@@ -47,7 +47,7 @@
     ]
   },
   "proficiencyBonus": 2,
-  "ac": 17,
+  "ac": 19,
   "speed": 25,
   "initiative": -1,
   "savingThrows": [
@@ -193,12 +193,11 @@
   },
   "concentration": {
     "active": true,
-    "spellName": "Bless",
+    "spellName": "Shield of Faith",
     "effects": [
       {
-        "type": "rollReminder",
-        "context": "attacks_and_saves",
-        "text": "+1d4"
+        "type": "acBonus",
+        "value": 2
       }
     ]
   },
