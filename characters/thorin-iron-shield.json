@@ -201,16 +201,30 @@
       }
     ]
   },
-  "activeConditions": [
-    "Poisoned",
-    "Petrified",
-    "Grappled",
-    "Incapacitated",
-    "Paralyzed",
-    "Restrained",
-    "Prone"
+  "activeConditions": [],
+  "sessionLog": [
+    {
+      "time": "3:57 PM",
+      "text": "Brain Smoothie — piercing: 12"
+    },
+    {
+      "time": "3:57 PM",
+      "text": "Brain Smoothie — piercing: 15"
+    },
+    {
+      "time": "3:57 PM",
+      "text": "Brain Smoothie — piercing: 13"
+    },
+    {
+      "time": "3:57 PM",
+      "text": "Brain Smoothie — Attack: 16"
+    },
+    {
+      "time": "3:57 PM",
+      "text": "Brain Smoothie — Attack: 17"
+    }
   ],
-  "sessionLog": [],
   "inspiration": false,
-  "journal": []
+  "journal": [],
+  "externalBuffs": []
 }
