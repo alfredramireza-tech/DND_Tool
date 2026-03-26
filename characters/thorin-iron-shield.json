@@ -1,0 +1,198 @@
+{
+  "name": "Thorin Iron Shield",
+  "race": "Hill Dwarf",
+  "class": "Cleric",
+  "subclass": "Life Domain",
+  "background": "Soldier",
+  "alignment": "Neutral Good",
+  "level": 4,
+  "abilityScores": {
+    "str": 14,
+    "dex": 8,
+    "con": 15,
+    "int": 10,
+    "wis": 18,
+    "cha": 12
+  },
+  "hp": {
+    "max": 34,
+    "hitDiceType": 8,
+    "hitDiceCount": 4,
+    "hpHistory": [
+      {
+        "level": 1,
+        "gained": 11,
+        "method": "base",
+        "notes": "8 + 2 CON + 1 Dwarf Toughness"
+      },
+      {
+        "level": 2,
+        "gained": 8,
+        "method": "roll",
+        "notes": "5 + 2 CON + 1 Dwarf Toughness"
+      },
+      {
+        "level": 3,
+        "gained": 7,
+        "method": "roll",
+        "notes": "4 + 2 CON + 1 Dwarf Toughness"
+      },
+      {
+        "level": 4,
+        "gained": 8,
+        "method": "roll",
+        "notes": "5 (roll) + 2 CON + 1 Dwarf"
+      }
+    ]
+  },
+  "proficiencyBonus": 2,
+  "ac": 17,
+  "speed": 25,
+  "initiative": -1,
+  "savingThrows": [
+    "wis",
+    "cha"
+  ],
+  "skillProficiencies": [
+    "athletics",
+    "religion",
+    "medicine",
+    "intimidation"
+  ],
+  "cantripsKnown": [
+    "Light",
+    "Sacred Flame",
+    "Thaumaturgy",
+    "Toll the Dead"
+  ],
+  "spellSlots": {
+    "1": 4,
+    "2": 3
+  },
+  "preparedSpellCount": 8,
+  "currentPreparedSpells": [
+    "Command",
+    "Guiding Bolt",
+    "Healing Word",
+    "Sanctuary",
+    "Aid",
+    "Prayer of Healing"
+  ],
+  "domainSpells": {
+    "1": [
+      "Bless",
+      "Cure Wounds"
+    ],
+    "3": [
+      "Lesser Restoration",
+      "Spiritual Weapon"
+    ]
+  },
+  "features": [
+    "Disciple of Life",
+    "Channel Divinity: Turn Undead",
+    "Channel Divinity: Preserve Life"
+  ],
+  "channelDivinityUses": 1,
+  "equipment": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope, mason's tools, playing cards, trophy, pouch, common clothes, rank insignia (sergeant), 3 apples, gem eye patch, semi-precious stones, ring from 2x Rivas, scroll of augury, 3 gold idols, Tressender Family Rings x2",
+  "notes": "25g each if we kill Glass-Staff\n1 point of inspiration\nTressender Family Rings x2",
+  "weapons": [
+    {
+      "name": "Brain Smoothie",
+      "ability": "str",
+      "proficient": true,
+      "damage": "2d8",
+      "damageType": "piercing",
+      "notes": "Morningstar"
+    },
+    {
+      "name": "Handaxe",
+      "ability": "str",
+      "proficient": true,
+      "damage": "1d6",
+      "damageType": "slashing",
+      "notes": "Thrown 20/60, disadvantage"
+    },
+    {
+      "name": "Light Crossbow",
+      "ability": "dex",
+      "proficient": true,
+      "damage": "1d8",
+      "damageType": "piercing",
+      "notes": "5 bolts"
+    }
+  ],
+  "levelHistory": [
+    {
+      "level": 4,
+      "from": 3,
+      "hpMethod": "roll",
+      "hpRoll": 5,
+      "hpGained": 8,
+      "retroHp": false,
+      "retroHpAmount": 0,
+      "asi": {
+        "type": "plus2",
+        "ability": "wis"
+      },
+      "newCantrip": "Toll the Dead"
+    }
+  ],
+  "id": "mn12z7a2x0032",
+  "currentHp": 34,
+  "tempHp": 0,
+  "spellSlotsUsed": {
+    "1": 0,
+    "2": 1
+  },
+  "channelDivinityUsed": 0,
+  "currency": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0
+  },
+  "equippedItems": [
+    {
+      "name": "Splint Mail",
+      "slot": "armor",
+      "armorType": "heavy",
+      "stats": {
+        "ac": 17
+      },
+      "notes": ""
+    }
+  ],
+  "quickItems": [],
+  "bulkGear": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope, mason's tools, playing cards, trophy, pouch, common clothes, rank insignia (sergeant), 3 apples, gem eye patch, semi-precious stones, ring from 2x Rivas, scroll of augury, 3 gold idols, Tressender Family Rings x2",
+  "subrace": "",
+  "colorTheme": {
+    "name": "Cleric Gold",
+    "accent": "#c4a35a",
+    "accentHover": "#d4b36a",
+    "accentDim": "#8a7340",
+    "bg": "#1a1410",
+    "surface": "#241e16",
+    "surfaceRaised": "#2e2720",
+    "border": "#3d3428",
+    "text": "#e8dcc8",
+    "textDim": "#a89880",
+    "error": "#c45a5a",
+    "success": "#6aaa5a",
+    "inputBg": "#1e1812"
+  },
+  "resources": {},
+  "expertiseSkills": [],
+  "passwordHash": "h2gm6377ivp",
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  },
+  "concentration": {
+    "active": false,
+    "spellName": ""
+  },
+  "activeConditions": [],
+  "sessionLog": []
+}
