@@ -556,6 +556,79 @@ details[open] summary::before { content: '▾ '; }
   position: sticky; top: 0; z-index: 50;
   background: var(--bg); padding-bottom: 4px;
   -webkit-sticky: sticky;
+  max-height: 160px; overflow: hidden;
+}
+/* ── Combat HUD ── */
+.hud-columns {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  background: var(--surface); border: 2px solid var(--accent);
+  border-radius: 12px; overflow: hidden;
+}
+.hud-left {
+  padding: 8px 10px; position: relative;
+}
+.hud-right {
+  padding: 8px 10px; border-left: 1px solid var(--border);
+}
+.hud-hp-big {
+  font-size: 1.8rem; font-weight: bold; color: var(--accent); line-height: 1.1;
+  text-align: center;
+}
+.hud-hp-big .hp-separator { font-size: 1.2rem; color: var(--text-dim); }
+.hud-hp-big .hp-max { font-size: 1.2rem; color: var(--text-dim); }
+.hud-hp-sub {
+  font-size: 0.7rem; color: var(--accent); text-align: center; margin-top: 1px;
+}
+.hud-insp {
+  position: absolute; top: 4px; right: 6px; font-size: 1.1rem;
+  cursor: pointer; touch-action: manipulation; opacity: 0.3;
+  transition: all 0.15s; line-height: 1;
+}
+.hud-insp.active { opacity: 1; color: var(--accent); }
+.hud-hp-btns {
+  display: flex; gap: 4px; justify-content: center; margin-top: 4px;
+}
+.hud-hp-btns .hp-btn { padding: 4px 10px; font-size: 0.7rem; min-height: 28px; }
+.hud-qa-name {
+  font-size: 0.85rem; font-weight: bold; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.hud-qa-stats {
+  font-size: 0.75rem; color: var(--text-dim); margin-top: 1px;
+}
+.hud-qa-btns {
+  display: flex; gap: 4px; margin-top: 4px;
+}
+.hud-qa-btns .btn { padding: 4px 8px; font-size: 0.7rem; min-height: 28px; flex: 1; }
+.hud-qa-switch {
+  width: 100%; margin-top: 4px; font-size: 0.7rem; font-family: inherit;
+  background: var(--input-bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 2px 4px;
+}
+.hud-strip {
+  display: flex; flex-wrap: wrap; gap: 4px 8px; padding: 4px 10px;
+  border-top: 1px solid var(--border); font-size: 0.75rem;
+  align-items: center; background: var(--surface);
+  border-radius: 0 0 12px 12px;
+}
+.slot-summary { white-space: nowrap; color: var(--text-dim); }
+.slot-pip {
+  display: inline-block; width: 7px; height: 7px;
+  border-radius: 50%; background: var(--accent);
+  margin: 0 1px; vertical-align: middle;
+}
+.slot-pip.spent { background: var(--border); opacity: 0.4; }
+.strip-badge {
+  padding: 1px 6px; border-radius: 10px;
+  font-size: 0.7rem; white-space: nowrap;
+}
+.strip-badge.conc { background: var(--accent-dim); color: var(--accent); }
+.strip-badge.cond { background: rgba(196,90,90,0.15); color: var(--error); }
+
+@media (max-width: 380px) {
+  .hud-columns { grid-template-columns: 1fr; }
+  .hud-right { border-left: none; border-top: 1px solid var(--border); }
+  .hp-sticky { max-height: 240px; }
 }
 
 /* ── Cantrip Chips ── */
@@ -5032,44 +5105,36 @@ function renderDashboard(c) {
   html += '<div class="text-dim" style="font-size:0.85rem;margin-top:4px">' + escapeHtml(c.background) + ' · ' + c.alignment + '</div>';
   html += '</div>';
 
-  // Sticky HP block: concentration + conditions + HP tracker
+  // Sticky Combat HUD
   html += '<div class="hp-sticky">';
+  html += '<div class="hud-columns">';
 
-  // Concentration banner
-  html += renderConcentrationBanner(c);
-
-  // Active conditions (inline badges)
-  if (c.activeConditions && c.activeConditions.length > 0) {
-    html += '<div style="margin:4px 0">';
-    html += renderActiveConditions(c);
-    html += '</div>';
-  }
-
-  // HP Tracker (most prominent)
-  html += '<div class="hp-tracker">';
-  html += '<div class="hp-label">Hit Points</div>';
-  html += '<div class="hp-display">';
+  // Left column: HP + Inspiration + buttons
   var effectiveHp = currentHp + tempHp;
-  html += '<span class="hp-current">' + effectiveHp + '</span>';
-  html += '<span class="hp-separator"> / </span>';
-  html += '<span class="hp-max">' + c.hp.max + '</span>';
-  html += '</div>';
-  if (tempHp > 0) html += '<div class="hp-temp">+' + tempHp + ' temp HP active (' + currentHp + ' real + ' + tempHp + ' temp)</div>';
-  html += '<div class="hp-buttons">';
-  html += '<button class="hp-btn damage" onclick="showHpInput(\'damage\')">Damage</button>';
+  html += '<div class="hud-left">';
+  html += '<span class="hud-insp' + (c.inspiration ? ' active' : '') + '" onclick="toggleInspiration()" title="Inspiration">' + (c.inspiration ? '\u2605' : '\u2606') + '</span>';
+  html += '<div class="hud-hp-big"><span class="hp-current">' + effectiveHp + '</span><span class="hp-separator"> / </span><span class="hp-max">' + c.hp.max + '</span></div>';
+  if (tempHp > 0) html += '<div class="hud-hp-sub">+' + tempHp + ' temp (' + currentHp + ' real)</div>';
+  html += '<div class="hud-hp-btns">';
+  html += '<button class="hp-btn damage" onclick="showHpInput(\'damage\')">Dmg</button>';
   html += '<button class="hp-btn heal" onclick="showHpInput(\'heal\')">Heal</button>';
-  html += '<button class="hp-btn temp" onclick="showHpInput(\'temp\')">Temp HP</button>';
+  html += '<button class="hp-btn temp" onclick="showHpInput(\'temp\')">Temp</button>';
   html += '</div></div>';
+
+  // Right column: Quick Action
+  html += renderQuickAction(c);
+
+  html += '</div>'; // end hud-columns
+
+  // Resource strip
+  html += renderResourceStrip(c);
 
   html += '</div>'; // end hp-sticky
 
   // Death Saves (when HP = 0)
   html += renderDeathSaves(c);
 
-  // Inspiration toggle
-  html += renderInspiration(c);
-
-  // Conditions button
+  // Conditions/Concentration buttons
   html += '<div style="display:flex;gap:8px;margin:8px 0">';
   html += '<button class="btn btn-secondary" onclick="showConditionsPanel()" style="font-size:0.8rem;padding:6px 12px">Conditions</button>';
   html += '<button class="btn btn-secondary" onclick="showSetConcentration()" style="font-size:0.8rem;padding:6px 12px">Set Concentration</button>';
@@ -7232,6 +7297,157 @@ function toggleInspiration() {
   showDashboard(c);
 }
 
+function buildQuickActions(c) {
+  var actions = [];
+  // Add all weapons
+  (c.weapons || []).forEach(function(w, i) {
+    var abilMod = mod(c.abilityScores[w.ability] || 10);
+    var profB = w.proficient ? c.proficiencyBonus : 0;
+    var magB = w.magicBonus || 0;
+    var atkB = abilMod + profB + magB;
+    var dmgMod = abilMod + magB;
+    actions.push({
+      type: 'weapon', index: i, name: w.name,
+      atkBonus: atkB, damage: w.damage, dmgMod: dmgMod, damageType: w.damageType
+    });
+  });
+  // Add rollable cantrips (damage, attack, or healing — not utility)
+  (c.cantripsKnown || []).forEach(function(name) {
+    var sp = getSpell(name);
+    if (sp && (sp.damage || sp.attack || sp.healing)) {
+      actions.push({ type: 'cantrip', name: name, spell: sp });
+    }
+  });
+  return actions;
+}
+
+function renderQuickAction(c) {
+  var actions = buildQuickActions(c);
+  if (actions.length === 0) {
+    return '<div class="hud-right"><div class="text-dim" style="font-size:0.8rem;text-align:center;padding:8px 0">No weapons or attack cantrips</div></div>';
+  }
+  var selectedIdx = parseInt(localStorage.getItem('dnd_quickAction_' + (c.id || '')) || '0');
+  if (selectedIdx >= actions.length) selectedIdx = 0;
+  var current = actions[selectedIdx];
+  var html = '<div class="hud-right">';
+  // Current action info
+  html += '<div class="hud-qa-name">\u2694 ' + escapeHtml(current.name) + '</div>';
+  if (current.type === 'weapon') {
+    html += '<div class="hud-qa-stats">+' + current.atkBonus + ' to hit \u00b7 ' + current.damage + (current.dmgMod >= 0 ? '+' : '') + current.dmgMod + ' ' + current.damageType + '</div>';
+    html += '<div class="hud-qa-btns">';
+    html += '<button class="btn btn-primary" onclick="doWeaponRoll(' + current.index + ',\'attack\')">Attack</button>';
+    html += '<button class="btn btn-secondary" onclick="doWeaponRoll(' + current.index + ',\'damage\')">Damage</button>';
+    html += '</div>';
+  } else if (current.type === 'cantrip') {
+    var sp = current.spell;
+    var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
+    var castMod = mod(c.abilityScores[cd.spellcastingAbility] || c.abilityScores.wis);
+    var spellDC = 8 + c.proficiencyBonus + castMod;
+    // Build stats line
+    var statsLine = '';
+    if (sp.attack) {
+      statsLine = '+' + (c.proficiencyBonus + castMod) + ' to hit';
+    } else if (sp.save) {
+      statsLine = sp.save + ' save DC ' + spellDC;
+    }
+    if (sp.damage) {
+      var dmgDice = sp.damage.dice || '';
+      if (sp.damage.scaleCantrip && c.level >= 5) {
+        // Simplified cantrip scaling display
+        var numDice = c.level >= 17 ? 4 : c.level >= 11 ? 3 : c.level >= 5 ? 2 : 1;
+        dmgDice = numDice + dmgDice.substring(1);
+      }
+      if (statsLine) statsLine += ' \u00b7 ';
+      statsLine += dmgDice + ' ' + (sp.damage.type || '');
+    }
+    if (sp.healing) {
+      var healDice = sp.healing.dice || '';
+      if (statsLine) statsLine += ' \u00b7 ';
+      statsLine += healDice + ' healing';
+    }
+    html += '<div class="hud-qa-stats">' + statsLine + '</div>';
+    html += '<div class="hud-qa-btns">';
+    if (sp.attack && sp.damage) {
+      html += '<button class="btn btn-primary" onclick="doSpellRoll(\'' + escapeHtml(sp.name) + '\',\'attack\')">Attack</button>';
+      html += '<button class="btn btn-secondary" onclick="doSpellRoll(\'' + escapeHtml(sp.name) + '\',\'damage\')">Damage</button>';
+    } else if (sp.damage && !sp.attack) {
+      html += '<button class="btn btn-primary" onclick="doSpellRoll(\'' + escapeHtml(sp.name) + '\',\'damage\')">Damage</button>';
+      if (sp.damage.altDice) {
+        html += '<button class="btn btn-secondary" onclick="doSpellRoll(\'' + escapeHtml(sp.name) + '\',\'damage-alt\')">Alt Dmg</button>';
+      }
+    }
+    if (sp.healing) {
+      html += '<button class="btn btn-primary" onclick="doSpellRoll(\'' + escapeHtml(sp.name) + '\',\'healing\')" style="border-color:var(--success);color:var(--success)">Heal</button>';
+    }
+    html += '</div>';
+  }
+  // Switch dropdown (only if more than 1 action)
+  if (actions.length > 1) {
+    html += '<select class="hud-qa-switch" onchange="switchQuickAction(this.value)">';
+    actions.forEach(function(a, i) {
+      var label = (a.type === 'weapon' ? '\u2694 ' : '\u2728 ') + a.name;
+      html += '<option value="' + i + '"' + (i === selectedIdx ? ' selected' : '') + '>' + escapeHtml(label) + '</option>';
+    });
+    html += '</select>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function switchQuickAction(idx) {
+  var c = loadCharacter();
+  if (!c) return;
+  localStorage.setItem('dnd_quickAction_' + (c.id || ''), idx);
+  var rightEl = document.querySelector('.hud-right');
+  if (rightEl) {
+    var tmp = document.createElement('div');
+    tmp.innerHTML = renderQuickAction(c);
+    var newRight = tmp.querySelector('.hud-right');
+    if (newRight) rightEl.innerHTML = newRight.innerHTML;
+  }
+}
+
+function renderResourceStrip(c) {
+  var html = '<div class="hud-strip">';
+  // Spell slots as read-only dots
+  var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
+  var isCaster = cd.isCaster;
+  // Also handle EK spell slots
+  var slotsObj = null;
+  var slotsUsed = null;
+  if (isCaster && c.spellSlots && Object.keys(c.spellSlots).length > 0) {
+    slotsObj = c.spellSlots;
+    slotsUsed = c.spellSlotsUsed || {};
+  } else if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight' && c.ekSpellSlots) {
+    slotsObj = c.ekSpellSlots;
+    slotsUsed = c.ekSlotsUsed || {};
+  }
+  if (slotsObj) {
+    Object.entries(slotsObj).forEach(function(entry) {
+      var level = entry[0], count = entry[1];
+      if (count <= 0) return;
+      var used = (slotsUsed && slotsUsed[level]) || 0;
+      html += '<span class="slot-summary">';
+      for (var i = 0; i < count; i++) {
+        html += '<span class="slot-pip' + (i < used ? ' spent' : '') + '"></span>';
+      }
+      html += ' ' + ordinal(parseInt(level)) + '</span>';
+    });
+  }
+  // Concentration badge
+  if (c.concentration && c.concentration.active) {
+    html += '<span class="strip-badge conc">\u27E1 ' + escapeHtml(c.concentration.spellName) + '</span>';
+  }
+  // Condition badges
+  if (c.activeConditions && c.activeConditions.length > 0) {
+    c.activeConditions.forEach(function(cn) {
+      html += '<span class="strip-badge cond">\u26A0 ' + escapeHtml(cn) + '</span>';
+    });
+  }
+  html += '</div>';
+  return html;
+}
+
 function renderDeathSaves(c) {
   if (c.currentHp > 0 && c.deathSaves.successes === 0 && c.deathSaves.failures === 0) return '';
   if (c.currentHp > 0) return '';
@@ -7513,9 +7729,9 @@ function applyCombatMode() {
     container.classList.remove('combat-mode-on');
     container.querySelectorAll('.combat-hide').forEach(function(el) { el.classList.remove('combat-hidden'); });
   }
-  // Auto-expand dice rollers in combat mode
-  var diceDetails = container.querySelector('.dice-rolls-outer');
-  if (diceDetails && combatModeOn) diceDetails.open = true;
+  // Auto-expand session log in combat mode (dice rollers replaced by HUD quick actions)
+  var combatDetails = container.querySelectorAll('.combat-show .dice-rolls-outer');
+  combatDetails.forEach(function(d) { if (combatModeOn) d.open = true; });
   var btn = document.getElementById('combat-mode-btn');
   if (btn) btn.classList.toggle('active', combatModeOn);
 }
@@ -8693,20 +8909,11 @@ function renderSpellCard(spell, char, options) {
    ═══════════════════════════════════════════ */
 
 function renderDiceRollers(c) {
-  let html = '<div class="dash-section"><details class="dice-rolls-outer"><summary>Dice &amp; Rolls</summary>';
+  let html = '<div class="dash-section"><details class="dice-rolls-outer"><summary>All Rolls &amp; Checks</summary>';
 
   // General Purpose Roller
   html += `<details class="roller-section">
     <summary>General Dice Roller</summary>
-    <div class="roller-grid">
-      <button class="die-btn" onclick="document.getElementById('gr-sides').value=4;document.getElementById('gr-count').value=1">d4</button>
-      <button class="die-btn" onclick="document.getElementById('gr-sides').value=6;document.getElementById('gr-count').value=1">d6</button>
-      <button class="die-btn" onclick="document.getElementById('gr-sides').value=8;document.getElementById('gr-count').value=1">d8</button>
-      <button class="die-btn" onclick="document.getElementById('gr-sides').value=10;document.getElementById('gr-count').value=1">d10</button>
-      <button class="die-btn" onclick="document.getElementById('gr-sides').value=12;document.getElementById('gr-count').value=1">d12</button>
-      <button class="die-btn" onclick="document.getElementById('gr-sides').value=20;document.getElementById('gr-count').value=1">d20</button>
-      <button class="die-btn" onclick="document.getElementById('gr-sides').value=100;document.getElementById('gr-count').value=1">d100</button>
-    </div>
     <div class="roller-controls">
       <div class="form-group"><label style="font-size:0.75rem;color:var(--text-dim)">Count</label><input type="number" id="gr-count" value="1" min="1" max="10"></div>
       <div class="form-group"><label style="font-size:0.75rem;color:var(--text-dim)">Die</label>
