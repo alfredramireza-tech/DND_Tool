@@ -142,7 +142,7 @@
   "currentHp": 34,
   "tempHp": 0,
   "spellSlotsUsed": {
-    "1": 0,
+    "1": 1,
     "2": 1
   },
   "channelDivinityUsed": 0,
@@ -194,7 +194,12 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [],
+  "sessionLog": [
+    {
+      "time": "1:10 PM",
+      "text": "Guiding Bolt — Attack: 9"
+    }
+  ],
   "inspiration": true,
   "journal": []
 }
