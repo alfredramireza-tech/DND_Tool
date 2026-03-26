@@ -556,7 +556,6 @@ details[open] summary::before { content: '▾ '; }
   position: sticky; top: 0; z-index: 50;
   background: var(--bg); padding-bottom: 4px;
   -webkit-sticky: sticky;
-  max-height: 160px; overflow: hidden;
 }
 /* ── Combat HUD ── */
 .hud-columns {
@@ -628,7 +627,6 @@ details[open] summary::before { content: '▾ '; }
 @media (max-width: 380px) {
   .hud-columns { grid-template-columns: 1fr; }
   .hud-right { border-left: none; border-top: 1px solid var(--border); }
-  .hp-sticky { max-height: 240px; }
 }
 
 /* ── Cantrip Chips ── */
@@ -2829,6 +2827,22 @@ const SPELL_DB = [
 ];
 
 
+// Spell buff effects — mechanical effects applied when concentrating on these spells
+var SPELL_BUFF_EFFECTS = {
+  "Shield of Faith": [{ type: "acBonus", value: 2 }],
+  "Haste": [{ type: "acBonus", value: 2 }, { type: "reminder", text: "+2 AC, double speed, extra action (Attack/Dash/Disengage/Hide/Use Object only)" }],
+  "Barkskin": [{ type: "acMinimum", value: 16 }],
+  "Shield": [{ type: "reminder", text: "+5 AC until start of next turn (not concentration - track manually)" }],
+  "Bless": [{ type: "rollReminder", context: "attacks_and_saves", text: "+1d4" }],
+  "Bane": [{ type: "reminder", text: "Targets subtract 1d4 from attacks & saves" }],
+  "Enhance Ability": [{ type: "reminder", text: "Advantage on chosen ability checks" }],
+  "Protection from Evil and Good": [{ type: "reminder", text: "Aberrations/celestials/elementals/fey/fiends/undead have disadvantage attacking you" }],
+  "Beacon of Hope": [{ type: "reminder", text: "Advantage on WIS saves & death saves. Maximize healing received." }],
+  "Spirit Guardians": [{ type: "reminder", text: "Enemies within 15ft: half speed, 3d8 radiant/necrotic on entering or starting turn (WIS save for half)" }],
+  "Spiritual Weapon": [{ type: "reminder", text: "Bonus action: melee spell attack, 1d8+WIS force damage" }],
+  "Warding Bond": [{ type: "acBonus", value: 1 }, { type: "reminder", text: "Target also gets +1 saves, resistance to all damage. You take same damage they take." }]
+};
+
 // Derived name arrays for backward compatibility with onboarding/level-up spell pickers
 const CLERIC_CANTRIPS = CANTRIP_DATA.map(c => c.name);
 const CLERIC_SPELLS = {};
@@ -3522,6 +3536,9 @@ function migrateCharacter(c) {
   if (!c.expertiseSkills) c.expertiseSkills = [];
   if (!c.deathSaves) c.deathSaves = { successes: 0, failures: 0 };
   if (!c.concentration) c.concentration = { active: false, spellName: '' };
+  if (c.concentration && c.concentration.active && !c.concentration.effects) {
+    c.concentration.effects = SPELL_BUFF_EFFECTS[c.concentration.spellName] || [];
+  }
   if (!c.activeConditions) c.activeConditions = [];
   if (!c.sessionLog) c.sessionLog = [];
   if (c.inspiration === undefined) c.inspiration = false;
@@ -3571,7 +3588,15 @@ function calculateAC(c) {
   if (armor && c.class === 'Fighter' && (c.fightingStyle === 'Defense' || c.fightingStyle2 === 'Defense')) {
     ac += 1;
   }
-  return ac + shieldBonus;
+  ac += shieldBonus;
+  // Apply concentration AC buffs
+  if (c.concentration && c.concentration.active && c.concentration.effects) {
+    c.concentration.effects.forEach(function(eff) {
+      if (eff.type === 'acBonus') ac += eff.value;
+      if (eff.type === 'acMinimum' && ac < eff.value) ac = eff.value;
+    });
+  }
+  return ac;
 }
 
 function showView(viewId) {
@@ -5143,9 +5168,18 @@ function renderDashboard(c) {
   // Dice & Rolls (directly below HP for combat use)
   html += renderDiceRollers(c);
 
+  // Compute AC buff annotation
+  var acBuff = 0;
+  if (c.concentration && c.concentration.active && c.concentration.effects) {
+    c.concentration.effects.forEach(function(eff) {
+      if (eff.type === 'acBonus') acBuff += eff.value;
+    });
+  }
+  var acNote = acBuff > 0 ? ' <span style="font-size:0.7rem;color:var(--accent)">(+' + acBuff + ')</span>' : '';
+
   // Stat cards
   html += '<div class="stat-grid">';
-  html += '<div class="stat-card"><div class="stat-value">' + ac + '</div><div class="stat-label">Armor Class</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">' + ac + acNote + '</div><div class="stat-label">Armor Class</div></div>';
   html += '<div class="stat-card"><div class="stat-value">' + c.speed + ' ft</div><div class="stat-label">Speed</div></div>';
   html += '<div class="stat-card"><div class="stat-value">' + (c.initiative >= 0 ? '+' : '') + c.initiative + '</div><div class="stat-label">Initiative</div></div>';
   html += '<div class="stat-card"><div class="stat-value">+' + c.proficiencyBonus + '</div><div class="stat-label">Prof. Bonus</div></div>';
@@ -7381,6 +7415,16 @@ function renderQuickAction(c) {
     }
     html += '</div>';
   }
+  // Roll reminders from active buffs
+  var rollReminders = [];
+  if (c.concentration && c.concentration.active && c.concentration.effects) {
+    c.concentration.effects.forEach(function(eff) {
+      if (eff.type === 'rollReminder') rollReminders.push(eff.text);
+    });
+  }
+  if (rollReminders.length > 0) {
+    html += '<div style="font-size:0.65rem;color:var(--accent);margin-top:2px">' + rollReminders.join(' \u00b7 ') + '</div>';
+  }
   // Switch dropdown (only if more than 1 action)
   if (actions.length > 1) {
     html += '<select class="hud-qa-switch" onchange="switchQuickAction(this.value)">';
@@ -7590,7 +7634,8 @@ function setConcentration(spellName) {
     var oldSpell = c.concentration.spellName;
     logEvent('Lost concentration on ' + oldSpell);
   }
-  c.concentration = { active: true, spellName: spellName };
+  var effects = SPELL_BUFF_EFFECTS[spellName] || [];
+  c.concentration = { active: true, spellName: spellName, effects: effects };
   logEvent('Began concentrating on ' + spellName);
   saveCurrentCharacter(c);
   showDashboard(c);
@@ -7608,13 +7653,44 @@ function dropConcentration() {
 }
 
 function showSetConcentration() {
-  showModal(
-    '<h3>Set Concentration</h3>' +
-    '<input type="text" id="conc-spell-input" placeholder="Spell name..." onclick="event.stopPropagation()">' +
-    '<div class="confirm-actions">' +
-    '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>' +
-    '<button class="btn btn-primary" onclick="var v=document.getElementById(\'conc-spell-input\').value.trim();if(v){closeModal();setConcentration(v);}">Set</button></div>'
-  );
+  var c = loadCharacter();
+  var html = '<h3>Set Concentration</h3>';
+  // Show known concentration spells as quick-pick buttons
+  if (c) {
+    var concSpells = [];
+    var allSpells = (c.currentPreparedSpells || []).concat(c.cantripsKnown || []);
+    if (c.class === 'Cleric') {
+      var domainList = getDomainSpellList(c.level);
+      allSpells = allSpells.concat(domainList);
+    }
+    if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
+      allSpells = allSpells.concat(c.ekSpellsKnown || []);
+    }
+    // Deduplicate
+    var seen = {};
+    allSpells.forEach(function(name) {
+      if (seen[name]) return;
+      seen[name] = true;
+      var sp = getSpell(name);
+      if (sp && sp.duration && sp.duration.toLowerCase().indexOf('concentration') >= 0) {
+        concSpells.push(name);
+      }
+    });
+    if (concSpells.length > 0) {
+      html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">';
+      concSpells.forEach(function(name) {
+        var safeName = name.replace(/'/g, "\\'");
+        html += '<button class="btn btn-secondary" style="font-size:0.85rem;padding:6px 12px" onclick="closeModal();setConcentration(\'' + safeName + '\')">' + escapeHtml(name) + '</button>';
+      });
+      html += '</div>';
+      html += '<div class="text-dim" style="font-size:0.8rem;margin-bottom:8px">Or type a custom spell:</div>';
+    }
+  }
+  html += '<input type="text" id="conc-spell-input" placeholder="Spell name..." onclick="event.stopPropagation()">';
+  html += '<div class="confirm-actions">';
+  html += '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>';
+  html += '<button class="btn btn-primary" onclick="var v=document.getElementById(\'conc-spell-input\').value.trim();if(v){closeModal();setConcentration(v);}">Set</button></div>';
+  showModal(html);
   setTimeout(function() { var el = document.getElementById('conc-spell-input'); if (el) el.focus(); }, 100);
 }
 
@@ -7625,6 +7701,14 @@ function renderConcentrationBanner(c) {
   html += '<div class="conc-info">';
   html += '<div class="conc-name">Concentrating: ' + escapeHtml(c.concentration.spellName) + '</div>';
   html += '<div class="conc-hint">CON save to maintain if you take damage (DC = max of 10 or half damage taken)</div>';
+  // Show reminder effects
+  if (c.concentration.effects) {
+    c.concentration.effects.forEach(function(eff) {
+      if (eff.type === 'reminder') {
+        html += '<div style="font-size:0.8rem;color:var(--accent);margin-top:4px">' + escapeHtml(eff.text) + '</div>';
+      }
+    });
+  }
   html += '<div class="conc-actions">';
   html += '<button class="btn btn-secondary" onclick="dropConcentration()">Drop</button>';
   html += '<button class="btn btn-secondary" onclick="showSetConcentration()">Change</button>';
@@ -7957,7 +8041,8 @@ function castSpellAtLevel(spellName, rollType, castLevel) {
     if (c.concentration && c.concentration.active) {
       logEvent('Lost concentration on ' + c.concentration.spellName);
     }
-    c.concentration = { active: true, spellName: spellName };
+    var effects = SPELL_BUFF_EFFECTS[spellName] || [];
+    c.concentration = { active: true, spellName: spellName, effects: effects };
     logEvent('Began concentrating on ' + spellName);
   }
   var slotsObj = (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') ? c.ekSpellSlots : c.spellSlots;
@@ -8130,7 +8215,12 @@ function renderPartyGrid(container) {
     var pvEffective = c.currentHp + (c.tempHp || 0);
     var pvHpText = 'HP: ' + pvEffective + ' / ' + c.hp.max;
     if (c.tempHp > 0) pvHpText += ' (' + c.currentHp + '+' + c.tempHp + ' temp)';
-    html += '<div class="pv-hp ' + hpClass + '">' + pvHpText + '  \u2022  AC: ' + (ac || '?') + '</div>';
+    var pvAcBuff = 0;
+    if (c.concentration && c.concentration.active && c.concentration.effects) {
+      c.concentration.effects.forEach(function(eff) { if (eff.type === 'acBonus') pvAcBuff += eff.value; });
+    }
+    var pvAcNote = pvAcBuff > 0 ? '(+' + pvAcBuff + ')' : '';
+    html += '<div class="pv-hp ' + hpClass + '">' + pvHpText + '  \u2022  AC: ' + (ac || '?') + pvAcNote + '</div>';
     var statuses = [];
     if (c.activeConditions && c.activeConditions.length > 0) statuses = statuses.concat(c.activeConditions);
     if (c.concentration && c.concentration.active) statuses.push('Concentrating: ' + c.concentration.spellName);
@@ -8182,7 +8272,12 @@ function showPartyCharDetail(idx) {
   html += '<div style="text-align:center;margin:16px 0;padding:16px;background:var(--surface);border-radius:var(--radius);border:2px solid ' + hpColor + '">';
   html += '<div style="font-size:2.5rem;font-weight:bold;color:' + hpColor + '">' + effectiveHp + ' / ' + c.hp.max + '</div>';
   if (c.tempHp > 0) html += '<div style="color:var(--accent);font-size:0.9rem">+' + c.tempHp + ' temp HP (' + c.currentHp + ' real + ' + c.tempHp + ' temp)</div>';
-  html += '<div style="font-size:0.85rem;color:var(--text-dim);margin-top:4px">AC: ' + (ac || '?') + '</div>';
+  var detailAcBuff = 0;
+  if (c.concentration && c.concentration.active && c.concentration.effects) {
+    c.concentration.effects.forEach(function(eff) { if (eff.type === 'acBonus') detailAcBuff += eff.value; });
+  }
+  var detailAcNote = detailAcBuff > 0 ? ' <span style="color:var(--accent)">(+' + detailAcBuff + ')</span>' : '';
+  html += '<div style="font-size:0.85rem;color:var(--text-dim);margin-top:4px">AC: ' + (ac || '?') + detailAcNote + '</div>';
   html += '</div>';
 
   // Concentration & conditions
@@ -8948,6 +9043,16 @@ function renderDiceRollers(c) {
 
   // Saving Throw & Ability Check Roller
   html += '<details class="roller-section"><summary>Saving Throws &amp; Ability Checks</summary>';
+  // Roll reminders from active buffs
+  var saveReminders = [];
+  if (c.concentration && c.concentration.active && c.concentration.effects) {
+    c.concentration.effects.forEach(function(eff) {
+      if (eff.type === 'rollReminder') saveReminders.push(eff.text);
+    });
+  }
+  if (saveReminders.length > 0) {
+    html += '<div style="font-size:0.75rem;color:var(--accent);margin-bottom:6px">Active: ' + saveReminders.join(' \u00b7 ') + '</div>';
+  }
   html += '<h4 style="font-size:0.8rem;color:var(--text-dim);margin-bottom:8px">SAVING THROWS</h4>';
   html += '<div class="save-check-grid">';
   ABILITIES.forEach(ab => {
