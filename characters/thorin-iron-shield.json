@@ -1,6 +1,7 @@
 {
   "name": "Thorin Iron Shield",
   "race": "Hill Dwarf",
+  "subrace": "",
   "class": "Cleric",
   "subclass": "Life Domain",
   "background": "Soldier",
@@ -54,9 +55,9 @@
     "cha"
   ],
   "skillProficiencies": [
-    "athletics",
     "religion",
     "medicine",
+    "athletics",
     "intimidation"
   ],
   "cantripsKnown": [
@@ -74,9 +75,11 @@
     "Command",
     "Guiding Bolt",
     "Healing Word",
-    "Sanctuary",
+    "Shield of Faith",
     "Aid",
-    "Prayer of Healing"
+    "Hold Person",
+    "Prayer of Healing",
+    "Zone of Truth"
   ],
   "domainSpells": {
     "1": [
@@ -95,7 +98,7 @@
   ],
   "channelDivinityUses": 1,
   "equipment": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope, mason's tools, playing cards, trophy, pouch, common clothes, rank insignia (sergeant), 3 apples, gem eye patch, semi-precious stones, ring from 2x Rivas, scroll of augury, 3 gold idols, Tressender Family Rings x2",
-  "notes": "25g each if we kill Glass-Staff\n1 point of inspiration\nTressender Family Rings x2",
+  "notes": "Tressender Family Rings x2",
   "weapons": [
     {
       "name": "Brain Smoothie",
@@ -138,6 +141,15 @@
       "newCantrip": "Toll the Dead"
     }
   ],
+  "expertiseSkills": [],
+  "resources": {},
+  "currency": {
+    "cp": 0,
+    "sp": 63,
+    "ep": 0,
+    "gp": 39,
+    "pp": 0
+  },
   "id": "mn12z7a2x0032",
   "currentHp": 34,
   "tempHp": 0,
@@ -146,13 +158,6 @@
     "2": 1
   },
   "channelDivinityUsed": 0,
-  "currency": {
-    "cp": 0,
-    "sp": 0,
-    "ep": 0,
-    "gp": 0,
-    "pp": 0
-  },
   "equippedItems": [
     {
       "name": "Splint Mail",
@@ -166,7 +171,6 @@
   ],
   "quickItems": [],
   "bulkGear": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope, mason's tools, playing cards, trophy, pouch, common clothes, rank insignia (sergeant), 3 apples, gem eye patch, semi-precious stones, ring from 2x Rivas, scroll of augury, 3 gold idols, Tressender Family Rings x2",
-  "subrace": "",
   "colorTheme": {
     "name": "Cleric Gold",
     "accent": "#c4a35a",
@@ -182,8 +186,6 @@
     "success": "#6aaa5a",
     "inputBg": "#1e1812"
   },
-  "resources": {},
-  "expertiseSkills": [],
   "passwordHash": "h2gm6377ivp",
   "deathSaves": {
     "successes": 0,
@@ -194,12 +196,7 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [
-    {
-      "time": "1:10 PM",
-      "text": "Guiding Bolt — Attack: 9"
-    }
-  ],
-  "inspiration": true,
+  "sessionLog": [],
+  "inspiration": false,
   "journal": []
 }
