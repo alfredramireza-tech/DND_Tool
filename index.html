@@ -530,6 +530,66 @@ details[open] summary::before { content: '▾ '; }
 .hp-btn.heal { border-color: var(--success); color: var(--success); }
 .hp-btn.temp { border-color: var(--accent); color: var(--accent); }
 
+/* ── Session Journal ── */
+.journal-entry {
+  border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px;
+  background: var(--surface);
+}
+.journal-entry summary {
+  padding: 8px 12px; cursor: pointer; font-size: 0.85rem; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.journal-entry summary .je-date { color: var(--text-dim); font-size: 0.8rem; flex-shrink: 0; }
+.journal-entry summary .je-preview { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-dim); }
+.journal-entry-body { padding: 8px 12px 12px; font-size: 0.85rem; white-space: pre-wrap; border-top: 1px solid var(--border); }
+.journal-entry-body .je-delete { margin-top: 8px; font-size: 0.75rem; color: var(--error); cursor: pointer; background: none; border: none; padding: 4px 8px; }
+.journal-add-form { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.journal-add-form input, .journal-add-form textarea {
+  width: 100%; padding: 8px; font-family: inherit; font-size: 0.85rem;
+  background: var(--input-bg); color: var(--text); border: 1px solid var(--border); border-radius: var(--radius);
+  box-sizing: border-box;
+}
+.journal-add-form textarea { min-height: 60px; resize: vertical; }
+
+/* ── Sticky HP Block ── */
+.hp-sticky {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg); padding-bottom: 4px;
+  -webkit-sticky: sticky;
+}
+
+/* ── Cantrip Chips ── */
+.cantrip-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cantrip-chip {
+  display: inline-block; padding: 6px 12px; font-size: 0.85rem; font-family: inherit;
+  background: var(--surface-raised); border: 1px solid var(--border); border-radius: 20px;
+  cursor: pointer; touch-action: manipulation; color: var(--text); transition: all 0.15s;
+}
+.cantrip-chip:active { background: var(--accent-dim); }
+.cantrip-chip-detail {
+  margin-top: 8px; padding: 10px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 0.85rem;
+}
+/* ── Dashboard Action Grid ── */
+.dash-actions-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px;
+}
+.dash-actions-grid .btn { width: 100%; }
+.dash-actions-grid .btn-full { grid-column: 1 / -1; }
+
+/* ── Inspiration Toggle ── */
+.inspiration-toggle {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin: 8px 0; padding: 10px; cursor: pointer; touch-action: manipulation;
+  border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface);
+  transition: all 0.2s;
+}
+.inspiration-toggle.active { border-color: var(--accent); background: var(--surface-raised); }
+.insp-star { font-size: 1.6rem; opacity: 0.3; transition: all 0.2s; }
+.inspiration-toggle.active .insp-star { opacity: 1; color: var(--accent); }
+.insp-label { font-size: 0.9rem; font-weight: bold; color: var(--text-dim); }
+.inspiration-toggle.active .insp-label { color: var(--accent); }
+
 /* ── Interactive Spell Slots ── */
 .slot-dot.interactive { cursor: pointer; touch-action: manipulation; transition: all 0.15s; }
 .slot-dot.interactive:active { transform: scale(1.2); }
@@ -3391,6 +3451,8 @@ function migrateCharacter(c) {
   if (!c.concentration) c.concentration = { active: false, spellName: '' };
   if (!c.activeConditions) c.activeConditions = [];
   if (!c.sessionLog) c.sessionLog = [];
+  if (c.inspiration === undefined) c.inspiration = false;
+  if (!c.journal) c.journal = [];
   // Fighter-specific fields
   if (c.class === 'Fighter') {
     if (!c.maneuversKnown) c.maneuversKnown = [];
@@ -3654,6 +3716,9 @@ function saveAllCharacters(chars) {
   localStorage.setItem(CHARACTERS_KEY, JSON.stringify(chars));
 }
 
+var _autoSaveTimer = null;
+var _autoSaving = false;
+
 function saveCurrentCharacter(char) {
   if (char.equippedItems && char.equippedItems.length > 0) {
     char.ac = calculateAC(char);
@@ -3663,6 +3728,52 @@ function saveCurrentCharacter(char) {
   if (idx >= 0) chars[idx] = char;
   else chars.push(char);
   saveAllCharacters(chars);
+  // Auto cloud save debounce (30s)
+  scheduleAutoCloudSave();
+}
+
+function scheduleAutoCloudSave() {
+  if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(function() {
+    _autoSaveTimer = null;
+    saveToCloudSilent();
+  }, 30000);
+}
+
+function saveToCloudSilent() {
+  var c = loadCharacter();
+  if (!c) return;
+  var headers = getGitHubHeaders();
+  if (!headers || GITHUB_CONFIG.token === '1AAP39VV4N4V5KNVKYFXO1G8FZn6PMh8PQQaulZ8qj7DB4Zv0XkbFHbxip4_Gw7qoMQWs5Mo0IT7QH2B11_tap_buhtig') return;
+  _autoSaving = true;
+  showSyncIndicator(true);
+  var slug = cloudFileName(c);
+  var targetPath = 'characters/' + slug + '.json';
+  var targetUrl = ghApiUrl(targetPath);
+  // Try to get existing sha
+  fetch(targetUrl, { headers: headers })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) {
+      var body = { message: 'Auto-save ' + c.name, content: btoa(unescape(encodeURIComponent(JSON.stringify(c, null, 2)))) };
+      if (d && d.sha) body.sha = d.sha;
+      return fetch(targetUrl, { method: 'PUT', headers: headers, body: JSON.stringify(body) });
+    })
+    .then(function() { _autoSaving = false; showSyncIndicator(false); })
+    .catch(function() { _autoSaving = false; showSyncIndicator(false); });
+}
+
+function showSyncIndicator(show) {
+  var el = document.getElementById('sync-indicator');
+  if (!el && show) {
+    el = document.createElement('div');
+    el.id = 'sync-indicator';
+    el.style.cssText = 'position:fixed;bottom:12px;right:12px;background:var(--surface-raised);color:var(--text-dim);padding:6px 12px;border-radius:20px;font-size:0.75rem;z-index:100;border:1px solid var(--border);opacity:0.8';
+    el.textContent = 'Syncing...';
+    document.body.appendChild(el);
+  } else if (el && !show) {
+    el.textContent = 'Saved';
+    setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 1500);
+  }
 }
 
 function migrateStorage() {
@@ -4178,6 +4289,7 @@ function buildHpHistoryFields(level, history) {
 
 function showHomeScreen() {
   showView('homescreen');
+  clearPartyPoll();
   activeCharId = null;
   resetThemeToDefault();
   renderHomeScreen();
@@ -4920,10 +5032,13 @@ function renderDashboard(c) {
   html += '<div class="text-dim" style="font-size:0.85rem;margin-top:4px">' + escapeHtml(c.background) + ' · ' + c.alignment + '</div>';
   html += '</div>';
 
+  // Sticky HP block: concentration + conditions + HP tracker
+  html += '<div class="hp-sticky">';
+
   // Concentration banner
   html += renderConcentrationBanner(c);
 
-  // Active conditions
+  // Active conditions (inline badges)
   if (c.activeConditions && c.activeConditions.length > 0) {
     html += '<div style="margin:4px 0">';
     html += renderActiveConditions(c);
@@ -4934,19 +5049,25 @@ function renderDashboard(c) {
   html += '<div class="hp-tracker">';
   html += '<div class="hp-label">Hit Points</div>';
   html += '<div class="hp-display">';
-  html += '<span class="hp-current">' + currentHp + '</span>';
+  var effectiveHp = currentHp + tempHp;
+  html += '<span class="hp-current">' + effectiveHp + '</span>';
   html += '<span class="hp-separator"> / </span>';
   html += '<span class="hp-max">' + c.hp.max + '</span>';
   html += '</div>';
-  if (tempHp > 0) html += '<div class="hp-temp">+' + tempHp + ' temp</div>';
+  if (tempHp > 0) html += '<div class="hp-temp">+' + tempHp + ' temp HP active (' + currentHp + ' real + ' + tempHp + ' temp)</div>';
   html += '<div class="hp-buttons">';
   html += '<button class="hp-btn damage" onclick="showHpInput(\'damage\')">Damage</button>';
   html += '<button class="hp-btn heal" onclick="showHpInput(\'heal\')">Heal</button>';
   html += '<button class="hp-btn temp" onclick="showHpInput(\'temp\')">Temp HP</button>';
   html += '</div></div>';
 
+  html += '</div>'; // end hp-sticky
+
   // Death Saves (when HP = 0)
   html += renderDeathSaves(c);
+
+  // Inspiration toggle
+  html += renderInspiration(c);
 
   // Conditions button
   html += '<div style="display:flex;gap:8px;margin:8px 0">';
@@ -5072,14 +5193,14 @@ function renderDashboard(c) {
   html += '<button class="rest-btn" onclick="confirmLongRest()">Long Rest<span class="rest-label">Restores everything</span></button>';
   html += '</div></div></div>';
 
-  // Ability Scores
-  html += '<div class="dash-section combat-hide"><h2>Ability Scores</h2><div class="ability-row-dash">';
+  // Ability Scores — collapsible, default open
+  html += '<div class="dash-section combat-hide"><details open><summary><h2 style="display:inline">Ability Scores</h2></summary><div class="ability-row-dash">';
   ABILITIES.forEach(function(ab) {
     html += '<div class="ability-card"><div class="ab-name">' + ABILITY_NAMES[ab] + '</div>';
     html += '<div class="ab-mod">' + modStr(c.abilityScores[ab]) + '</div>';
     html += '<div class="ab-score">' + c.abilityScores[ab] + '</div></div>';
   });
-  html += '</div></div>';
+  html += '</div></details></div>';
 
   // Proficiencies
   html += '<div class="dash-section"><h2>Proficiencies</h2>';
@@ -5098,39 +5219,37 @@ function renderDashboard(c) {
   });
   html += '</div></div>';
 
-  // Cantrips — show for casters, plus innate racial cantrips (e.g., Aasimar Light)
+  // Cantrips — compact chips with tap-to-expand
   var displayCantrips = (c.cantripsKnown || []).slice();
   var hasInnateLight = c.race === 'Aasimar' && displayCantrips.indexOf('Light') < 0;
   if (hasInnateLight) displayCantrips.push('Light');
   if (displayCantrips.length > 0) {
     html += '<div class="dash-section"><h2>Cantrips</h2>';
-    displayCantrips.forEach(function(name) {
-      var sp = getSpell(name);
+    html += '<div class="cantrip-chips">';
+    displayCantrips.forEach(function(name, ci) {
       var isInnate = (name === 'Light' && hasInnateLight) || (name === 'Light' && c.race === 'Aasimar');
-      if (sp) {
-        html += renderSpellCard(sp, c, isInnate ? { innateLabel: 'Racial' } : {});
-      } else {
-        html += '<span class="tag">' + escapeHtml(name) + (isInnate ? ' <span class="badge">Racial</span>' : '') + '</span>';
-      }
+      html += '<span class="cantrip-chip" onclick="toggleCantripDetail(' + ci + ')">' + escapeHtml(name) + (isInnate ? ' (R)' : '') + '</span>';
     });
+    html += '</div>';
+    html += '<div id="cantrip-detail-area"></div>';
     html += '</div>';
   }
 
-  // Domain Spells (Cleric only)
+  // Domain Spells (Cleric only) — collapsible
   if (c.class === 'Cleric') {
     var domainList = getDomainSpellList(c.level);
-    html += '<div class="dash-section"><h2>Domain Spells <span class="badge">Always Prepared</span></h2>';
+    html += '<div class="dash-section"><details><summary><h2 style="display:inline">Domain Spells <span class="badge">Always Prepared</span></h2> <span class="text-dim" style="font-size:0.85rem">(' + domainList.length + ')</span></summary>';
     domainList.forEach(function(name) {
       var sp = getSpell(name);
       if (sp) html += renderSpellCard(sp, c, { domain: true });
       else html += '<span class="tag accent">' + escapeHtml(name) + '</span>';
     });
-    html += '</div>';
+    html += '</details></div>';
   }
 
-  // Prepared Spells (Cleric only)
+  // Prepared Spells (Cleric only) — collapsible
   if (c.class === 'Cleric') {
-    html += '<div class="dash-section"><h2>Prepared Spells <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + (c.currentPreparedSpells || []).length + '/' + c.preparedSpellCount + ')</span></h2>';
+    html += '<div class="dash-section"><details><summary><h2 style="display:inline">Prepared Spells</h2> <span class="text-dim" style="font-size:0.85rem">(' + (c.currentPreparedSpells || []).length + '/' + c.preparedSpellCount + ')</span></summary>';
     if (c.currentPreparedSpells && c.currentPreparedSpells.length > 0) {
       c.currentPreparedSpells.forEach(function(name) {
         var sp = getSpell(name);
@@ -5140,7 +5259,7 @@ function renderDashboard(c) {
     } else {
       html += '<p class="text-dim">No prepared spells selected</p>';
     }
-    html += '</div>';
+    html += '</details></div>';
   }
 
   // Weapons (from weapons array — single source of truth)
@@ -5234,6 +5353,9 @@ function renderDashboard(c) {
   else html += '<p class="text-dim">No notes</p>';
   html += '</div></div>';
 
+  // Session Journal
+  html += renderJournal(c);
+
   // Features
   html += '<div class="dash-section combat-hide"><h2>Features &amp; Traits</h2>';
   if (c.features && c.features.length > 0) {
@@ -5251,19 +5373,19 @@ function renderDashboard(c) {
   // Quick Rules Reference
   html += renderQuickRules();
 
-  // Actions
-  html += '<div class="dash-actions combat-hide">';
+  // Actions — 2-column grid
+  html += '<div class="dash-actions-grid combat-hide">';
   if (c.class !== 'Cleric' && c.class !== 'Fighter') {
-    html += '<button class="btn btn-primary btn-large" disabled style="opacity:0.4">Level Up — ' + escapeHtml(c.class) + ' coming in a future update</button>';
+    html += '<button class="btn btn-primary btn-large btn-full" disabled style="opacity:0.4">Level Up — ' + escapeHtml(c.class) + ' coming in a future update</button>';
   } else {
     var lvlUpDisabled = c.level >= 20;
     html += lvlUpDisabled
-      ? '<button class="btn btn-primary btn-large" disabled style="opacity:0.4">Level Up (Max Level)</button>'
-      : '<button class="btn btn-primary btn-large" onclick="startLevelUp()">Level Up</button>';
+      ? '<button class="btn btn-primary btn-large btn-full" disabled style="opacity:0.4">Level Up (Max Level)</button>'
+      : '<button class="btn btn-primary btn-large btn-full" onclick="startLevelUp()">Level Up</button>';
   }
-  html += '<button class="btn btn-secondary btn-large" onclick="exportPDF()">Export PDF</button>';
-  html += '<button class="btn btn-secondary btn-large" onclick="saveToCloud()">Save to Cloud</button>';
-  html += '<button class="btn btn-secondary btn-large" onclick="editCharacter()">Edit Character</button>';
+  html += '<button class="btn btn-secondary" onclick="exportPDF()">Export PDF</button>';
+  html += '<button class="btn btn-secondary" onclick="saveToCloud()">Save to Cloud</button>';
+  html += '<button class="btn btn-secondary" onclick="editCharacter()">Edit Character</button>';
   html += '<button class="btn btn-secondary" onclick="showThemeEditor()">Theme</button>';
   html += '<button class="btn btn-secondary" onclick="showChangePassword()">Change Password</button>';
   html += '<button class="btn btn-secondary" onclick="goHome()">Back to Home</button>';
@@ -5271,6 +5393,7 @@ function renderDashboard(c) {
   html += '</div>';
 
   container.innerHTML = html;
+  window.scrollTo(0, 0);
   // Apply combat mode state
   combatModeOn = localStorage.getItem('dnd_combatMode') === '1';
   applyCombatMode();
@@ -6887,7 +7010,10 @@ function renderSessionLog(c) {
   var log = c.sessionLog || [];
   var html = '<div class="dash-section combat-show"><details class="dice-rolls-outer"><summary>Session Log <span class="text-dim" style="font-size:0.8rem;font-weight:normal">(' + log.length + ')</span></summary>';
   if (log.length > 0) {
-    html += '<button class="btn btn-secondary" onclick="clearSessionLog()" style="font-size:0.75rem;padding:4px 10px;margin-bottom:8px">Clear Log</button>';
+    html += '<div style="display:flex;gap:6px;margin-bottom:8px">';
+    html += '<button class="btn btn-secondary" onclick="logNewSession()" style="font-size:0.75rem;padding:4px 10px">New Session</button>';
+    html += '<button class="btn btn-secondary" onclick="clearSessionLog()" style="font-size:0.75rem;padding:4px 10px">Clear Log</button>';
+    html += '</div>';
     html += '<div class="session-log">';
     log.slice(0, 50).forEach(function(e) {
       html += '<div class="slog-entry"><span class="slog-time">' + escapeHtml(e.time) + '</span><span class="slog-text">' + escapeHtml(e.text) + '</span></div>';
@@ -6906,6 +7032,77 @@ function clearSessionLog() {
   c.sessionLog = [];
   saveCurrentCharacter(c);
   showDashboard(c);
+}
+
+function renderJournal(c) {
+  var entries = c.journal || [];
+  var html = '<div class="dash-section combat-hide"><details><summary><h2 style="display:inline">Journal</h2> <span class="text-dim" style="font-size:0.85rem">(' + entries.length + ')</span></summary>';
+  // Inline add form
+  html += '<div class="journal-add-form">';
+  html += '<input type="text" id="journal-title" placeholder="Title" maxlength="100">';
+  html += '<textarea id="journal-body" placeholder="Write your entry..."></textarea>';
+  html += '<button class="btn btn-primary" onclick="addJournalEntry()" style="align-self:flex-start;font-size:0.8rem;padding:6px 14px">Add Entry</button>';
+  html += '</div>';
+  // Entries (reverse chronological, max 50 shown)
+  entries.slice(0, 50).forEach(function(entry, idx) {
+    var preview = (entry.body || '').substring(0, 80).replace(/\n/g, ' ');
+    html += '<details class="journal-entry"><summary>';
+    html += '<span class="je-date">' + escapeHtml(entry.date || '') + '</span>';
+    html += '<strong>' + escapeHtml(entry.title || 'Untitled') + '</strong>';
+    html += '<span class="je-preview">' + escapeHtml(preview) + '</span>';
+    html += '</summary><div class="journal-entry-body">';
+    html += escapeHtml(entry.body || '');
+    html += '<br><button class="je-delete" onclick="confirmDeleteJournal(' + idx + ')">Delete entry</button>';
+    html += '</div></details>';
+  });
+  if (entries.length === 0) html += '<p class="text-dim" style="font-size:0.85rem">No journal entries yet</p>';
+  html += '</details></div>';
+  return html;
+}
+
+function addJournalEntry() {
+  var titleEl = document.getElementById('journal-title');
+  var bodyEl = document.getElementById('journal-body');
+  if (!titleEl || !bodyEl) return;
+  var title = titleEl.value.trim();
+  var body = bodyEl.value.trim();
+  if (!title && !body) return;
+  var c = loadCharacter();
+  if (!c) return;
+  if (!c.journal) c.journal = [];
+  var now = new Date();
+  var dateStr = (now.getMonth() + 1) + '/' + now.getDate() + '/' + now.getFullYear();
+  c.journal.unshift({ title: title || 'Untitled', body: body, date: dateStr });
+  if (c.journal.length > 50) c.journal = c.journal.slice(0, 50);
+  saveCurrentCharacter(c);
+  showDashboard(c);
+}
+
+function confirmDeleteJournal(idx) {
+  var c = loadCharacter();
+  if (!c || !c.journal || !c.journal[idx]) return;
+  showModal(
+    '<h3>Delete Journal Entry?</h3>' +
+    '<p>"' + escapeHtml(c.journal[idx].title) + '"</p>' +
+    '<div class="confirm-actions">' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-danger" onclick="deleteJournalEntry(' + idx + ')">Delete</button></div>'
+  );
+}
+
+function deleteJournalEntry(idx) {
+  var c = loadCharacter();
+  if (!c || !c.journal) return;
+  c.journal.splice(idx, 1);
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c);
+}
+
+function logNewSession() {
+  logEvent('\u2550\u2550\u2550 New Session \u2550\u2550\u2550');
+  var c = loadCharacter();
+  if (c) showDashboard(c);
 }
 
 /* ═══════════════════════════════════════════
@@ -6998,6 +7195,42 @@ function animateDiceTumble(diceArray, callback) {
 /* ═══════════════════════════════════════════
    DEATH SAVE TRACKER
    ═══════════════════════════════════════════ */
+
+var _lastCantripIdx = -1;
+function toggleCantripDetail(idx) {
+  var area = document.getElementById('cantrip-detail-area');
+  if (!area) return;
+  if (_lastCantripIdx === idx) { area.innerHTML = ''; _lastCantripIdx = -1; return; }
+  _lastCantripIdx = idx;
+  var c = loadCharacter();
+  if (!c) return;
+  var displayCantrips = (c.cantripsKnown || []).slice();
+  if (c.race === 'Aasimar' && displayCantrips.indexOf('Light') < 0) displayCantrips.push('Light');
+  var name = displayCantrips[idx];
+  if (!name) return;
+  var sp = getSpell(name);
+  if (sp) {
+    area.innerHTML = '<div class="cantrip-chip-detail">' + renderSpellCard(sp, c) + '</div>';
+  } else {
+    area.innerHTML = '<div class="cantrip-chip-detail"><strong>' + escapeHtml(name) + '</strong></div>';
+  }
+}
+
+function renderInspiration(c) {
+  var active = c.inspiration ? ' active' : '';
+  return '<div class="inspiration-toggle' + active + '" onclick="toggleInspiration()">' +
+    '<span class="insp-star">\u2B50</span>' +
+    '<span class="insp-label">Inspiration' + (c.inspiration ? ' (Active)' : '') + '</span></div>';
+}
+
+function toggleInspiration() {
+  var c = loadCharacter();
+  if (!c) return;
+  c.inspiration = !c.inspiration;
+  logEvent(c.inspiration ? 'Gained Inspiration' : 'Used Inspiration');
+  saveCurrentCharacter(c);
+  showDashboard(c);
+}
 
 function renderDeathSaves(c) {
   if (c.currentHp > 0 && c.deathSaves.successes === 0 && c.deathSaves.failures === 0) return '';
@@ -7280,6 +7513,9 @@ function applyCombatMode() {
     container.classList.remove('combat-mode-on');
     container.querySelectorAll('.combat-hide').forEach(function(el) { el.classList.remove('combat-hidden'); });
   }
+  // Auto-expand dice rollers in combat mode
+  var diceDetails = container.querySelector('.dice-rolls-outer');
+  if (diceDetails && combatModeOn) diceDetails.open = true;
   var btn = document.getElementById('combat-mode-btn');
   if (btn) btn.classList.toggle('active', combatModeOn);
 }
@@ -7606,8 +7842,13 @@ function doSpellRollAtLevel(spellName, rollType, castLevel) {
    PARTY VIEW
    ═══════════════════════════════════════════ */
 
+var _partyChars = [];
+var _partyPollInterval = null;
+var _partyLastFetched = null;
+
 function showPartyView() {
   showView('homescreen');
+  clearPartyPoll();
   var container = document.getElementById('homescreen-content');
   container.innerHTML = '<div class="home-screen"><h1 style="color:var(--accent)">Party View</h1><p class="text-dim">Loading from cloud...</p></div>';
 
@@ -7617,7 +7858,27 @@ function showPartyView() {
     return;
   }
 
-  fetch(ghApiUrl('characters'), { headers: headers })
+  fetchPartyChars(headers).then(function(chars) {
+    _partyChars = chars;
+    _partyLastFetched = Date.now();
+    renderPartyGrid(container);
+    // Auto-poll every 60s
+    _partyPollInterval = setInterval(function() {
+      fetchPartyChars(headers).then(function(chars) {
+        _partyChars = chars;
+        _partyLastFetched = Date.now();
+        // Only re-render if we're still on party grid (not detail)
+        var el = document.getElementById('pv-grid-view');
+        if (el) renderPartyGrid(container);
+      }).catch(function() {});
+    }, 60000);
+  }).catch(function(err) {
+    container.innerHTML = '<div class="home-screen"><h1 style="color:var(--accent)">Party View</h1><p class="text-dim">Failed to load: ' + escapeHtml(err.message) + '</p><button class="btn btn-secondary" onclick="showHomeScreen()" style="margin-top:16px">Back</button></div>';
+  });
+}
+
+function fetchPartyChars(headers) {
+  return fetch(ghApiUrl('characters'), { headers: headers })
     .then(function(res) { return res.json(); })
     .then(function(files) {
       if (!Array.isArray(files)) throw new Error('Not an array');
@@ -7633,38 +7894,210 @@ function showPartyView() {
       });
       return Promise.all(promises);
     })
-    .then(function(chars) {
-      chars = chars.filter(Boolean);
-      var html = '<div class="home-screen"><h1 style="color:var(--accent)">Party View</h1>';
-      html += '<p class="text-dim" style="margin-bottom:16px">' + chars.length + ' character(s) in the cloud</p>';
-      html += '<div class="pv-grid">';
-      chars.forEach(function(c) {
-        c = migrateCharacter(c);
-        var hpPct = c.hp && c.hp.max > 0 ? (c.currentHp / c.hp.max) * 100 : 100;
-        var hpClass = hpPct > 50 ? 'hp-green' : hpPct > 25 ? 'hp-yellow' : 'hp-red';
-        var ac = (c.equippedItems && c.equippedItems.length > 0) ? calculateAC(c) : c.ac;
-        html += '<div class="pv-card" onclick="this.classList.toggle(\'expanded\')">';
-        html += '<div class="pv-name">' + escapeHtml(c.name) + '</div>';
-        var pvRace = c.subrace ? c.subrace + ' ' + c.race : c.race;
-        html += '<div class="pv-detail">' + pvRace + ' ' + c.class + (c.subclass ? ' (' + c.subclass + ')' : '') + ' \u2014 Level ' + c.level + '</div>';
-        html += '<div class="pv-hp ' + hpClass + '">HP: ' + c.currentHp + ' / ' + c.hp.max + '  \u2022  AC: ' + (ac || '?') + '</div>';
-        // Status
-        var statuses = [];
-        if (c.activeConditions && c.activeConditions.length > 0) statuses = statuses.concat(c.activeConditions);
-        if (c.concentration && c.concentration.active) statuses.push('Concentrating: ' + c.concentration.spellName);
-        if (statuses.length > 0) html += '<div class="pv-status">' + statuses.map(function(s) { return escapeHtml(s); }).join(' \u2022 ') + '</div>';
-        html += '</div>';
-      });
-      html += '</div>';
-      html += '<div style="margin-top:20px;display:flex;gap:10px">';
-      html += '<button class="btn btn-secondary" onclick="showPartyView()">Refresh</button>';
-      html += '<button class="btn btn-secondary" onclick="showHomeScreen()">Back</button>';
-      html += '</div></div>';
-      container.innerHTML = html;
-    })
-    .catch(function(err) {
-      container.innerHTML = '<div class="home-screen"><h1 style="color:var(--accent)">Party View</h1><p class="text-dim">Failed to load: ' + escapeHtml(err.message) + '</p><button class="btn btn-secondary" onclick="showHomeScreen()" style="margin-top:16px">Back</button></div>';
+    .then(function(chars) { return chars.filter(Boolean).map(migrateCharacter); });
+}
+
+function renderPartyGrid(container) {
+  var chars = _partyChars;
+  var html = '<div class="home-screen" id="pv-grid-view"><h1 style="color:var(--accent)">Party View</h1>';
+  var agoText = _partyLastFetched ? getTimeAgo(_partyLastFetched) : '';
+  html += '<p class="text-dim" style="margin-bottom:16px">' + chars.length + ' character(s)' + (agoText ? ' \u2022 Last updated: ' + agoText : '') + '</p>';
+  html += '<div class="pv-grid">';
+  chars.forEach(function(c, idx) {
+    var hpPct = c.hp && c.hp.max > 0 ? (c.currentHp / c.hp.max) * 100 : 100;
+    var hpClass = hpPct > 50 ? 'hp-green' : hpPct > 25 ? 'hp-yellow' : 'hp-red';
+    var ac = (c.equippedItems && c.equippedItems.length > 0) ? calculateAC(c) : c.ac;
+    html += '<div class="pv-card" onclick="showPartyCharDetail(' + idx + ')">';
+    html += '<div class="pv-name">' + escapeHtml(c.name) + '</div>';
+    var pvRace = c.subrace ? c.subrace + ' ' + c.race : c.race;
+    html += '<div class="pv-detail">' + pvRace + ' ' + c.class + (c.subclass ? ' (' + c.subclass + ')' : '') + ' \u2014 Level ' + c.level + '</div>';
+    var pvEffective = c.currentHp + (c.tempHp || 0);
+    var pvHpText = 'HP: ' + pvEffective + ' / ' + c.hp.max;
+    if (c.tempHp > 0) pvHpText += ' (' + c.currentHp + '+' + c.tempHp + ' temp)';
+    html += '<div class="pv-hp ' + hpClass + '">' + pvHpText + '  \u2022  AC: ' + (ac || '?') + '</div>';
+    var statuses = [];
+    if (c.activeConditions && c.activeConditions.length > 0) statuses = statuses.concat(c.activeConditions);
+    if (c.concentration && c.concentration.active) statuses.push('Concentrating: ' + c.concentration.spellName);
+    if (statuses.length > 0) html += '<div class="pv-status">' + statuses.map(function(s) { return escapeHtml(s); }).join(' \u2022 ') + '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  html += '<div style="margin-top:20px;display:flex;gap:10px">';
+  html += '<button class="btn btn-secondary" onclick="showPartyView()">Refresh</button>';
+  html += '<button class="btn btn-secondary" onclick="clearPartyPoll();showHomeScreen()">Back</button>';
+  html += '</div></div>';
+  container.innerHTML = html;
+}
+
+function getTimeAgo(timestamp) {
+  var secs = Math.floor((Date.now() - timestamp) / 1000);
+  if (secs < 5) return 'just now';
+  if (secs < 60) return secs + 's ago';
+  return Math.floor(secs / 60) + 'm ago';
+}
+
+function clearPartyPoll() {
+  if (_partyPollInterval) { clearInterval(_partyPollInterval); _partyPollInterval = null; }
+}
+
+function showPartyCharDetail(idx) {
+  var c = _partyChars[idx];
+  if (!c) return;
+  var container = document.getElementById('homescreen-content');
+  var ac = (c.equippedItems && c.equippedItems.length > 0) ? calculateAC(c) : c.ac;
+  var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
+  var isCaster = cd.isCaster;
+  var spellDC = isCaster ? 8 + c.proficiencyBonus + mod(c.abilityScores[cd.spellcastingAbility]) : 0;
+  var spellAtk = isCaster ? c.proficiencyBonus + mod(c.abilityScores[cd.spellcastingAbility]) : 0;
+
+  var html = '<div class="home-screen">';
+  html += '<button class="btn btn-secondary" onclick="renderPartyGrid(document.getElementById(\'homescreen-content\'))" style="margin-bottom:12px">\u2190 Back to Party</button>';
+
+  // Header
+  var raceDisplay = c.subrace ? c.subrace + ' ' + c.race : c.race;
+  html += '<h1 style="color:var(--accent)">' + escapeHtml(c.name) + '</h1>';
+  html += '<div class="text-dim">' + raceDisplay + ' ' + c.class + (c.subclass ? ' (' + c.subclass + ')' : '') + ' \u2014 Level ' + c.level + '</div>';
+  html += '<div class="text-dim" style="font-size:0.85rem">' + escapeHtml(c.background || '') + (c.alignment ? ' \u2022 ' + c.alignment : '') + '</div>';
+
+  // HP
+  var effectiveHp = c.currentHp + (c.tempHp || 0);
+  var hpPct = c.hp && c.hp.max > 0 ? (c.currentHp / c.hp.max) * 100 : 100;
+  var hpColor = hpPct > 50 ? 'var(--success)' : hpPct > 25 ? '#f9a825' : 'var(--error)';
+  html += '<div style="text-align:center;margin:16px 0;padding:16px;background:var(--surface);border-radius:var(--radius);border:2px solid ' + hpColor + '">';
+  html += '<div style="font-size:2.5rem;font-weight:bold;color:' + hpColor + '">' + effectiveHp + ' / ' + c.hp.max + '</div>';
+  if (c.tempHp > 0) html += '<div style="color:var(--accent);font-size:0.9rem">+' + c.tempHp + ' temp HP (' + c.currentHp + ' real + ' + c.tempHp + ' temp)</div>';
+  html += '<div style="font-size:0.85rem;color:var(--text-dim);margin-top:4px">AC: ' + (ac || '?') + '</div>';
+  html += '</div>';
+
+  // Concentration & conditions
+  if (c.concentration && c.concentration.active) {
+    html += '<div style="padding:6px 10px;background:var(--accent-dim);border-radius:var(--radius);margin-bottom:8px;font-size:0.85rem">Concentrating: ' + escapeHtml(c.concentration.spellName) + '</div>';
+  }
+  if (c.activeConditions && c.activeConditions.length > 0) {
+    html += '<div style="margin-bottom:8px">' + c.activeConditions.map(function(cn) { return '<span class="tag" style="font-size:0.8rem">' + escapeHtml(cn) + '</span>'; }).join(' ') + '</div>';
+  }
+
+  // Inspiration
+  if (c.inspiration) html += '<div style="margin-bottom:8px"><span class="tag accent">\u2B50 Inspired</span></div>';
+
+  // Stat grid
+  html += '<div class="stat-grid">';
+  html += '<div class="stat-card"><div class="stat-value">' + (ac || '?') + '</div><div class="stat-label">AC</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">' + (c.speed || 30) + ' ft</div><div class="stat-label">Speed</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">' + (c.initiative >= 0 ? '+' : '') + c.initiative + '</div><div class="stat-label">Initiative</div></div>';
+  html += '<div class="stat-card"><div class="stat-value">+' + c.proficiencyBonus + '</div><div class="stat-label">Prof.</div></div>';
+  if (isCaster) {
+    html += '<div class="stat-card"><div class="stat-value">' + spellDC + '</div><div class="stat-label">Spell DC</div></div>';
+    html += '<div class="stat-card"><div class="stat-value">+' + spellAtk + '</div><div class="stat-label">Spell Atk</div></div>';
+  }
+  html += '</div>';
+
+  // Ability Scores
+  html += '<h3 style="margin-top:16px">Ability Scores</h3><div class="ability-row-dash">';
+  ABILITIES.forEach(function(ab) {
+    html += '<div class="ability-card"><div class="ab-name">' + ABILITY_NAMES[ab] + '</div>';
+    html += '<div class="ab-mod">' + modStr(c.abilityScores[ab]) + '</div>';
+    html += '<div class="ab-score">' + c.abilityScores[ab] + '</div></div>';
+  });
+  html += '</div>';
+
+  // Saving Throws
+  html += '<h3 style="margin-top:12px">Saving Throws</h3><div>';
+  (c.savingThrows || []).forEach(function(st) {
+    var bonus = mod(c.abilityScores[st]) + c.proficiencyBonus;
+    html += '<span class="tag accent">' + ABILITY_NAMES[st] + ' +' + bonus + '</span> ';
+  });
+  html += '</div>';
+
+  // Skills
+  html += '<h3 style="margin-top:12px">Skills</h3><div style="display:flex;flex-wrap:wrap;gap:4px">';
+  (c.skillProficiencies || []).forEach(function(sk) {
+    var skill = SKILLS.find(function(s) { return s.name.toLowerCase() === sk.toLowerCase(); });
+    if (!skill) return;
+    var isExp = c.expertiseSkills && c.expertiseSkills.indexOf(sk.toLowerCase()) >= 0;
+    var bonus = mod(c.abilityScores[skill.ability]) + c.proficiencyBonus * (isExp ? 2 : 1);
+    html += '<span class="tag accent">' + skill.name + ' +' + bonus + (isExp ? ' (E)' : '') + '</span>';
+  });
+  html += '</div>';
+
+  // Class resources
+  if (c.class === 'Cleric') {
+    var cdMax = c.channelDivinityUses || 1;
+    var cdUsed = c.channelDivinityUsed || 0;
+    html += '<h3 style="margin-top:12px">Channel Divinity</h3><div class="text-dim" style="font-size:0.85rem">' + (cdMax - cdUsed) + '/' + cdMax + ' remaining</div>';
+  }
+  if (c.resources) {
+    Object.keys(c.resources).forEach(function(key) {
+      var r = c.resources[key];
+      var remaining = (r.max || 0) - (r.used || 0);
+      var displayName = key.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase(); });
+      html += '<div class="text-dim" style="font-size:0.85rem;margin-top:4px">' + displayName + ': ' + remaining + '/' + r.max + '</div>';
     });
+  }
+
+  // Spell Slots
+  if (isCaster && c.spellSlots && Object.keys(c.spellSlots).length > 0) {
+    html += '<h3 style="margin-top:12px">Spell Slots</h3>';
+    Object.entries(c.spellSlots).forEach(function(entry) {
+      var level = entry[0], count = entry[1];
+      var used = (c.spellSlotsUsed && c.spellSlotsUsed[level]) || 0;
+      html += '<div style="font-size:0.85rem;color:var(--text-dim)">' + ordinal(parseInt(level)) + ': ' + (count - used) + '/' + count + '</div>';
+    });
+  }
+
+  // Cantrips
+  if (c.cantripsKnown && c.cantripsKnown.length > 0) {
+    html += '<h3 style="margin-top:12px">Cantrips</h3><div style="display:flex;flex-wrap:wrap;gap:4px">';
+    c.cantripsKnown.forEach(function(name) { html += '<span class="tag">' + escapeHtml(name) + '</span>'; });
+    html += '</div>';
+  }
+
+  // Prepared / Known Spells
+  var spellList = c.currentPreparedSpells || c.ekSpellsKnown || [];
+  if (spellList.length > 0) {
+    var spellLabel = c.currentPreparedSpells ? 'Prepared Spells' : 'Known Spells';
+    html += '<h3 style="margin-top:12px">' + spellLabel + '</h3><div style="display:flex;flex-wrap:wrap;gap:4px">';
+    spellList.forEach(function(name) {
+      var sp = getSpell(name);
+      var lvl = sp ? sp.level : '?';
+      html += '<span class="tag">' + escapeHtml(name) + ' <span class="text-dim">(L' + lvl + ')</span></span>';
+    });
+    html += '</div>';
+  }
+
+  // Domain Spells
+  if (c.class === 'Cleric') {
+    var domainList = getDomainSpellList(c.level);
+    if (domainList.length > 0) {
+      html += '<h3 style="margin-top:12px">Domain Spells</h3><div style="display:flex;flex-wrap:wrap;gap:4px">';
+      domainList.forEach(function(name) { html += '<span class="tag accent">' + escapeHtml(name) + '</span>'; });
+      html += '</div>';
+    }
+  }
+
+  // Weapons
+  if (c.weapons && c.weapons.length > 0) {
+    html += '<h3 style="margin-top:12px">Weapons</h3>';
+    c.weapons.forEach(function(w) {
+      var abilMod = mod(c.abilityScores[w.ability] || 10);
+      var profB = w.proficient ? c.proficiencyBonus : 0;
+      var magB = w.magicBonus || 0;
+      var atkTotal = abilMod + profB + magB;
+      var dmgTotal = abilMod + magB;
+      html += '<div style="font-size:0.85rem;margin-bottom:4px"><strong>' + escapeHtml(w.name) + '</strong> +' + atkTotal + ' to hit, ' + w.damage + (dmgTotal >= 0 ? '+' : '') + dmgTotal + ' ' + w.damageType + '</div>';
+    });
+  }
+
+  // Features
+  if (c.features && c.features.length > 0) {
+    html += '<h3 style="margin-top:12px">Features</h3><ul class="feature-list">';
+    c.features.forEach(function(f) { html += '<li>' + f + '</li>'; });
+    html += '</ul>';
+  }
+
+  html += '<button class="btn btn-secondary" onclick="renderPartyGrid(document.getElementById(\'homescreen-content\'))" style="margin-top:20px">\u2190 Back to Party</button>';
+  html += '</div>';
+  container.innerHTML = html;
 }
 
 /* ═══════════════════════════════════════════
@@ -7698,6 +8131,8 @@ function getCritRange(char) {
 function showRollResult(label, diceResults, modifier, modLabel, total, extra, rollContext) {
   var el = document.getElementById('roll-result');
   var ctx = rollContext || {};
+  // Log the roll
+  logEvent(label + ': ' + total);
   // Add to roll history
   addToRollHistory(label, total);
   // Determine CSS class
@@ -9186,6 +9621,9 @@ function toggleCD(idx) {
   var used = c.channelDivinityUsed || 0;
   if (idx < used) c.channelDivinityUsed = idx;
   else c.channelDivinityUsed = idx + 1;
+  var cdMax = c.channelDivinityUses || 1;
+  var remaining = cdMax - c.channelDivinityUsed;
+  logEvent('Channel Divinity: ' + remaining + '/' + cdMax + ' remaining');
   saveCurrentCharacter(c);
   showDashboard(c);
 }
@@ -9220,6 +9658,9 @@ function toggleResource(resourceKey, idx, max) {
   var used = c.resources[resourceKey].used || 0;
   if (idx < used) c.resources[resourceKey].used = idx;
   else c.resources[resourceKey].used = idx + 1;
+  var remaining = max - c.resources[resourceKey].used;
+  var displayName = resourceKey.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase(); });
+  logEvent('Used ' + displayName + ' (' + remaining + '/' + max + ' remaining)');
   saveCurrentCharacter(c);
   showDashboard(c);
 }
