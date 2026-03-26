@@ -151,7 +151,7 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 34,
+  "currentHp": 1,
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 1,
@@ -197,6 +197,26 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "1:28 PM",
+      "text": "Death Save: 20"
+    },
+    {
+      "time": "1:28 PM",
+      "text": "Death save: NAT 20! Regained 1 HP"
+    },
+    {
+      "time": "1:28 PM",
+      "text": "Death Save: 17"
+    },
+    {
+      "time": "1:28 PM",
+      "text": "Death Save: 18"
+    },
+    {
+      "time": "1:28 PM",
+      "text": "Death Save: 6"
+    },
     {
       "time": "1:26 PM",
       "text": "3d8+3: 21"
