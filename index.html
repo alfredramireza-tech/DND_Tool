@@ -623,6 +623,16 @@ details[open] summary::before { content: '▾ '; }
 }
 .strip-badge.conc { background: var(--accent-dim); color: var(--accent); }
 .strip-badge.cond { background: rgba(196,90,90,0.15); color: var(--error); }
+.ext-buff-badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+  border-radius: 10px; font-size: 0.75rem; white-space: nowrap; cursor: pointer;
+  background: rgba(100,180,100,0.15); color: var(--success); border: 1px solid var(--success);
+}
+.ext-buff-badge .eb-x {
+  font-size: 0.85rem; cursor: pointer; opacity: 0.6; margin-left: 2px;
+}
+.ext-buff-badge .eb-x:hover { opacity: 1; }
+.ext-buff-row { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; align-items: center; }
 
 @media (max-width: 380px) {
   .hud-columns { grid-template-columns: 1fr; }
@@ -740,6 +750,7 @@ details[open] summary::before { content: '▾ '; }
 .confirm-box {
   background: var(--surface-raised); border: 1px solid var(--border); border-radius: 12px;
   padding: 24px; max-width: 360px; width: 100%; text-align: center;
+  max-height: 70vh; overflow-y: auto;
 }
 .confirm-box h3 { color: var(--accent); margin-bottom: 8px; }
 .confirm-box p { color: var(--text-dim); margin-bottom: 16px; font-size: 0.9rem; }
@@ -3543,6 +3554,7 @@ function migrateCharacter(c) {
   if (!c.sessionLog) c.sessionLog = [];
   if (c.inspiration === undefined) c.inspiration = false;
   if (!c.journal) c.journal = [];
+  if (!c.externalBuffs) c.externalBuffs = [];
   // Fighter-specific fields
   if (c.class === 'Fighter') {
     if (!c.maneuversKnown) c.maneuversKnown = [];
@@ -3594,6 +3606,15 @@ function calculateAC(c) {
     c.concentration.effects.forEach(function(eff) {
       if (eff.type === 'acBonus') ac += eff.value;
       if (eff.type === 'acMinimum' && ac < eff.value) ac = eff.value;
+    });
+  }
+  // Apply external buff AC bonuses
+  if (c.externalBuffs) {
+    c.externalBuffs.forEach(function(buff) {
+      (buff.effects || []).forEach(function(eff) {
+        if (eff.type === 'acBonus') ac += eff.value;
+        if (eff.type === 'acMinimum' && ac < eff.value) ac = eff.value;
+      });
     });
   }
   return ac;
@@ -4399,10 +4420,14 @@ function showOnboarding() {
   showStep(1);
 }
 
-function showDashboard(character) {
+function showDashboard(character, preserveScroll) {
+  var savedScroll = preserveScroll ? window.scrollY : 0;
   showView('dashboard');
   applyTheme(character.colorTheme);
-  renderDashboard(character);
+  renderDashboard(character, preserveScroll);
+  if (preserveScroll) {
+    window.scrollTo(0, savedScroll);
+  }
 }
 
 function showStep(n) {
@@ -5101,7 +5126,7 @@ function getShortRestDescription(cls, sub) {
   return 'Recover hit dice, some abilities';
 }
 
-function renderDashboard(c) {
+function renderDashboard(c, preserveScroll) {
   var container = document.getElementById('dashboard-content');
   var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
   var isCaster = cd.isCaster;
@@ -5159,21 +5184,26 @@ function renderDashboard(c) {
   // Death Saves (when HP = 0)
   html += renderDeathSaves(c);
 
-  // Conditions/Concentration buttons
-  html += '<div style="display:flex;gap:8px;margin:8px 0">';
+  // External buff badges
+  html += renderExternalBuffBadges(c);
+
+  // Conditions/Concentration/Buff buttons
+  html += '<div style="display:flex;gap:8px;margin:8px 0;flex-wrap:wrap">';
   html += '<button class="btn btn-secondary" onclick="showConditionsPanel()" style="font-size:0.8rem;padding:6px 12px">Conditions</button>';
   html += '<button class="btn btn-secondary" onclick="showSetConcentration()" style="font-size:0.8rem;padding:6px 12px">Set Concentration</button>';
+  html += '<button class="btn btn-secondary" onclick="showAddBuff()" style="font-size:0.8rem;padding:6px 12px">+ Buff</button>';
   html += '</div>';
 
   // Dice & Rolls (directly below HP for combat use)
   html += renderDiceRollers(c);
 
-  // Compute AC buff annotation
+  // Compute AC buff annotation (concentration + external)
   var acBuff = 0;
   if (c.concentration && c.concentration.active && c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) {
-      if (eff.type === 'acBonus') acBuff += eff.value;
-    });
+    c.concentration.effects.forEach(function(eff) { if (eff.type === 'acBonus') acBuff += eff.value; });
+  }
+  if (c.externalBuffs) {
+    c.externalBuffs.forEach(function(buff) { (buff.effects || []).forEach(function(eff) { if (eff.type === 'acBonus') acBuff += eff.value; }); });
   }
   var acNote = acBuff > 0 ? ' <span style="font-size:0.7rem;color:var(--accent)">(+' + acBuff + ')</span>' : '';
 
@@ -5492,7 +5522,7 @@ function renderDashboard(c) {
   html += '</div>';
 
   container.innerHTML = html;
-  window.scrollTo(0, 0);
+  if (!preserveScroll) window.scrollTo(0, 0);
   // Apply combat mode state
   combatModeOn = localStorage.getItem('dnd_combatMode') === '1';
   applyCombatMode();
@@ -7328,7 +7358,7 @@ function toggleInspiration() {
   c.inspiration = !c.inspiration;
   logEvent(c.inspiration ? 'Gained Inspiration' : 'Used Inspiration');
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function buildQuickActions(c) {
@@ -7415,12 +7445,13 @@ function renderQuickAction(c) {
     }
     html += '</div>';
   }
-  // Roll reminders from active buffs
+  // Roll reminders from active buffs (concentration + external)
   var rollReminders = [];
   if (c.concentration && c.concentration.active && c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) {
-      if (eff.type === 'rollReminder') rollReminders.push(eff.text);
-    });
+    c.concentration.effects.forEach(function(eff) { if (eff.type === 'rollReminder') rollReminders.push(eff.text); });
+  }
+  if (c.externalBuffs) {
+    c.externalBuffs.forEach(function(buff) { (buff.effects || []).forEach(function(eff) { if (eff.type === 'rollReminder') rollReminders.push(eff.text); }); });
   }
   if (rollReminders.length > 0) {
     html += '<div style="font-size:0.65rem;color:var(--accent);margin-top:2px">' + rollReminders.join(' \u00b7 ') + '</div>';
@@ -7482,14 +7513,60 @@ function renderResourceStrip(c) {
   if (c.concentration && c.concentration.active) {
     html += '<span class="strip-badge conc">\u27E1 ' + escapeHtml(c.concentration.spellName) + '</span>';
   }
-  // Condition badges
+  // Condition badges (tappable for popover)
   if (c.activeConditions && c.activeConditions.length > 0) {
     c.activeConditions.forEach(function(cn) {
-      html += '<span class="strip-badge cond">\u26A0 ' + escapeHtml(cn) + '</span>';
+      var safeName = cn.replace(/'/g, "\\'");
+      var safeDesc = getConditionDesc(cn).replace(/'/g, "\\'");
+      html += '<span class="strip-badge cond" style="cursor:pointer" onclick="event.stopPropagation();showBadgePopover(\'' + safeName + '\',\'' + safeDesc + '\',event)">\u26A0 ' + escapeHtml(cn) + '</span>';
+    });
+  }
+  // External buff badges in strip
+  if (c.externalBuffs && c.externalBuffs.length > 0) {
+    c.externalBuffs.forEach(function(buff) {
+      var safeName = buff.spellName.replace(/'/g, "\\'");
+      var desc = (buff.effects || []).map(function(e) {
+        if (e.type === 'acBonus') return '+' + e.value + ' AC';
+        if (e.type === 'rollReminder') return e.text;
+        if (e.type === 'reminder') return e.text;
+        return '';
+      }).filter(Boolean).join(', ');
+      var safeDesc = desc.replace(/'/g, "\\'");
+      html += '<span class="strip-badge conc" style="cursor:pointer" onclick="event.stopPropagation();showBadgePopover(\'' + safeName + '\',\'' + safeDesc + '\',event)">\u2728 ' + escapeHtml(buff.spellName) + '</span>';
     });
   }
   html += '</div>';
   return html;
+}
+
+function updateHudStrip(c) {
+  var stripEl = document.querySelector('.hud-strip');
+  if (!stripEl) return;
+  // Re-render strip contents by building fresh HTML
+  var tmp = document.createElement('div');
+  tmp.innerHTML = renderResourceStrip(c);
+  var newStrip = tmp.querySelector('.hud-strip');
+  if (newStrip) stripEl.innerHTML = newStrip.innerHTML;
+}
+
+function showBadgePopover(name, text, evt) {
+  dismissBadgePopover();
+  var el = evt.target.closest('.cond-badge, .strip-badge, .ext-buff-badge');
+  if (!el) return;
+  var rect = el.getBoundingClientRect();
+  var pop = document.createElement('div');
+  pop.id = 'badge-popover';
+  pop.style.cssText = 'position:fixed;z-index:200;background:var(--surface-raised);border:1px solid var(--border);border-radius:8px;padding:10px 14px;max-width:260px;font-size:0.82rem;box-shadow:0 4px 12px rgba(0,0,0,0.4);';
+  pop.style.top = (rect.bottom + 6) + 'px';
+  pop.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 270)) + 'px';
+  pop.innerHTML = '<strong style="color:var(--accent)">' + escapeHtml(name) + '</strong><div style="color:var(--text-dim);margin-top:4px">' + escapeHtml(text) + '</div>';
+  document.body.appendChild(pop);
+  setTimeout(function() { document.addEventListener('click', dismissBadgePopover, { once: true }); }, 10);
+}
+
+function dismissBadgePopover() {
+  var el = document.getElementById('badge-popover');
+  if (el) el.remove();
 }
 
 function renderDeathSaves(c) {
@@ -7649,7 +7726,7 @@ function dropConcentration() {
   }
   c.concentration = { active: false, spellName: '' };
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function showSetConcentration() {
@@ -7737,12 +7814,19 @@ var CONDITIONS = [
   { name: 'Unconscious', desc: "Incapacitated. Can't move or speak. Unaware. Drop held items. Fall prone. Auto-fail STR/DEX saves. Attacks have advantage. Hits within 5ft are auto-crits." }
 ];
 
+function getConditionDesc(name) {
+  var found = CONDITIONS.find(function(c) { return c.name === name; });
+  return found ? found.desc : '';
+}
+
 function renderActiveConditions(c) {
   var conds = c.activeConditions || [];
   if (conds.length === 0) return '';
   var html = '<div class="cond-badges">';
   conds.forEach(function(cn) {
-    html += '<span class="cond-badge" onclick="removeCondition(\'' + escapeHtml(cn) + '\')">' + escapeHtml(cn) + ' <span class="cb-x">\u00d7</span></span>';
+    var safeName = cn.replace(/'/g, "\\'");
+    var safeDesc = getConditionDesc(cn).replace(/'/g, "\\'");
+    html += '<span class="cond-badge" onclick="event.stopPropagation();showBadgePopover(\'' + safeName + '\',\'' + safeDesc + '\',event)">' + escapeHtml(cn) + ' <span class="cb-x" onclick="event.stopPropagation();removeCondition(\'' + safeName + '\')">\u00d7</span></span>';
   });
   html += '</div>';
   return html;
@@ -7779,6 +7863,8 @@ function toggleConditionFromPanel(name, checked) {
   }
   saveCurrentCharacter(c);
   // Don't close modal - let them toggle multiple
+  // Surgically update the HUD strip badges
+  updateHudStrip(c);
 }
 
 function removeCondition(name) {
@@ -7787,7 +7873,83 @@ function removeCondition(name) {
   c.activeConditions = (c.activeConditions || []).filter(function(cn) { return cn !== name; });
   logEvent('Condition removed: ' + name);
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
+}
+
+/* ═══════════════════════════════════════════
+   EXTERNAL BUFFS
+   ═══════════════════════════════════════════ */
+
+function showAddBuff() {
+  var html = '<h3>Add External Buff</h3>';
+  html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:12px">Buffs from other party members, potions, or magic items:</p>';
+  html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">';
+  Object.keys(SPELL_BUFF_EFFECTS).forEach(function(name) {
+    var safeName = name.replace(/'/g, "\\'");
+    html += '<button class="btn btn-secondary" style="font-size:0.8rem;padding:5px 10px" onclick="addExternalBuff(\'' + safeName + '\')">' + escapeHtml(name) + '</button>';
+  });
+  html += '</div>';
+  html += '<div class="text-dim" style="font-size:0.8rem;margin-bottom:6px">Or type a custom buff name:</div>';
+  html += '<input type="text" id="ext-buff-input" placeholder="Buff name..." onclick="event.stopPropagation()">';
+  html += '<div class="confirm-actions" style="margin-top:10px">';
+  html += '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>';
+  html += '<button class="btn btn-primary" onclick="var v=document.getElementById(\'ext-buff-input\').value.trim();if(v){addExternalBuff(v);}">Add</button></div>';
+  showModal(html);
+}
+
+function addExternalBuff(spellName) {
+  var c = loadCharacter();
+  if (!c) return;
+  if (!c.externalBuffs) c.externalBuffs = [];
+  if (c.externalBuffs.length >= 5) {
+    closeModal();
+    showModal('<h3>Max Buffs Reached</h3><p>Remove an existing buff before adding more (max 5).</p><div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">OK</button></div>');
+    return;
+  }
+  var effects = SPELL_BUFF_EFFECTS[spellName] || [{ type: 'reminder', text: spellName }];
+  c.externalBuffs.push({ spellName: spellName, effects: effects });
+  var desc = effects.map(function(e) {
+    if (e.type === 'acBonus') return '+' + e.value + ' AC';
+    if (e.type === 'rollReminder') return e.text;
+    if (e.type === 'reminder') return e.text;
+    return '';
+  }).filter(Boolean).join(', ');
+  logEvent('Added external buff: ' + spellName + (desc ? ' (' + desc + ')' : ''));
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
+}
+
+function removeExternalBuff(idx) {
+  var c = loadCharacter();
+  if (!c || !c.externalBuffs) return;
+  var removed = c.externalBuffs[idx];
+  if (removed) logEvent('Removed external buff: ' + removed.spellName);
+  c.externalBuffs.splice(idx, 1);
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function renderExternalBuffBadges(c) {
+  var buffs = c.externalBuffs || [];
+  if (buffs.length === 0) return '';
+  var html = '<div class="ext-buff-row">';
+  buffs.forEach(function(buff, idx) {
+    var desc = (buff.effects || []).map(function(e) {
+      if (e.type === 'acBonus') return '+' + e.value + ' AC';
+      if (e.type === 'acMinimum') return 'Min AC ' + e.value;
+      if (e.type === 'rollReminder') return e.text;
+      if (e.type === 'reminder') return e.text;
+      return '';
+    }).filter(Boolean).join(', ');
+    var safeName = buff.spellName.replace(/'/g, "\\'");
+    var safeDesc = desc.replace(/'/g, "\\'");
+    html += '<span class="ext-buff-badge" onclick="event.stopPropagation();showBadgePopover(\'' + safeName + '\',\'' + safeDesc + '\',event)">';
+    html += '\u2728 ' + escapeHtml(buff.spellName);
+    html += ' <span class="eb-x" onclick="event.stopPropagation();removeExternalBuff(' + idx + ')">\u00d7</span></span>';
+  });
+  html += '</div>';
+  return html;
 }
 
 /* ═══════════════════════════════════════════
@@ -8219,6 +8381,7 @@ function renderPartyGrid(container) {
     if (c.concentration && c.concentration.active && c.concentration.effects) {
       c.concentration.effects.forEach(function(eff) { if (eff.type === 'acBonus') pvAcBuff += eff.value; });
     }
+    if (c.externalBuffs) { c.externalBuffs.forEach(function(b) { (b.effects||[]).forEach(function(e) { if (e.type==='acBonus') pvAcBuff+=e.value; }); }); }
     var pvAcNote = pvAcBuff > 0 ? '(+' + pvAcBuff + ')' : '';
     html += '<div class="pv-hp ' + hpClass + '">' + pvHpText + '  \u2022  AC: ' + (ac || '?') + pvAcNote + '</div>';
     var statuses = [];
@@ -8276,6 +8439,7 @@ function showPartyCharDetail(idx) {
   if (c.concentration && c.concentration.active && c.concentration.effects) {
     c.concentration.effects.forEach(function(eff) { if (eff.type === 'acBonus') detailAcBuff += eff.value; });
   }
+  if (c.externalBuffs) { c.externalBuffs.forEach(function(b) { (b.effects||[]).forEach(function(e) { if (e.type==='acBonus') detailAcBuff+=e.value; }); }); }
   var detailAcNote = detailAcBuff > 0 ? ' <span style="color:var(--accent)">(+' + detailAcBuff + ')</span>' : '';
   html += '<div style="font-size:0.85rem;color:var(--text-dim);margin-top:4px">AC: ' + (ac || '?') + detailAcNote + '</div>';
   html += '</div>';
@@ -9043,12 +9207,13 @@ function renderDiceRollers(c) {
 
   // Saving Throw & Ability Check Roller
   html += '<details class="roller-section"><summary>Saving Throws &amp; Ability Checks</summary>';
-  // Roll reminders from active buffs
+  // Roll reminders from active buffs (concentration + external)
   var saveReminders = [];
   if (c.concentration && c.concentration.active && c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) {
-      if (eff.type === 'rollReminder') saveReminders.push(eff.text);
-    });
+    c.concentration.effects.forEach(function(eff) { if (eff.type === 'rollReminder') saveReminders.push(eff.text); });
+  }
+  if (c.externalBuffs) {
+    c.externalBuffs.forEach(function(buff) { (buff.effects || []).forEach(function(eff) { if (eff.type === 'rollReminder') saveReminders.push(eff.text); }); });
   }
   if (saveReminders.length > 0) {
     html += '<div style="font-size:0.75rem;color:var(--accent);margin-bottom:6px">Active: ' + saveReminders.join(' \u00b7 ') + '</div>';
@@ -9889,7 +10054,7 @@ function applyHpChange(mode) {
         '<button class="btn btn-secondary" onclick="closeModal();dropConcentration()">Failed \u2014 Drop</button>' +
         '<button class="btn btn-secondary" onclick="closeModal()">Maintained</button></div>'
       );
-      showDashboard(c);
+      showDashboard(c, true);
       return;
     }
   } else if (mode === 'heal') {
@@ -9905,7 +10070,7 @@ function applyHpChange(mode) {
   }
   saveCurrentCharacter(c);
   closeModal();
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 /* ═══════════════════════════════════════════
@@ -9920,7 +10085,7 @@ function toggleSlot(level, idx) {
   if (idx < used) c.spellSlotsUsed[level] = idx;
   else c.spellSlotsUsed[level] = idx + 1;
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 /* ═══════════════════════════════════════════
@@ -9937,7 +10102,7 @@ function toggleCD(idx) {
   var remaining = cdMax - c.channelDivinityUsed;
   logEvent('Channel Divinity: ' + remaining + '/' + cdMax + ' remaining');
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 /* ═══════════════════════════════════════════
@@ -9974,7 +10139,7 @@ function toggleResource(resourceKey, idx, max) {
   var displayName = resourceKey.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase(); });
   logEvent('Used ' + displayName + ' (' + remaining + '/' + max + ' remaining)');
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 /* ═══════════════════════════════════════════
@@ -10046,9 +10211,10 @@ function doLongRest() {
       c.resources[key].used = 0;
     });
   }
-  // Clear death saves & concentration on long rest
+  // Clear death saves, concentration, and external buffs on long rest
   clearDeathSaves(c);
   c.concentration = { active: false, spellName: '' };
+  c.externalBuffs = [];
   logEvent('Long Rest \u2014 all resources restored, HP full');
   saveCurrentCharacter(c);
   closeModal();
