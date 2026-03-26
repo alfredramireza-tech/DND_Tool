@@ -155,7 +155,7 @@
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 0,
-    "2": 3
+    "2": 0
   },
   "channelDivinityUsed": 0,
   "equippedItems": [
@@ -203,6 +203,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "3:15 PM",
+      "text": "Initiative: 15"
+    },
+    {
+      "time": "3:15 PM",
+      "text": "Initiative: 15"
+    },
     {
       "time": "3:13 PM",
       "text": "1d10: 8"
