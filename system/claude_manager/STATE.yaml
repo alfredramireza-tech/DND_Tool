@@ -1,0 +1,20 @@
+# =============================================================================
+# STATE.yaml — Where We Are Right Now
+# =============================================================================
+# Updated by PM at every ::close
+# Read by PM at every ::start
+# =============================================================================
+
+current:
+  task: "Project initialized"
+  status: "READY"
+
+resume_point: |
+  Fresh project start. D&D Level-Up Wizard app.
+  See MEMORY.md for full phase history and architecture notes.
+
+open_loops: []
+
+recent: []
+
+gap_log: []
