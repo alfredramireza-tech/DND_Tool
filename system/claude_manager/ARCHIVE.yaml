@@ -4,4 +4,12 @@
 # Append-only log. PM adds entry at every ::close.
 # =============================================================================
 
-sessions: []
+sessions:
+  - date: "2026-03-26"
+    summary: "Full audit + 3 CC handoffs: UX Enhancements (9 tasks), Combat HUD Redesign, Sticky Fix + Spell Buff System"
+    learned:
+      - "Spec'd max-height constraints can clip real content — enumerate worst-case content before capping"
+      - "Concentration was purely cosmetic — no D&D buff had mechanical effect on dashboard until this session"
+      - "Sacred Flame and Toll the Dead are save-based, not attack-roll cantrips — caught in handoff review before CC implemented it wrong"
+      - "Quick Action scope should be weapons + rollable cantrips only — leveled spells need slot selection modal and clutter the dropdown"
+    next: "Testing pass recommended before adding more features. Then class implementations (Rogue/Barbarian/Monk) or avatar images."

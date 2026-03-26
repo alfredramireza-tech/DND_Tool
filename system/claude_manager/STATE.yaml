@@ -6,15 +6,38 @@
 # =============================================================================
 
 current:
-  task: "Project initialized"
-  status: "READY"
+  task: "Spell Buff System implementation"
+  status: "COMPLETE"
 
 resume_point: |
-  Fresh project start. D&D Level-Up Wizard app.
-  See MEMORY.md for full phase history and architecture notes.
+  File: index.html (10,580 lines) at alfredramireza-tech.github.io/DND_Tool/
+  Three CC handoffs completed this session cycle:
+    1. UX Enhancements (9 tasks) — 9,828 → 10,268 lines
+    2. Combat HUD Redesign (8 steps) — 10,268 → 10,475 lines
+    3. Sticky Fix + Spell Buff System (6 steps) — 10,475 → 10,580 lines
+  Dashboard now has: two-column sticky HUD, Quick Action weapon/cantrip selector,
+  resource strip with spell slot dots, concentration with mechanical buff effects
+  (AC bonuses, roll reminders, reminder text), collapsible spells, compact cantrips,
+  auto cloud save, session journal, enhanced party view with drill-down.
+  Next likely work: testing pass (recommended), then class implementations or avatars.
 
-open_loops: []
+open_loops:
+  - "Testing pass — 3 handoffs shipped without a play-test. iPad Safari is primary platform."
+  - "Rogue/Barbarian/Monk at 25-30% — CLASS_DATA exists, no dashboard/level-up/subclass features"
+  - "Paladin and Wizard at 0% — blocked on class implementation"
+  - "Avatar images — designed but not spec'd (base64, 150x150, canvas resize, initials fallback)"
+  - "PDF filler gaps — checkbox mapping, expertise handling, page 2 biographical fields"
 
-recent: []
+recent:
+  - "2026-03-26: Spell Buff System — 12-spell effects map, AC calculation with buffs, buffed AC display, roll reminders, Set Concentration modal with spell buttons"
+  - "2026-03-26: Sticky Overflow Fix — removed max-height/overflow from hp-sticky CSS"
+  - "2026-03-26: Combat HUD Redesign — two-column sticky HUD, Quick Action, resource strip, die shortcuts removed"
+  - "2026-03-26: UX Enhancements — inspiration toggle, temp HP display, collapsible sections, sticky HP, session log wiring, journal, party view drill-down, auto cloud save, polish"
+  - "2026-03-26: Full spec-vs-code audit — all active specs audited against 9,828-line codebase"
 
-gap_log: []
+gap_log:
+  - date: "2026-03-26"
+    gap: "Max-height cap in sticky HUD spec caused visible slot clipping"
+    cause: "Spec'd max-height: 160px looked reasonable on paper but clipped real content when resource strip wrapped to 2 lines"
+    resolution: "Removed max-height and overflow: hidden. Compact HUD design keeps it short naturally."
+    severity: "medium — resource strip was visually broken until caught"
