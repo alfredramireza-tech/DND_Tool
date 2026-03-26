@@ -201,85 +201,10 @@
       }
     ]
   },
-  "activeConditions": [],
-  "sessionLog": [
-    {
-      "time": "3:15 PM",
-      "text": "Initiative: 15"
-    },
-    {
-      "time": "3:15 PM",
-      "text": "Initiative: 15"
-    },
-    {
-      "time": "3:13 PM",
-      "text": "1d10: 8"
-    },
-    {
-      "time": "1:57 PM",
-      "text": "Toll the Dead — necrotic: 6"
-    },
-    {
-      "time": "1:57 PM",
-      "text": "Toll the Dead — necrotic: 6"
-    },
-    {
-      "time": "1:57 PM",
-      "text": "Toll the Dead — necrotic: 8"
-    },
-    {
-      "time": "1:57 PM",
-      "text": "Toll the Dead — necrotic: 2"
-    },
-    {
-      "time": "1:55 PM",
-      "text": "Toll the Dead — necrotic: 8"
-    },
-    {
-      "time": "1:55 PM",
-      "text": "Toll the Dead — necrotic: 6"
-    },
-    {
-      "time": "1:55 PM",
-      "text": "Toll the Dead — necrotic: 1"
-    },
-    {
-      "time": "1:28 PM",
-      "text": "Death Save: 20"
-    },
-    {
-      "time": "1:28 PM",
-      "text": "Death save: NAT 20! Regained 1 HP"
-    },
-    {
-      "time": "1:28 PM",
-      "text": "Death Save: 17"
-    },
-    {
-      "time": "1:28 PM",
-      "text": "Death Save: 18"
-    },
-    {
-      "time": "1:28 PM",
-      "text": "Death Save: 6"
-    },
-    {
-      "time": "1:26 PM",
-      "text": "3d8+3: 21"
-    },
-    {
-      "time": "1:26 PM",
-      "text": "3d8+3: 9"
-    },
-    {
-      "time": "1:26 PM",
-      "text": "3d8+3: 13"
-    },
-    {
-      "time": "1:25 PM",
-      "text": "3d8: 13"
-    }
+  "activeConditions": [
+    "Poisoned"
   ],
-  "inspiration": true,
+  "sessionLog": [],
+  "inspiration": false,
   "journal": []
 }
