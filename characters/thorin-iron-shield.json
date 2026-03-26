@@ -196,7 +196,24 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [],
+  "sessionLog": [
+    {
+      "time": "1:26 PM",
+      "text": "3d8+3: 21"
+    },
+    {
+      "time": "1:26 PM",
+      "text": "3d8+3: 9"
+    },
+    {
+      "time": "1:26 PM",
+      "text": "3d8+3: 13"
+    },
+    {
+      "time": "1:25 PM",
+      "text": "3d8: 13"
+    }
+  ],
   "inspiration": true,
   "journal": []
 }
