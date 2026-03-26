@@ -194,5 +194,7 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": []
+  "sessionLog": [],
+  "inspiration": true,
+  "journal": []
 }
