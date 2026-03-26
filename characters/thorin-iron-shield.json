@@ -203,7 +203,12 @@
   },
   "activeConditions": [
     "Poisoned",
-    "Petrified"
+    "Petrified",
+    "Grappled",
+    "Incapacitated",
+    "Paralyzed",
+    "Restrained",
+    "Prone"
   ],
   "sessionLog": [],
   "inspiration": false,
