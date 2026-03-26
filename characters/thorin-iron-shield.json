@@ -47,7 +47,7 @@
     ]
   },
   "proficiencyBonus": 2,
-  "ac": 17,
+  "ac": 19,
   "speed": 25,
   "initiative": -1,
   "savingThrows": [
@@ -193,7 +193,13 @@
   },
   "concentration": {
     "active": true,
-    "spellName": "Shield of Faith"
+    "spellName": "Shield of Faith",
+    "effects": [
+      {
+        "type": "acBonus",
+        "value": 2
+      }
+    ]
   },
   "activeConditions": [],
   "sessionLog": [
