@@ -1,0 +1,103 @@
+{
+  "name": "Desmond",
+  "race": "Aasimar",
+  "subrace": "",
+  "class": "Paladin",
+  "subclass": "Oath of Devotion",
+  "background": "",
+  "alignment": "Lawful Good",
+  "level": 1,
+  "abilityScores": {
+    "str": 15,
+    "dex": 10,
+    "con": 13,
+    "int": 8,
+    "wis": 12,
+    "cha": 14
+  },
+  "hp": {
+    "max": 11,
+    "hitDiceType": 10,
+    "hitDiceCount": 1,
+    "hpHistory": []
+  },
+  "proficiencyBonus": 2,
+  "ac": 19,
+  "speed": 25,
+  "initiative": 0,
+  "savingThrows": [
+    "wis",
+    "cha"
+  ],
+  "skillProficiencies": [
+    "athletics",
+    "persuasion",
+    "acrobatics",
+    "perception"
+  ],
+  "cantripsKnown": [],
+  "spellSlots": {},
+  "preparedSpellCount": 0,
+  "currentPreparedSpells": [],
+  "domainSpells": {},
+  "features": [
+    "Divine Sense",
+    "Lay on Hands"
+  ],
+  "channelDivinityUses": 0,
+  "equipment": "",
+  "notes": "",
+  "weapons": [],
+  "levelHistory": [],
+  "expertiseSkills": [],
+  "resources": {},
+  "currency": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0
+  },
+  "fightingStyle": null,
+  "id": "mn8dsrm9e3vng",
+  "currentHp": 11,
+  "tempHp": 0,
+  "spellSlotsUsed": {},
+  "channelDivinityUsed": 0,
+  "equippedItems": [],
+  "quickItems": [],
+  "bulkGear": "",
+  "colorTheme": {
+    "name": "Paladin Silver",
+    "accent": "#c0c8d8",
+    "accentHover": "#d0d8e8",
+    "accentDim": "#8090a8",
+    "bg": "#121418",
+    "surface": "#1a1e24",
+    "surfaceRaised": "#242830",
+    "border": "#2d3340",
+    "text": "#e0e4ec",
+    "textDim": "#8890a0",
+    "error": "#c45a5a",
+    "success": "#6aaa5a",
+    "inputBg": "#161a20"
+  },
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  },
+  "concentration": {
+    "active": false,
+    "spellName": ""
+  },
+  "activeConditions": [],
+  "sessionLog": [],
+  "inspiration": false,
+  "journal": [],
+  "externalBuffs": [],
+  "maxHpBoost": {
+    "value": 0,
+    "source": ""
+  },
+  "passwordHash": null
+}
