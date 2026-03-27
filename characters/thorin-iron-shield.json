@@ -195,7 +195,9 @@
     "active": false,
     "spellName": ""
   },
-  "activeConditions": [],
+  "activeConditions": [
+    "Blinded"
+  ],
   "sessionLog": [
     {
       "time": "4:14 PM",
