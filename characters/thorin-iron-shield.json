@@ -153,10 +153,7 @@
   "id": "mn12z7a2x0032",
   "currentHp": 34,
   "tempHp": 0,
-  "spellSlotsUsed": {
-    "1": 0,
-    "2": 0
-  },
+  "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
   "equippedItems": [
     {
@@ -172,19 +169,19 @@
   "quickItems": [],
   "bulkGear": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope, mason's tools, playing cards, trophy, pouch, common clothes, rank insignia (sergeant), 3 apples, gem eye patch, semi-precious stones, ring from 2x Rivas, scroll of augury, 3 gold idols, Tressender Family Rings x2",
   "colorTheme": {
-    "name": "Fighter Steel",
-    "accent": "#6a9bc5",
-    "accentHover": "#7aadd5",
-    "accentDim": "#4a7090",
-    "bg": "#121820",
-    "surface": "#1a2230",
-    "surfaceRaised": "#222c3a",
-    "border": "#2e3a4d",
-    "text": "#d8e0ec",
-    "textDim": "#8898aa",
+    "name": "Cleric Gold",
+    "accent": "#c4a35a",
+    "accentHover": "#d4b36a",
+    "accentDim": "#8a7340",
+    "bg": "#1a1410",
+    "surface": "#241e16",
+    "surfaceRaised": "#2e2720",
+    "border": "#3d3428",
+    "text": "#e8dcc8",
+    "textDim": "#a89880",
     "error": "#c45a5a",
     "success": "#6aaa5a",
-    "inputBg": "#141c28"
+    "inputBg": "#1e1812"
   },
   "passwordHash": "h2gm6377ivp",
   "deathSaves": {
@@ -197,6 +194,66 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "4:03 PM",
+      "text": "Initiative: 5"
+    },
+    {
+      "time": "4:03 PM",
+      "text": "Initiative: 5"
+    },
+    {
+      "time": "4:01 PM",
+      "text": "Initiative: 11"
+    },
+    {
+      "time": "4:01 PM",
+      "text": "Initiative: 11"
+    },
+    {
+      "time": "4:00 PM",
+      "text": "Initiative: 17"
+    },
+    {
+      "time": "4:00 PM",
+      "text": "Initiative: 17"
+    },
+    {
+      "time": "4:00 PM",
+      "text": "Initiative: 10"
+    },
+    {
+      "time": "4:00 PM",
+      "text": "Initiative: 10"
+    },
+    {
+      "time": "4:00 PM",
+      "text": "Initiative: 6"
+    },
+    {
+      "time": "4:00 PM",
+      "text": "Initiative: 6"
+    },
+    {
+      "time": "3:59 PM",
+      "text": "Initiative: 17"
+    },
+    {
+      "time": "3:59 PM",
+      "text": "Initiative: 17"
+    },
+    {
+      "time": "3:57 PM",
+      "text": "Prayer of Healing — Healing: 22"
+    },
+    {
+      "time": "3:56 PM",
+      "text": "Guiding Bolt — radiant: 14"
+    },
+    {
+      "time": "3:56 PM",
+      "text": "Guiding Bolt — Attack: 15"
+    },
     {
       "time": "8:37 PM",
       "text": "1d20: 13"

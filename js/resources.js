@@ -321,7 +321,7 @@ function doShortRest() {
   logEvent('Short Rest \u2014 ' + getShortRestDescription(c.class, c.subclass, c.level));
   saveCurrentCharacter(c);
   closeModal();
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function doLongRest() {
@@ -349,7 +349,7 @@ function doLongRest() {
   logEvent('Long Rest \u2014 all resources restored, HP full');
   saveCurrentCharacter(c);
   closeModal();
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 /* ═══════════════════════════════════════════
@@ -464,7 +464,7 @@ function saveEquipItem(idx) {
   if (idx >= 0) c.equippedItems[idx] = item;
   else c.equippedItems.push(item);
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function cancelEquipForm() {
@@ -477,7 +477,7 @@ function removeEquipItem(idx) {
   if (!c) return;
   c.equippedItems.splice(idx, 1);
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function unequipItem(idx) {
@@ -489,7 +489,7 @@ function unequipItem(idx) {
   if (!c.quickItems) c.quickItems = [];
   c.quickItems.push(item.name);
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function addQuickItem() {
@@ -500,7 +500,7 @@ function addQuickItem() {
   if (!c.quickItems) c.quickItems = [];
   c.quickItems.push(input.value.trim());
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function removeQuickItem(idx) {
@@ -508,7 +508,7 @@ function removeQuickItem(idx) {
   if (!c) return;
   c.quickItems.splice(idx, 1);
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 /* ═══════════════════════════════════════════
@@ -566,7 +566,7 @@ function saveWeaponItem(idx) {
   if (idx >= 0) c.weapons[idx] = w;
   else c.weapons.push(w);
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function cancelWeaponForm() {
@@ -591,7 +591,7 @@ function doDeleteWeapon(idx) {
   c.weapons.splice(idx, 1);
   saveCurrentCharacter(c);
   closeModal();
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 /* ═══════════════════════════════════════════
@@ -615,7 +615,7 @@ function saveBulkGear() {
   if (!c) return;
   c.bulkGear = document.getElementById('bulk-gear-edit').value;
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function toggleNotesEdit() {
@@ -635,11 +635,11 @@ function saveNotes() {
   if (!c) return;
   c.notes = document.getElementById('notes-edit').value;
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function cancelInlineEdit() {
   var c = loadCharacter();
-  if (c) showDashboard(c);
+  if (c) showDashboard(c, true);
 }
 

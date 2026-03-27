@@ -287,7 +287,7 @@ function toggleDeathSave(type, idx) {
   var current = c.deathSaves[type] || 0;
   c.deathSaves[type] = idx < current ? idx : idx + 1;
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function rollDeathSave() {
@@ -305,7 +305,7 @@ function rollDeathSave() {
     saveCurrentCharacter(c);
     logEvent(msg);
     showRollResult('Death Save', [d20], 0, '', d20, 'NAT 20! You regain 1 HP!', { nat20: true });
-    setTimeout(function() { showDashboard(loadCharacter()); }, 1500);
+    setTimeout(function() { showDashboard(loadCharacter(), true); }, 1500);
     return;
   }
   if (d20 === 1) {
@@ -325,7 +325,7 @@ function rollDeathSave() {
   if (d20 === 1) ctx.nat1 = true;
   var extra = d20 >= 10 ? 'Success (' + c.deathSaves.successes + '/3)' : 'Failure (' + c.deathSaves.failures + '/3)';
   showRollResult('Death Save', [d20], 0, '', d20, extra, ctx);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function clearDeathSaves(c) {
@@ -369,9 +369,9 @@ function rollInitiative() {
   if (d20 === 20) ctx.nat20 = true;
   else if (d20 === 1) ctx.nat1 = true;
   showRollResult('Initiative', usedAdvantage ? [d20, d20b] : [d20], bonus, extraLabel, total, extra, ctx);
-  // Update the initiative display
-  var initEl = document.getElementById('init-display');
-  if (initEl) initEl.textContent = 'Initiative: ' + total;
+  // Update the initiative button text in-place
+  var initBtn = document.getElementById('init-btn');
+  if (initBtn) initBtn.innerHTML = '&#127922; Initiative: ' + total;
 }
 
 /* ═══════════════════════════════════════════

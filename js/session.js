@@ -42,7 +42,7 @@ function clearSessionLog() {
   if (!c) return;
   c.sessionLog = [];
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function renderJournal(c) {
@@ -86,7 +86,7 @@ function addJournalEntry() {
   c.journal.unshift({ title: title || 'Untitled', body: body, date: dateStr });
   if (c.journal.length > 50) c.journal = c.journal.slice(0, 50);
   saveCurrentCharacter(c);
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function confirmDeleteJournal(idx) {
@@ -107,13 +107,13 @@ function deleteJournalEntry(idx) {
   c.journal.splice(idx, 1);
   saveCurrentCharacter(c);
   closeModal();
-  showDashboard(c);
+  showDashboard(c, true);
 }
 
 function logNewSession() {
   logEvent('\u2550\u2550\u2550 New Session \u2550\u2550\u2550');
   var c = loadCharacter();
-  if (c) showDashboard(c);
+  if (c) showDashboard(c, true);
 }
 
 /* ═══════════════════════════════════════════

@@ -467,10 +467,33 @@ function showOnboarding() {
 
 function showDashboard(character, preserveScroll) {
   var savedScroll = preserveScroll ? window.scrollY : 0;
+  // Snapshot <details> open/closed state before re-render
+  var detailsState = {};
+  if (preserveScroll) {
+    var allDetails = document.querySelectorAll('#dashboard-content details');
+    allDetails.forEach(function(d) {
+      var summary = d.querySelector('summary');
+      if (summary) {
+        var key = summary.textContent.trim();
+        detailsState[key] = d.open;
+      }
+    });
+  }
   showView('dashboard');
   applyTheme(character.colorTheme);
   renderDashboard(character, preserveScroll);
   if (preserveScroll) {
+    // Restore <details> open/closed state after re-render
+    var newDetails = document.querySelectorAll('#dashboard-content details');
+    newDetails.forEach(function(d) {
+      var summary = d.querySelector('summary');
+      if (summary) {
+        var key = summary.textContent.trim();
+        if (key in detailsState) {
+          d.open = detailsState[key];
+        }
+      }
+    });
     window.scrollTo(0, savedScroll);
   }
 }
