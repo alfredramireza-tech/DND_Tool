@@ -2844,8 +2844,8 @@ var SPELL_BUFF_EFFECTS = {
   "Haste": [{ type: "acBonus", value: 2 }, { type: "reminder", text: "+2 AC, double speed, extra action (Attack/Dash/Disengage/Hide/Use Object only)" }],
   "Barkskin": [{ type: "acMinimum", value: 16 }],
   "Shield": [{ type: "reminder", text: "+5 AC until start of next turn (not concentration - track manually)" }],
-  "Bless": [{ type: "rollReminder", context: "attacks_and_saves", text: "+1d4" }],
-  "Bane": [{ type: "reminder", text: "Targets subtract 1d4 from attacks & saves" }],
+  "Bless": [{ type: "rollReminder", text: "+1d4", rollBonus: { dice: "1d4", appliesTo: ["attacks", "saves"] } }],
+  "Bane": [{ type: "rollReminder", text: "-1d4", rollBonus: { dice: "1d4", appliesTo: ["attacks", "saves"], subtract: true } }],
   "Enhance Ability": [{ type: "reminder", text: "Advantage on chosen ability checks" }],
   "Protection from Evil and Good": [{ type: "reminder", text: "Aberrations/celestials/elementals/fey/fiends/undead have disadvantage attacking you" }],
   "Beacon of Hope": [{ type: "reminder", text: "Advantage on WIS saves & death saves. Maximize healing received." }],
@@ -3547,8 +3547,14 @@ function migrateCharacter(c) {
   if (!c.expertiseSkills) c.expertiseSkills = [];
   if (!c.deathSaves) c.deathSaves = { successes: 0, failures: 0 };
   if (!c.concentration) c.concentration = { active: false, spellName: '' };
-  if (c.concentration && c.concentration.active && !c.concentration.effects) {
-    c.concentration.effects = SPELL_BUFF_EFFECTS[c.concentration.spellName] || [];
+  // Migration: move concentration.effects into externalBuffs as linked buffs
+  if (c.concentration && c.concentration.active && c.concentration.effects && c.concentration.effects.length) {
+    if (!c.externalBuffs) c.externalBuffs = [];
+    var alreadyLinked = c.externalBuffs.some(function(b) { return b.linkedToConcentration && b.spellName === c.concentration.spellName; });
+    if (!alreadyLinked) {
+      c.externalBuffs.push({ spellName: c.concentration.spellName, effects: c.concentration.effects, linkedToConcentration: true });
+    }
+    delete c.concentration.effects;
   }
   if (!c.activeConditions) c.activeConditions = [];
   if (!c.sessionLog) c.sessionLog = [];
@@ -3601,14 +3607,7 @@ function calculateAC(c) {
     ac += 1;
   }
   ac += shieldBonus;
-  // Apply concentration AC buffs
-  if (c.concentration && c.concentration.active && c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) {
-      if (eff.type === 'acBonus') ac += eff.value;
-      if (eff.type === 'acMinimum' && ac < eff.value) ac = eff.value;
-    });
-  }
-  // Apply external buff AC bonuses
+  // Apply buff AC bonuses (from externalBuffs only — single source of truth)
   if (c.externalBuffs) {
     c.externalBuffs.forEach(function(buff) {
       (buff.effects || []).forEach(function(eff) {
@@ -5184,6 +5183,9 @@ function renderDashboard(c, preserveScroll) {
   // Death Saves (when HP = 0)
   html += renderDeathSaves(c);
 
+  // Concentration banner (with Drop/Change buttons)
+  html += renderConcentrationBanner(c);
+
   // External buff badges
   html += renderExternalBuffBadges(c);
 
@@ -5197,11 +5199,8 @@ function renderDashboard(c, preserveScroll) {
   // Dice & Rolls (directly below HP for combat use)
   html += renderDiceRollers(c);
 
-  // Compute AC buff annotation (concentration + external)
+  // Compute AC buff annotation (from externalBuffs only)
   var acBuff = 0;
-  if (c.concentration && c.concentration.active && c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) { if (eff.type === 'acBonus') acBuff += eff.value; });
-  }
   if (c.externalBuffs) {
     c.externalBuffs.forEach(function(buff) { (buff.effects || []).forEach(function(eff) { if (eff.type === 'acBonus') acBuff += eff.value; }); });
   }
@@ -7445,11 +7444,8 @@ function renderQuickAction(c) {
     }
     html += '</div>';
   }
-  // Roll reminders from active buffs (concentration + external)
+  // Roll reminders from active buffs (externalBuffs only)
   var rollReminders = [];
-  if (c.concentration && c.concentration.active && c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) { if (eff.type === 'rollReminder') rollReminders.push(eff.text); });
-  }
   if (c.externalBuffs) {
     c.externalBuffs.forEach(function(buff) { (buff.effects || []).forEach(function(eff) { if (eff.type === 'rollReminder') rollReminders.push(eff.text); }); });
   }
@@ -7706,22 +7702,82 @@ function rollInitiative() {
 function setConcentration(spellName) {
   var c = loadCharacter();
   if (!c) return;
-  // If already concentrating, warn
+  // If already concentrating, remove old linked buffs and log
   if (c.concentration && c.concentration.active && c.concentration.spellName !== spellName) {
-    var oldSpell = c.concentration.spellName;
-    logEvent('Lost concentration on ' + oldSpell);
+    removeLinkedBuffs(c, c.concentration.spellName);
+    logEvent('Lost concentration on ' + c.concentration.spellName);
   }
-  var effects = SPELL_BUFF_EFFECTS[spellName] || [];
-  c.concentration = { active: true, spellName: spellName, effects: effects };
+  c.concentration = { active: true, spellName: spellName };
   logEvent('Began concentrating on ' + spellName);
   saveCurrentCharacter(c);
-  showDashboard(c);
+  // If spell has buff effects, ask if player is a target
+  var buffEffects = SPELL_BUFF_EFFECTS[spellName];
+  if (buffEffects && buffEffects.length > 0) {
+    var desc = buffEffects.map(function(e) {
+      if (e.type === 'acBonus') return '+' + e.value + ' AC';
+      if (e.type === 'acMinimum') return 'Min AC ' + e.value;
+      if (e.type === 'rollReminder') return e.text;
+      if (e.type === 'reminder') return e.text;
+      return '';
+    }).filter(Boolean).join(', ');
+    var safeName = spellName.replace(/'/g, "\\'");
+    showModal(
+      '<h3>Are you a target of ' + escapeHtml(spellName) + '?</h3>' +
+      '<p class="text-dim" style="font-size:0.85rem">' + escapeHtml(desc) + '</p>' +
+      '<div class="confirm-actions">' +
+      '<button class="btn btn-primary" onclick="closeModal();addLinkedBuff(\'' + safeName + '\')">Yes, I\'m a target</button>' +
+      '<button class="btn btn-secondary" onclick="closeModal();showDashboard(loadCharacter(),true)">No</button></div>'
+    );
+  } else {
+    showDashboard(c, true);
+  }
+}
+
+function addLinkedBuff(spellName) {
+  var c = loadCharacter();
+  if (!c) return;
+  if (!c.externalBuffs) c.externalBuffs = [];
+  // Don't duplicate
+  var already = c.externalBuffs.some(function(b) { return b.linkedToConcentration && b.spellName === spellName; });
+  if (already) { showDashboard(c, true); return; }
+  if (c.externalBuffs.length >= 5) { showDashboard(c, true); return; }
+  var effects = SPELL_BUFF_EFFECTS[spellName] || [];
+  c.externalBuffs.push({ spellName: spellName, effects: effects, linkedToConcentration: true });
+  var desc = effects.map(function(e) {
+    if (e.type === 'acBonus') return '+' + e.value + ' AC';
+    if (e.type === 'rollReminder') return e.text;
+    return '';
+  }).filter(Boolean).join(', ');
+  logEvent('Added buff: ' + spellName + (desc ? ' (' + desc + ')' : ''));
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function removeLinkedBuffs(c, spellName) {
+  if (!c.externalBuffs) return;
+  var removed = [];
+  c.externalBuffs = c.externalBuffs.filter(function(b) {
+    if (b.linkedToConcentration && b.spellName === spellName) {
+      removed.push(b);
+      return false;
+    }
+    return true;
+  });
+  removed.forEach(function(b) {
+    var desc = (b.effects || []).map(function(e) {
+      if (e.type === 'acBonus') return '-' + e.value + ' AC';
+      if (e.type === 'rollReminder') return e.text;
+      return '';
+    }).filter(Boolean).join(', ');
+    logEvent('Removed buff: ' + b.spellName + (desc ? ' (' + desc + ')' : ''));
+  });
 }
 
 function dropConcentration() {
   var c = loadCharacter();
   if (!c) return;
   if (c.concentration && c.concentration.active) {
+    removeLinkedBuffs(c, c.concentration.spellName);
     logEvent('Dropped concentration on ' + c.concentration.spellName);
   }
   c.concentration = { active: false, spellName: '' };
@@ -7778,14 +7834,6 @@ function renderConcentrationBanner(c) {
   html += '<div class="conc-info">';
   html += '<div class="conc-name">Concentrating: ' + escapeHtml(c.concentration.spellName) + '</div>';
   html += '<div class="conc-hint">CON save to maintain if you take damage (DC = max of 10 or half damage taken)</div>';
-  // Show reminder effects
-  if (c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) {
-      if (eff.type === 'reminder') {
-        html += '<div style="font-size:0.8rem;color:var(--accent);margin-top:4px">' + escapeHtml(eff.text) + '</div>';
-      }
-    });
-  }
   html += '<div class="conc-actions">';
   html += '<button class="btn btn-secondary" onclick="dropConcentration()">Drop</button>';
   html += '<button class="btn btn-secondary" onclick="showSetConcentration()">Change</button>';
@@ -7881,20 +7929,78 @@ function removeCondition(name) {
    ═══════════════════════════════════════════ */
 
 function showAddBuff() {
-  var html = '<h3>Add External Buff</h3>';
-  html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:12px">Buffs from other party members, potions, or magic items:</p>';
+  var html = '<h3>Add Buff</h3>';
+  html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:12px">Preset spells:</p>';
   html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">';
   Object.keys(SPELL_BUFF_EFFECTS).forEach(function(name) {
     var safeName = name.replace(/'/g, "\\'");
     html += '<button class="btn btn-secondary" style="font-size:0.8rem;padding:5px 10px" onclick="addExternalBuff(\'' + safeName + '\')">' + escapeHtml(name) + '</button>';
   });
   html += '</div>';
-  html += '<div class="text-dim" style="font-size:0.8rem;margin-bottom:6px">Or type a custom buff name:</div>';
-  html += '<input type="text" id="ext-buff-input" placeholder="Buff name..." onclick="event.stopPropagation()">';
+  html += '<div class="text-dim" style="font-size:0.8rem;margin-bottom:6px">Or add a custom buff:</div>';
+  html += '<div style="text-align:left">';
+  html += '<input type="text" id="cb-name" placeholder="Name (e.g., Bardic Inspiration)" onclick="event.stopPropagation()" style="width:100%;margin-bottom:6px;box-sizing:border-box">';
+  html += '<div style="display:flex;gap:8px;margin-bottom:6px">';
+  html += '<div style="flex:1"><label style="font-size:0.7rem;color:var(--text-dim)">AC Bonus</label><input type="number" id="cb-ac" value="0" min="0" onclick="event.stopPropagation()" style="width:100%;box-sizing:border-box"></div>';
+  html += '<div style="flex:1"><label style="font-size:0.7rem;color:var(--text-dim)">Roll Bonus Dice</label><input type="text" id="cb-dice" placeholder="e.g., 1d4" onclick="event.stopPropagation()" style="width:100%;box-sizing:border-box"></div>';
+  html += '</div>';
+  html += '<div id="cb-applies-row" style="display:none;margin-bottom:6px"><label style="font-size:0.7rem;color:var(--text-dim)">Applies to:</label><div style="display:flex;gap:8px;margin-top:2px">';
+  html += '<label style="font-size:0.8rem"><input type="checkbox" id="cb-atk" checked> Attacks</label>';
+  html += '<label style="font-size:0.8rem"><input type="checkbox" id="cb-sav" checked> Saves</label>';
+  html += '<label style="font-size:0.8rem"><input type="checkbox" id="cb-chk" checked> Checks</label>';
+  html += '</div></div>';
+  html += '<input type="text" id="cb-reminder" placeholder="Reminder text (optional)" onclick="event.stopPropagation()" style="width:100%;margin-bottom:6px;box-sizing:border-box">';
+  html += '</div>';
   html += '<div class="confirm-actions" style="margin-top:10px">';
   html += '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>';
-  html += '<button class="btn btn-primary" onclick="var v=document.getElementById(\'ext-buff-input\').value.trim();if(v){addExternalBuff(v);}">Add</button></div>';
+  html += '<button class="btn btn-primary" onclick="addCustomBuff()">Add Custom</button></div>';
   showModal(html);
+  // Show appliesTo row when dice is entered
+  setTimeout(function() {
+    var diceEl = document.getElementById('cb-dice');
+    if (diceEl) diceEl.addEventListener('input', function() {
+      var row = document.getElementById('cb-applies-row');
+      if (row) row.style.display = this.value.trim() ? '' : 'none';
+    });
+  }, 50);
+}
+
+function addCustomBuff() {
+  var name = (document.getElementById('cb-name').value || '').trim();
+  if (!name) return;
+  var acBonus = parseInt(document.getElementById('cb-ac').value) || 0;
+  var dice = (document.getElementById('cb-dice').value || '').trim();
+  var reminder = (document.getElementById('cb-reminder').value || '').trim();
+  var effects = [];
+  if (acBonus > 0) effects.push({ type: 'acBonus', value: acBonus });
+  if (dice) {
+    var appliesTo = [];
+    if (document.getElementById('cb-atk').checked) appliesTo.push('attacks');
+    if (document.getElementById('cb-sav').checked) appliesTo.push('saves');
+    if (document.getElementById('cb-chk').checked) appliesTo.push('checks');
+    effects.push({ type: 'rollReminder', text: '+' + dice, rollBonus: { dice: dice, appliesTo: appliesTo } });
+  }
+  if (reminder) effects.push({ type: 'reminder', text: reminder });
+  if (effects.length === 0) effects.push({ type: 'reminder', text: name });
+  var c = loadCharacter();
+  if (!c) return;
+  if (!c.externalBuffs) c.externalBuffs = [];
+  if (c.externalBuffs.length >= 5) {
+    closeModal();
+    showModal('<h3>Max Buffs</h3><p>Remove a buff first (max 5).</p><div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">OK</button></div>');
+    return;
+  }
+  c.externalBuffs.push({ spellName: name, effects: effects, custom: true });
+  var desc = effects.map(function(e) {
+    if (e.type === 'acBonus') return '+' + e.value + ' AC';
+    if (e.type === 'rollReminder') return e.text;
+    if (e.type === 'reminder') return e.text;
+    return '';
+  }).filter(Boolean).join(', ');
+  logEvent('Added custom buff: ' + name + (desc ? ' (' + desc + ')' : ''));
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
 }
 
 function addExternalBuff(spellName) {
@@ -8199,13 +8305,15 @@ function castSpellAtLevel(spellName, rollType, castLevel) {
   }
   // Check if concentration spell
   var spell = getSpell(spellName);
+  var _castIsConc = false;
   if (spell && spell.duration && spell.duration.toLowerCase().indexOf('concentration') >= 0) {
     if (c.concentration && c.concentration.active) {
+      removeLinkedBuffs(c, c.concentration.spellName);
       logEvent('Lost concentration on ' + c.concentration.spellName);
     }
-    var effects = SPELL_BUFF_EFFECTS[spellName] || [];
-    c.concentration = { active: true, spellName: spellName, effects: effects };
+    c.concentration = { active: true, spellName: spellName };
     logEvent('Began concentrating on ' + spellName);
+    _castIsConc = true;
   }
   var slotsObj = (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') ? c.ekSpellSlots : c.spellSlots;
   var remaining = (slotsObj[castLevel] || 0) - ((c.class === 'Fighter' && c.subclass === 'Eldritch Knight' ? c.ekSlotsUsed : c.spellSlotsUsed)[castLevel] || 0);
@@ -8214,8 +8322,32 @@ function castSpellAtLevel(spellName, rollType, castLevel) {
   closeModal();
   // Now roll — pass castLevel for upcast damage
   doSpellRollAtLevel(spellName, rollType, castLevel);
-  // Refresh dashboard after a moment
-  setTimeout(function() { var cc = loadCharacter(); if (cc) showDashboard(cc); }, 100);
+  // Refresh dashboard after a moment, then prompt for target if concentration spell with buffs
+  var _castSpellName = spellName;
+  var _castWasConc = _castIsConc;
+  setTimeout(function() {
+    var cc = loadCharacter();
+    if (cc) showDashboard(cc, true);
+    if (_castWasConc) {
+      var buffEffects = SPELL_BUFF_EFFECTS[_castSpellName];
+      if (buffEffects && buffEffects.length > 0) {
+        var safeName = _castSpellName.replace(/'/g, "\\'");
+        var desc = buffEffects.map(function(e) {
+          if (e.type === 'acBonus') return '+' + e.value + ' AC';
+          if (e.type === 'rollReminder') return e.text;
+          if (e.type === 'reminder') return e.text;
+          return '';
+        }).filter(Boolean).join(', ');
+        showModal(
+          '<h3>Are you a target of ' + escapeHtml(_castSpellName) + '?</h3>' +
+          '<p class="text-dim" style="font-size:0.85rem">' + escapeHtml(desc) + '</p>' +
+          '<div class="confirm-actions">' +
+          '<button class="btn btn-primary" onclick="closeModal();addLinkedBuff(\'' + safeName + '\')">Yes</button>' +
+          '<button class="btn btn-secondary" onclick="closeModal()">No</button></div>'
+        );
+      }
+    }
+  }, 200);
 }
 
 function doSpellRollAtLevel(spellName, rollType, castLevel) {
@@ -8235,7 +8367,13 @@ function doSpellRollAtLevel(spellName, rollType, castLevel) {
     var ctx = {};
     if (d20 === 20) ctx.nat20 = true;
     else if (d20 === 1) ctx.nat1 = true;
-    showRollResult(spellName + ' \u2014 Attack', [d20], atkBonus, 'prof+' + ABILITY_NAMES[cd.spellcastingAbility], total, '', ctx);
+    var spModLabel = 'prof+' + ABILITY_NAMES[cd.spellcastingAbility];
+    var buffInfo = rollBuffBonuses(char, 'attacks');
+    if (buffInfo.totalBonus !== 0) {
+      total += buffInfo.totalBonus;
+      buffInfo.results.forEach(function(r) { spModLabel += (r.subtract ? '-' : '+') + r.dice + '[' + r.roll + '] ' + r.name; });
+    }
+    showRollResult(spellName + ' \u2014 Attack', [d20], atkBonus + buffInfo.totalBonus, spModLabel, total, '', ctx);
     return;
   }
 
@@ -8378,9 +8516,6 @@ function renderPartyGrid(container) {
     var pvHpText = 'HP: ' + pvEffective + ' / ' + c.hp.max;
     if (c.tempHp > 0) pvHpText += ' (' + c.currentHp + '+' + c.tempHp + ' temp)';
     var pvAcBuff = 0;
-    if (c.concentration && c.concentration.active && c.concentration.effects) {
-      c.concentration.effects.forEach(function(eff) { if (eff.type === 'acBonus') pvAcBuff += eff.value; });
-    }
     if (c.externalBuffs) { c.externalBuffs.forEach(function(b) { (b.effects||[]).forEach(function(e) { if (e.type==='acBonus') pvAcBuff+=e.value; }); }); }
     var pvAcNote = pvAcBuff > 0 ? '(+' + pvAcBuff + ')' : '';
     html += '<div class="pv-hp ' + hpClass + '">' + pvHpText + '  \u2022  AC: ' + (ac || '?') + pvAcNote + '</div>';
@@ -8436,9 +8571,6 @@ function showPartyCharDetail(idx) {
   html += '<div style="font-size:2.5rem;font-weight:bold;color:' + hpColor + '">' + effectiveHp + ' / ' + c.hp.max + '</div>';
   if (c.tempHp > 0) html += '<div style="color:var(--accent);font-size:0.9rem">+' + c.tempHp + ' temp HP (' + c.currentHp + ' real + ' + c.tempHp + ' temp)</div>';
   var detailAcBuff = 0;
-  if (c.concentration && c.concentration.active && c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) { if (eff.type === 'acBonus') detailAcBuff += eff.value; });
-  }
   if (c.externalBuffs) { c.externalBuffs.forEach(function(b) { (b.effects||[]).forEach(function(e) { if (e.type==='acBonus') detailAcBuff+=e.value; }); }); }
   var detailAcNote = detailAcBuff > 0 ? ' <span style="color:var(--accent)">(+' + detailAcBuff + ')</span>' : '';
   html += '<div style="font-size:0.85rem;color:var(--text-dim);margin-top:4px">AC: ' + (ac || '?') + detailAcNote + '</div>';
@@ -8582,6 +8714,31 @@ function showPartyCharDetail(idx) {
 let rollTimeout = null;
 
 function rollDie(sides) { return Math.floor(Math.random() * sides) + 1; }
+
+// Collect and roll applicable buff bonuses for a roll type ('attacks', 'saves', 'checks')
+function rollBuffBonuses(char, rollType) {
+  var results = []; // { name, dice, roll, subtract }
+  var totalBonus = 0;
+  if (!char || !char.externalBuffs) return { results: results, totalBonus: totalBonus };
+  char.externalBuffs.forEach(function(buff) {
+    (buff.effects || []).forEach(function(eff) {
+      if (eff.rollBonus && eff.rollBonus.dice) {
+        var applies = eff.rollBonus.appliesTo || ['attacks', 'saves', 'checks'];
+        if (applies.indexOf(rollType) >= 0) {
+          var parsed = parseDice(eff.rollBonus.dice);
+          if (parsed) {
+            var diceResults = rollDice(parsed.count, parsed.sides);
+            var diceTotal = diceResults.reduce(function(a, b) { return a + b; }, 0);
+            var subtract = eff.rollBonus.subtract || false;
+            results.push({ name: buff.spellName, dice: eff.rollBonus.dice, roll: diceTotal, subtract: subtract });
+            totalBonus += subtract ? -diceTotal : diceTotal;
+          }
+        }
+      }
+    });
+  });
+  return { results: results, totalBonus: totalBonus };
+}
 
 function rollDice(count, sides) {
   const results = [];
@@ -8767,7 +8924,7 @@ function doWeaponRoll(idx, rollType) {
   if (rollType === 'attack') {
     const atkBonus = abilMod + profBonus + magB + fsAtkBonus;
     const d20 = rollDie(20);
-    const total = d20 + atkBonus;
+    var total = d20 + atkBonus;
     var ctx = {};
     if (d20 === 20) ctx.nat20 = true;
     else if (d20 >= critMin && critMin < 20) ctx.crit = true;
@@ -8775,7 +8932,12 @@ function doWeaponRoll(idx, rollType) {
     var critNote = '';
     if (critMin < 20) critNote = ' (crit range ' + critMin + '-20)';
     var modLabel = ABILITY_NAMES[w.ability] + '+prof' + (magB ? '+' + magB + ' magic' : '') + (fsAtkBonus ? '+' + fsAtkBonus + ' style' : '');
-    showRollResult(w.name + ' — Attack', [d20], atkBonus, modLabel, total, critNote, ctx);
+    var buffInfo = rollBuffBonuses(char, 'attacks');
+    if (buffInfo.totalBonus !== 0) {
+      total += buffInfo.totalBonus;
+      buffInfo.results.forEach(function(r) { modLabel += (r.subtract ? '-' : '+') + r.dice + '[' + r.roll + '] ' + r.name; });
+    }
+    showRollResult(w.name + ' \u2014 Attack', [d20], atkBonus + buffInfo.totalBonus, modLabel, total, critNote, ctx);
   } else {
     const parsed = parseDice(w.damage);
     if (!parsed) return;
@@ -8804,14 +8966,20 @@ function doAbilityRoll(ability, isProficient) {
   }
   const bonus = abilMod + (isProficient ? char.proficiencyBonus : 0) + extraBonus;
   const d20 = rollDie(20);
-  const total = d20 + bonus;
+  var total = d20 + bonus;
   const label = ABILITY_NAMES[ability] + (isProficient ? ' Save' : ' Check');
   var ctx = {};
   if (d20 === 20) ctx.nat20 = true;
   else if (d20 === 1) ctx.nat1 = true;
   var modLabel = isProficient ? ABILITY_NAMES[ability] + '+prof' : ABILITY_NAMES[ability];
   if (extraLabel) modLabel += extraLabel;
-  showRollResult(label, [d20], bonus, modLabel, total, '', ctx);
+  var buffType = isProficient ? 'saves' : 'checks';
+  var buffInfo = rollBuffBonuses(char, buffType);
+  if (buffInfo.totalBonus !== 0) {
+    total += buffInfo.totalBonus;
+    buffInfo.results.forEach(function(r) { modLabel += (r.subtract ? '-' : '+') + r.dice + '[' + r.roll + '] ' + r.name; });
+  }
+  showRollResult(label, [d20], bonus + buffInfo.totalBonus, modLabel, total, '', ctx);
 }
 
 function doSkillRoll(skillName) {
@@ -8833,13 +9001,18 @@ function doSkillRoll(skillName) {
   }
   const bonus = abilMod + (isProficient ? char.proficiencyBonus : 0) + extraBonus;
   const d20 = rollDie(20);
-  const total = d20 + bonus;
+  var total = d20 + bonus;
   var ctx = {};
   if (d20 === 20) ctx.nat20 = true;
   else if (d20 === 1) ctx.nat1 = true;
   var modLabel = isProficient ? ABILITY_NAMES[skill.ability] + '+prof' : ABILITY_NAMES[skill.ability];
   if (extraLabel) modLabel += extraLabel;
-  showRollResult(skillName, [d20], bonus, modLabel, total, '', ctx);
+  var buffInfo = rollBuffBonuses(char, 'checks');
+  if (buffInfo.totalBonus !== 0) {
+    total += buffInfo.totalBonus;
+    buffInfo.results.forEach(function(r) { modLabel += (r.subtract ? '-' : '+') + r.dice + '[' + r.roll + '] ' + r.name; });
+  }
+  showRollResult(skillName, [d20], bonus + buffInfo.totalBonus, modLabel, total, '', ctx);
 }
 
 function doGeneralRoll() {
@@ -9207,11 +9380,8 @@ function renderDiceRollers(c) {
 
   // Saving Throw & Ability Check Roller
   html += '<details class="roller-section"><summary>Saving Throws &amp; Ability Checks</summary>';
-  // Roll reminders from active buffs (concentration + external)
+  // Roll reminders from active buffs (externalBuffs only)
   var saveReminders = [];
-  if (c.concentration && c.concentration.active && c.concentration.effects) {
-    c.concentration.effects.forEach(function(eff) { if (eff.type === 'rollReminder') saveReminders.push(eff.text); });
-  }
   if (c.externalBuffs) {
     c.externalBuffs.forEach(function(buff) { (buff.effects || []).forEach(function(eff) { if (eff.type === 'rollReminder') saveReminders.push(eff.text); }); });
   }
