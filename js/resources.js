@@ -134,13 +134,10 @@ function applyHpChange(mode) {
 function toggleSlot(level, idx) {
   var c = loadCharacter();
   if (!c) return;
-  var key = 'spellSlotsUsed';
-  if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') key = 'ekSlotsUsed';
-  if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') key = 'atSlotsUsed';
-  if (!c[key]) c[key] = {};
-  var used = c[key][level] || 0;
-  if (idx < used) c[key][level] = idx;
-  else c[key][level] = idx + 1;
+  if (!c.spellSlotsUsed) c.spellSlotsUsed = {};
+  var used = c.spellSlotsUsed[level] || 0;
+  if (idx < used) c.spellSlotsUsed[level] = idx;
+  else c.spellSlotsUsed[level] = idx + 1;
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -338,9 +335,7 @@ function doLongRest() {
   }
   c.currentHp = c.hp.max; // Heal to base max (boost is gone)
   c.tempHp = 0;
-  if (cdInfo.isCaster || (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') || (c.class === 'Rogue' && c.subclass === 'Arcane Trickster')) c.spellSlotsUsed = {};
-  if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') c.ekSlotsUsed = {};
-  if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') c.atSlotsUsed = {};
+  if (cdInfo.isCaster || (c.spellSlots && Object.keys(c.spellSlots).length > 0)) c.spellSlotsUsed = {};
   if (c.class === 'Cleric' || c.class === 'Paladin') c.channelDivinityUsed = 0;
   if (c.resources) {
     Object.keys(c.resources).forEach(function(key) {

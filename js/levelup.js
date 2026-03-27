@@ -94,14 +94,14 @@ function startLevelUp() {
     }
     // Eldritch Knight: Cantrip gain
     if (sub === 'Eldritch Knight') {
-      var ekCantOld = EK_CANTRIPS_KNOWN[char.level] || 0;
-      var ekCantNew = EK_CANTRIPS_KNOWN[newLevel] || 0;
+      var ekCantOld = THIRD_CASTER_CANTRIPS_KNOWN[char.level] || 0;
+      var ekCantNew = THIRD_CASTER_CANTRIPS_KNOWN[newLevel] || 0;
       if (ekCantNew > ekCantOld) screens.push('ekCantripSelect');
     }
     // Eldritch Knight: Spell learning
     if (sub === 'Eldritch Knight') {
-      var ekSpOld = EK_SPELLS_KNOWN[char.level] || 0;
-      var ekSpNew = EK_SPELLS_KNOWN[newLevel] || 0;
+      var ekSpOld = THIRD_CASTER_SPELLS_KNOWN[char.level] || 0;
+      var ekSpNew = THIRD_CASTER_SPELLS_KNOWN[newLevel] || 0;
       if (ekSpNew > ekSpOld) screens.push('ekSpellSelect');
     }
     // Features
@@ -109,8 +109,8 @@ function startLevelUp() {
     if (fighterFeats.length > 0) screens.push('features');
     // EK spell slot changes
     if (sub === 'Eldritch Knight') {
-      var oldEkSlots = getEkSpellSlots(char.level);
-      var newEkSlots = getEkSpellSlots(newLevel);
+      var oldEkSlots = getThirdCasterSlots(char.level);
+      var newEkSlots = getThirdCasterSlots(newLevel);
       if (JSON.stringify(oldEkSlots) !== JSON.stringify(newEkSlots)) screens.push('spellslots');
     }
   } else if (cls === 'Paladin') {
@@ -120,8 +120,8 @@ function startLevelUp() {
     // Oath (subclass) selection at level 3
     if (newLevel === 3 && !palSub) screens.push('subclassSelect');
     // Spell slot changes
-    var oldPalSlots = getPaladinSpellSlots(char.level);
-    var newPalSlots = getPaladinSpellSlots(newLevel);
+    var oldPalSlots = getHalfCasterSlots(char.level);
+    var newPalSlots = getHalfCasterSlots(newLevel);
     if (JSON.stringify(oldPalSlots) !== JSON.stringify(newPalSlots)) screens.push('spellslots');
     // New oath spells
     var oldOathSpells = getOathSpells(palSub, char.level);
@@ -138,14 +138,14 @@ function startLevelUp() {
     if (newLevel === 6) screens.push('expertiseSelect');
     // Arcane Trickster: spell screens (same tables as EK)
     if (rogueSub === 'Arcane Trickster') {
-      var atCantOld = EK_CANTRIPS_KNOWN[char.level] || 0;
-      var atCantNew = EK_CANTRIPS_KNOWN[newLevel] || 0;
+      var atCantOld = THIRD_CASTER_CANTRIPS_KNOWN[char.level] || 0;
+      var atCantNew = THIRD_CASTER_CANTRIPS_KNOWN[newLevel] || 0;
       if (atCantNew > atCantOld) screens.push('ekCantripSelect');
-      var atSpOld = EK_SPELLS_KNOWN[char.level] || 0;
-      var atSpNew = EK_SPELLS_KNOWN[newLevel] || 0;
+      var atSpOld = THIRD_CASTER_SPELLS_KNOWN[char.level] || 0;
+      var atSpNew = THIRD_CASTER_SPELLS_KNOWN[newLevel] || 0;
       if (atSpNew > atSpOld) screens.push('ekSpellSelect');
-      var oldAtSlots = getEkSpellSlots(char.level);
-      var newAtSlots = getEkSpellSlots(newLevel);
+      var oldAtSlots = getThirdCasterSlots(char.level);
+      var newAtSlots = getThirdCasterSlots(newLevel);
       if (JSON.stringify(oldAtSlots) !== JSON.stringify(newAtSlots)) screens.push('spellslots');
     }
     // Features
@@ -272,15 +272,15 @@ function validateLuScreen() {
       return true;
     }
     case 'ekCantripSelect': {
-      var ekCantOld = EK_CANTRIPS_KNOWN[luState.char.level] || 0;
-      var ekCantNew = EK_CANTRIPS_KNOWN[luState.newLevel] || 0;
+      var ekCantOld = THIRD_CASTER_CANTRIPS_KNOWN[luState.char.level] || 0;
+      var ekCantNew = THIRD_CASTER_CANTRIPS_KNOWN[luState.newLevel] || 0;
       var cantToChoose = ekCantNew - ekCantOld;
       if (luState.ekCantripSelections.length !== cantToChoose) { alert('Please choose ' + cantToChoose + ' cantrip' + (cantToChoose > 1 ? 's' : '') + '.'); return false; }
       return true;
     }
     case 'ekSpellSelect': {
-      var ekSpOld = EK_SPELLS_KNOWN[luState.char.level] || 0;
-      var ekSpNew = EK_SPELLS_KNOWN[luState.newLevel] || 0;
+      var ekSpOld = THIRD_CASTER_SPELLS_KNOWN[luState.char.level] || 0;
+      var ekSpNew = THIRD_CASTER_SPELLS_KNOWN[luState.newLevel] || 0;
       var spToChoose = ekSpNew - ekSpOld;
       if (luState.ekSpellSelections.length !== spToChoose) { alert('Please choose ' + spToChoose + ' spell' + (spToChoose > 1 ? 's' : '') + '.'); return false; }
       if (luState.ekSpellSwap.from && !luState.ekSpellSwap.to) { alert('Please select a replacement spell or cancel the swap.'); return false; }
@@ -652,8 +652,8 @@ function renderSpellSlotsScreen() {
   // Determine slot tables and prep count based on class
   var oldSlots, newSlots, oldPrepCount, newPrepCount, prepLabel;
   if (s.cls === 'Paladin') {
-    oldSlots = getPaladinSpellSlots(s.char.level);
-    newSlots = getPaladinSpellSlots(s.newLevel);
+    oldSlots = getHalfCasterSlots(s.char.level);
+    newSlots = getHalfCasterSlots(s.newLevel);
     var chaChange = s.abilityChanges.cha || 0;
     var oldChaMod = mod(s.char.abilityScores.cha);
     var newChaMod = mod(s.char.abilityScores.cha + chaChange);
@@ -710,8 +710,8 @@ function renderSpellSlotsScreen() {
 
 function renderEkSpellSlotsScreen() {
   var s = luState;
-  var oldSlots = getEkSpellSlots(s.char.level);
-  var newSlots = getEkSpellSlots(s.newLevel);
+  var oldSlots = getThirdCasterSlots(s.char.level);
+  var newSlots = getThirdCasterSlots(s.newLevel);
   var html = '<div class="lu-screen active"><h2>Spell Slots</h2>';
 
   // Check for new spell level
@@ -744,8 +744,8 @@ function renderEkSpellSlotsScreen() {
   html += '</div>';
 
   // Spells known count
-  var oldSpellsKnown = EK_SPELLS_KNOWN[s.char.level] || 0;
-  var newSpellsKnown = EK_SPELLS_KNOWN[s.newLevel] || 0;
+  var oldSpellsKnown = THIRD_CASTER_SPELLS_KNOWN[s.char.level] || 0;
+  var newSpellsKnown = THIRD_CASTER_SPELLS_KNOWN[s.newLevel] || 0;
   if (oldSpellsKnown !== newSpellsKnown) {
     html += '<div class="lu-change" style="margin-top:12px"><span class="change-label">Spells Known</span>';
     html += '<span class="change-old">' + oldSpellsKnown + '</span><span class="change-arrow">→</span><span class="change-new">' + newSpellsKnown + '</span></div>';
@@ -770,7 +770,7 @@ function renderFeaturesScreen() {
     featureDescriptions = ROGUE_FEATURE_DESCRIPTIONS;
   } else {
     features = s.prog.features || [];
-    featureDescriptions = FEATURE_DESCRIPTIONS;
+    featureDescriptions = CLERIC_FEATURE_DESCRIPTIONS;
   }
 
   let html = '<div class="lu-screen active"><h2>New Features</h2>';
@@ -819,7 +819,7 @@ function renderDomainSpellsScreen() {
 
   var paladinOathLevelMap = { 3: 1, 5: 2, 9: 3, 13: 4, 17: 5 };
   for (const [lvl, spells] of Object.entries(ds)) {
-    var spellLevel = isPaladin ? (paladinOathLevelMap[parseInt(lvl)] || 1) : (CHAR_LEVEL_TO_SPELL_LEVEL[parseInt(lvl)] || 1);
+    var spellLevel = isPaladin ? (paladinOathLevelMap[parseInt(lvl)] || 1) : (CLERIC_LEVEL_TO_SPELL_LEVEL[parseInt(lvl)] || 1);
     html += '<div class="lu-feature">';
     html += '<h3>' + ordinal(spellLevel) + '-Level ' + sectionLabel + '</h3>';
     html += '<div class="tag-list" style="margin-top:8px">' + spells.map(function(sp) { return '<span class="tag accent">' + escapeHtml(sp) + '</span>'; }).join('') + '</div>';
@@ -988,8 +988,8 @@ function renderEkCantripSelectScreen() {
   var s = luState;
   var isAT = s.cls === 'Rogue' && (s.char.subclass === 'Arcane Trickster' || s.subclassSelection === 'Arcane Trickster');
   var known = (s.char.cantripsKnown || []).slice();
-  var oldCount = EK_CANTRIPS_KNOWN[s.char.level] || 0;
-  var newCount = EK_CANTRIPS_KNOWN[s.newLevel] || 0;
+  var oldCount = THIRD_CASTER_CANTRIPS_KNOWN[s.char.level] || 0;
+  var newCount = THIRD_CASTER_CANTRIPS_KNOWN[s.newLevel] || 0;
   var toChoose = newCount - oldCount;
 
   var html = '<div class="lu-screen active"><h2>New Cantrip' + (toChoose > 1 ? 's' : '') + '</h2>';
@@ -1022,8 +1022,8 @@ function renderEkCantripSelectScreen() {
 function luToggleEkCantrip(name) {
   var s = luState;
   var idx = s.ekCantripSelections.indexOf(name);
-  var oldCount = EK_CANTRIPS_KNOWN[s.char.level] || 0;
-  var newCount = EK_CANTRIPS_KNOWN[s.newLevel] || 0;
+  var oldCount = THIRD_CASTER_CANTRIPS_KNOWN[s.char.level] || 0;
+  var newCount = THIRD_CASTER_CANTRIPS_KNOWN[s.newLevel] || 0;
   var toChoose = newCount - oldCount;
   if (idx >= 0) {
     s.ekCantripSelections.splice(idx, 1);
@@ -1036,18 +1036,18 @@ function luToggleEkCantrip(name) {
 function renderEkSpellSelectScreen() {
   var s = luState;
   var isAT = s.cls === 'Rogue' && (s.char.subclass === 'Arcane Trickster' || s.subclassSelection === 'Arcane Trickster');
-  var known = isAT ? (s.char.atSpellsKnown || []).slice() : (s.char.ekSpellsKnown || []).slice();
-  var oldCount = EK_SPELLS_KNOWN[s.char.level] || 0;
-  var newCount = EK_SPELLS_KNOWN[s.newLevel] || 0;
+  var known = (s.char.spellsKnown || []).slice();
+  var oldCount = THIRD_CASTER_SPELLS_KNOWN[s.char.level] || 0;
+  var newCount = THIRD_CASTER_SPELLS_KNOWN[s.newLevel] || 0;
   var toChoose = newCount - oldCount;
-  var isFreePickLevel = EK_FREE_PICK_LEVELS.indexOf(s.newLevel) >= 0;
+  var isFreePickLevel = THIRD_CASTER_FREE_PICK_LEVELS.indexOf(s.newLevel) >= 0;
 
   // School filter: EK = Abjuration/Evocation, AT = Enchantment/Illusion
   var school1 = isAT ? 'Enchantment' : 'Abjuration';
   var school2 = isAT ? 'Illusion' : 'Evocation';
 
   // Determine max spell level available
-  var ekSlots = getEkSpellSlots(s.newLevel);
+  var ekSlots = getThirdCasterSlots(s.newLevel);
   var maxSpellLevel = 0;
   Object.keys(ekSlots).forEach(function(k) { maxSpellLevel = Math.max(maxSpellLevel, parseInt(k)); });
 
@@ -1141,8 +1141,8 @@ function luSetSpellSwapFrom(val) {
 function luToggleEkSpell(name) {
   var s = luState;
   var idx = s.ekSpellSelections.indexOf(name);
-  var oldCount = EK_SPELLS_KNOWN[s.char.level] || 0;
-  var newCount = EK_SPELLS_KNOWN[s.newLevel] || 0;
+  var oldCount = THIRD_CASTER_SPELLS_KNOWN[s.char.level] || 0;
+  var newCount = THIRD_CASTER_SPELLS_KNOWN[s.newLevel] || 0;
   var toChoose = newCount - oldCount;
   if (idx >= 0) {
     s.ekSpellSelections.splice(idx, 1);
@@ -1319,8 +1319,8 @@ function renderLuSummary() {
 
   // Spell slots
   if (s.cls === 'Cleric' || s.cls === 'Paladin') {
-    var sumOldSlots = s.cls === 'Paladin' ? getPaladinSpellSlots(char.level) : char.spellSlots;
-    var sumNewSlots = s.cls === 'Paladin' ? getPaladinSpellSlots(s.newLevel) : s.prog.spellSlots;
+    var sumOldSlots = s.cls === 'Paladin' ? getHalfCasterSlots(char.level) : char.spellSlots;
+    var sumNewSlots = s.cls === 'Paladin' ? getHalfCasterSlots(s.newLevel) : s.prog.spellSlots;
     var slotsChanged = JSON.stringify(sumOldSlots) !== JSON.stringify(sumNewSlots);
     if (slotsChanged) {
       html += '<div class="lu-summary-section"><h3>Spell Slots</h3>';
@@ -1359,8 +1359,8 @@ function renderLuSummary() {
       html += '<span class="change-old">' + sumOldPrep + '</span><span class="change-arrow">→</span><span class="change-new">' + sumNewPrep + '</span></div></div>';
     }
   } else if (s.cls === 'Fighter' && (s.char.subclass === 'Eldritch Knight' || s.subclassSelection === 'Eldritch Knight')) {
-    var ekOldSlots = getEkSpellSlots(char.level);
-    var ekNewSlots = getEkSpellSlots(s.newLevel);
+    var ekOldSlots = getThirdCasterSlots(char.level);
+    var ekNewSlots = getThirdCasterSlots(s.newLevel);
     var ekSlotsChanged = JSON.stringify(ekOldSlots) !== JSON.stringify(ekNewSlots);
     if (ekSlotsChanged) {
       html += '<div class="lu-summary-section"><h3>Spell Slots</h3>';
@@ -1586,23 +1586,23 @@ function confirmLevelUp() {
 
     // Apply EK spells
     if (s.ekSpellSelections.length > 0) {
-      if (!char.ekSpellsKnown) char.ekSpellsKnown = [];
-      char.ekSpellsKnown = char.ekSpellsKnown.concat(s.ekSpellSelections);
+      if (!char.spellsKnown) char.spellsKnown = [];
+      char.spellsKnown = char.spellsKnown.concat(s.ekSpellSelections);
       historyEntry.ekSpells = s.ekSpellSelections;
     }
 
     // Apply EK spell swap
-    if (s.ekSpellSwap.from && s.ekSpellSwap.to && char.ekSpellsKnown) {
-      var swapIdx = char.ekSpellsKnown.indexOf(s.ekSpellSwap.from);
-      if (swapIdx >= 0) char.ekSpellsKnown[swapIdx] = s.ekSpellSwap.to;
+    if (s.ekSpellSwap.from && s.ekSpellSwap.to && char.spellsKnown) {
+      var swapIdx = char.spellsKnown.indexOf(s.ekSpellSwap.from);
+      if (swapIdx >= 0) char.spellsKnown[swapIdx] = s.ekSpellSwap.to;
       historyEntry.spellSwap = { from: s.ekSpellSwap.from, to: s.ekSpellSwap.to };
     }
 
     // Update EK spell slots
     var fSub = char.subclass;
     if (fSub === 'Eldritch Knight') {
-      char.ekSpellSlots = getEkSpellSlots(newLevel);
-      char.spellSlots = char.ekSpellSlots;
+      char.spellSlots = getThirdCasterSlots(newLevel);
+
     }
 
     // Update Fighter features
@@ -1638,19 +1638,19 @@ function confirmLevelUp() {
       }
       // Spells
       if (s.ekSpellSelections.length > 0) {
-        if (!char.atSpellsKnown) char.atSpellsKnown = [];
-        char.atSpellsKnown = char.atSpellsKnown.concat(s.ekSpellSelections);
+        if (!char.spellsKnown) char.spellsKnown = [];
+        char.spellsKnown = char.spellsKnown.concat(s.ekSpellSelections);
         historyEntry.atSpells = s.ekSpellSelections;
       }
       // Spell swap
-      if (s.ekSpellSwap.from && s.ekSpellSwap.to && char.atSpellsKnown) {
-        var atSwapIdx = char.atSpellsKnown.indexOf(s.ekSpellSwap.from);
-        if (atSwapIdx >= 0) char.atSpellsKnown[atSwapIdx] = s.ekSpellSwap.to;
+      if (s.ekSpellSwap.from && s.ekSpellSwap.to && char.spellsKnown) {
+        var atSwapIdx = char.spellsKnown.indexOf(s.ekSpellSwap.from);
+        if (atSwapIdx >= 0) char.spellsKnown[atSwapIdx] = s.ekSpellSwap.to;
         historyEntry.spellSwap = { from: s.ekSpellSwap.from, to: s.ekSpellSwap.to };
       }
       // Spell slots (1/3 caster — same table as EK)
-      char.atSpellSlots = getEkSpellSlots(newLevel);
-      char.spellSlots = char.atSpellSlots;
+      char.spellSlots = getThirdCasterSlots(newLevel);
+
     }
     // Features
     char.features = getRogueFeatures(newLevel, char.subclass);
@@ -1666,7 +1666,7 @@ function confirmLevelUp() {
       historyEntry.subclass = s.subclassSelection;
     }
     // Spell slots (half-caster)
-    char.spellSlots = getPaladinSpellSlots(newLevel);
+    char.spellSlots = getHalfCasterSlots(newLevel);
     // Prepared spell count (CHA-based)
     var chaModFinal = mod(char.abilityScores.cha);
     char.preparedSpellCount = Math.max(1, chaModFinal + Math.floor(newLevel / 2));

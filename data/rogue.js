@@ -8,11 +8,6 @@ function getSneakAttackDice(level) {
   return Math.ceil(level / 2);
 }
 
-/* Expertise count by level: 2 at 1-5, 4 at 6+ */
-function getRogueExpertiseCount(level) {
-  return level >= 6 ? 4 : 2;
-}
-
 /* Rogue progression: levels 2-20 */
 const ROGUE_PROGRESSION = {
   2:  { features: ['Cunning Action'], asi: false, proficiencyBonus: 2, sneakAttackDice: 1 },

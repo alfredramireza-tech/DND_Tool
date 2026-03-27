@@ -77,11 +77,7 @@ var PDF_SKILL_MAP = {
 
 function pdfSpellLine(name, c) {
   var spell = getSpell(name);
-  if (!spell) {
-    var wzSpell = typeof getWizardSpell === 'function' ? getWizardSpell(name) : null;
-    if (wzSpell) spell = wzSpell;
-    else return name;
-  }
+  if (!spell) return name;
   var castAbility = 'wis';
   var cd = CLASS_DATA[c.class];
   if (cd && cd.spellcastingAbility) castAbility = cd.spellcastingAbility;
@@ -372,15 +368,12 @@ async function fillPdfTemplate(c) {
       }
       pdfSetText(form, 'Total Prepared Spells', String(prepCount) + ' + ' + domainCount + ' domain', 7);
     } else if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
-      var ekKnown = (c.ekSpellsKnown || []).length;
+      var ekKnown = (c.spellsKnown || []).length;
       pdfSetText(form, 'Total Prepared Spells', ekKnown + ' known', 7);
     }
 
-    // Spell slots
+    // Spell slots (unified — all classes use c.spellSlots)
     var spellSlots = c.spellSlots || {};
-    if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
-      spellSlots = c.ekSpellSlots || {};
-    }
     for (var lvl = 1; lvl <= 9; lvl++) {
       var total = spellSlots[lvl] || 0;
       if (total > 0) {
@@ -391,8 +384,8 @@ async function fillPdfTemplate(c) {
     // Cantrips
     var cantrips = c.cantripsKnown || [];
     if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
-      cantrips = (c.ekSpellsKnown || []).filter(function(name) {
-        var s = typeof getWizardSpell === 'function' ? getWizardSpell(name) : null;
+      cantrips = (c.spellsKnown || []).filter(function(name) {
+        var s = getSpell(name);
         return s && s.level === 0;
       });
     }
@@ -446,15 +439,15 @@ async function fillPdfTemplate(c) {
       }
     } else if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
       // EK: list known spells by level, all checked (they're always "known")
-      var ekSpells = (c.ekSpellsKnown || []).filter(function(name) {
-        var s = typeof getWizardSpell === 'function' ? getWizardSpell(name) : null;
+      var ekSpells = (c.spellsKnown || []).filter(function(name) {
+        var s = getSpell(name);
         return s && s.level > 0;
       });
 
       // Group by level
       var byLevel = {};
       ekSpells.forEach(function(name) {
-        var s = typeof getWizardSpell === 'function' ? getWizardSpell(name) : null;
+        var s = getSpell(name);
         if (s) {
           if (!byLevel[s.level]) byLevel[s.level] = [];
           byLevel[s.level].push(name);

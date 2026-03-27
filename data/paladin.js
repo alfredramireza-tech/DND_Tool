@@ -11,41 +11,8 @@ const PALADIN_FIGHTING_STYLES = {
   'Protection': FIGHTING_STYLES['Protection']
 };
 
-/* Half-caster spell slot progression */
-const PALADIN_SPELL_SLOTS = {
-  1:{},
-  2:{1:2}, 3:{1:3}, 4:{1:3},
-  5:{1:4,2:2}, 6:{1:4,2:2}, 7:{1:4,2:3}, 8:{1:4,2:3},
-  9:{1:4,2:3,3:2}, 10:{1:4,2:3,3:2}, 11:{1:4,2:3,3:3}, 12:{1:4,2:3,3:3},
-  13:{1:4,2:3,3:3,4:1}, 14:{1:4,2:3,3:3,4:1}, 15:{1:4,2:3,3:3,4:2}, 16:{1:4,2:3,3:3,4:2},
-  17:{1:4,2:3,3:3,4:3,5:1}, 18:{1:4,2:3,3:3,4:3,5:1},
-  19:{1:4,2:3,3:3,4:3,5:2}, 20:{1:4,2:3,3:3,4:3,5:2}
-};
-
-/* Oath spell tables — automatically prepared at listed Paladin levels */
-const OATH_SPELLS = {
-  'Oath of Devotion': {
-    3: ['Protection from Evil and Good', 'Sanctuary'],
-    5: ['Lesser Restoration', 'Zone of Truth'],
-    9: ['Beacon of Hope', 'Dispel Magic'],
-    13: ['Freedom of Movement', 'Guardian of Faith'],
-    17: ['Commune', 'Flame Strike']
-  },
-  'Oath of the Ancients': {
-    3: ['Ensnaring Strike', 'Speak with Animals'],
-    5: ['Moonbeam', 'Misty Step'],
-    9: ['Plant Growth', 'Protection from Energy'],
-    13: ['Ice Storm', 'Stoneskin'],
-    17: ['Commune with Nature', 'Tree Stride']
-  },
-  'Oath of Vengeance': {
-    3: ["Hunter's Mark", 'Bane'],
-    5: ['Hold Person', 'Misty Step'],
-    9: ['Haste', 'Protection from Energy'],
-    13: ['Banishment', 'Dimension Door'],
-    17: ['Hold Monster', 'Scrying']
-  }
-};
+/* PALADIN_SPELL_SLOTS moved to spell-lists.js as HALF_CASTER_SLOTS */
+/* OATH_SPELLS moved to spell-lists.js */
 
 /* Paladin progression: levels 2-20 */
 const PALADIN_PROGRESSION = {
@@ -154,7 +121,7 @@ function getPaladinFeatures(level, subclass) {
 }
 
 /* Paladin spell slots for a given paladin level */
-function getPaladinSpellSlots(level) { return PALADIN_SPELL_SLOTS[level] || {}; }
+/* getPaladinSpellSlots moved to spell-lists.js as alias for getHalfCasterSlots */
 
 /* Get features gained at a specific level (not cumulative) — used by level-up wizard */
 function getPaladinLevelFeatures(level, subclass) {

@@ -3,11 +3,6 @@
    WIZARD DATA
    ═══════════════════════════════════════════ */
 
-/* Wizard spell slots — full caster table (same as Cleric). Reference CLERIC_SPELL_SLOTS. */
-function getWizardSpellSlots(level) {
-  return CLERIC_SPELL_SLOTS[Math.min(Math.max(level, 1), 20)] || { 1: 2 };
-}
-
 /* Wizard cantrips known by level */
 const WIZARD_CANTRIPS_KNOWN = {
   1:3,2:3,3:3,4:4,5:4,6:4,7:4,8:4,9:4,10:5,

@@ -594,7 +594,7 @@ function renderFighterDashboard(c) {
     html += '</div>';
 
     // EK Spell Slots
-    var ekSlots = c.ekSpellSlots || getEkSpellSlots(c.level);
+    var ekSlots = c.spellSlots || getThirdCasterSlots(c.level);
     if (ekSlots && Object.keys(ekSlots).length > 0) {
       html += '<div class="dash-section"><h2>Spell Slots</h2>';
       Object.entries(ekSlots).forEach(function(entry) {
@@ -613,7 +613,7 @@ function renderFighterDashboard(c) {
     if (c.cantripsKnown && c.cantripsKnown.length > 0) {
       html += '<div class="dash-section"><h2>Cantrips</h2>';
       c.cantripsKnown.forEach(function(name) {
-        var sp = getWizardSpell(name) || getSpell(name);
+        var sp = getSpell(name);
         if (sp) html += renderSpellCard(sp, c);
         else html += '<span class="tag">' + escapeHtml(name) + '</span>';
       });
@@ -621,10 +621,10 @@ function renderFighterDashboard(c) {
     }
 
     // EK Known Spells
-    if (c.ekSpellsKnown && c.ekSpellsKnown.length > 0) {
-      html += '<div class="dash-section"><h2>Spells Known <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + c.ekSpellsKnown.length + ')</span></h2>';
-      c.ekSpellsKnown.forEach(function(name) {
-        var sp = getWizardSpell(name) || getSpell(name);
+    if (c.spellsKnown && c.spellsKnown.length > 0) {
+      html += '<div class="dash-section"><h2>Spells Known <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + c.spellsKnown.length + ')</span></h2>';
+      c.spellsKnown.forEach(function(name) {
+        var sp = getSpell(name);
         if (sp) html += renderSpellCard(sp, c);
         else html += '<span class="tag">' + escapeHtml(name) + '</span>';
       });
@@ -943,12 +943,12 @@ function renderRogueDashboard(c) {
     html += '</div>';
 
     // AT Spell Slots
-    var atSlots = c.atSpellSlots || getEkSpellSlots(c.level);
+    var atSlots = c.spellSlots || getThirdCasterSlots(c.level);
     if (atSlots && Object.keys(atSlots).length > 0) {
       html += '<div class="dash-section"><h2>Spell Slots</h2>';
       Object.entries(atSlots).forEach(function(entry) {
         var level = entry[0], count = entry[1];
-        var used = (c.atSlotsUsed && c.atSlotsUsed[level]) || 0;
+        var used = (c.spellSlotsUsed && c.spellSlotsUsed[level]) || 0;
         html += '<div class="slot-row"><span class="slot-label">' + ordinal(parseInt(level)) + ' Level</span>';
         for (var si = 0; si < count; si++) {
           html += '<span class="slot-dot filled interactive' + (si < used ? ' spent' : '') + '" onclick="toggleSlot(' + level + ',' + si + ')"></span>';
@@ -962,7 +962,7 @@ function renderRogueDashboard(c) {
     if (c.cantripsKnown && c.cantripsKnown.length > 0) {
       html += '<div class="dash-section"><h2>Cantrips</h2>';
       c.cantripsKnown.forEach(function(name) {
-        var sp = getWizardSpell(name) || getSpell(name);
+        var sp = getSpell(name);
         if (sp) html += renderSpellCard(sp, c);
         else html += '<span class="tag">' + escapeHtml(name) + '</span>';
       });
@@ -970,10 +970,10 @@ function renderRogueDashboard(c) {
     }
 
     // AT Known Spells
-    if (c.atSpellsKnown && c.atSpellsKnown.length > 0) {
-      html += '<div class="dash-section"><h2>Spells Known <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + c.atSpellsKnown.length + ')</span></h2>';
-      c.atSpellsKnown.forEach(function(name) {
-        var sp = getWizardSpell(name) || getSpell(name);
+    if (c.spellsKnown && c.spellsKnown.length > 0) {
+      html += '<div class="dash-section"><h2>Spells Known <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + c.spellsKnown.length + ')</span></h2>';
+      c.spellsKnown.forEach(function(name) {
+        var sp = getSpell(name);
         if (sp) html += renderSpellCard(sp, c);
         else html += '<span class="tag">' + escapeHtml(name) + '</span>';
       });
@@ -1010,18 +1010,7 @@ function renderFightingStyleCard(style) {
     '<div class="cd-card-body"><p>' + data.effect + '</p></div></div>';
 }
 
-function getWizardSpell(name) {
-  var found = WIZARD_SPELL_DB.find(function(s) { return s.name === name; }) ||
-              WIZARD_CANTRIPS.find(function(s) { return s.name === name; });
-  if (found) return found;
-  // Bounded fallback: only search SPELL_DB for spells on the Wizard list
-  var allWizNames = [];
-  Object.values(WIZARD_SPELL_LIST).forEach(function(arr) { allWizNames = allWizNames.concat(arr); });
-  if (allWizNames.indexOf(name) >= 0) {
-    return SPELL_DB.find(function(s) { return s.name === name; }) || null;
-  }
-  return null;
-}
+/* getWizardSpell eliminated — use getSpell() (unified spell database) */
 
 function rollSecondWind() {
   var c = loadCharacter();

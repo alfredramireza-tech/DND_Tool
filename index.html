@@ -324,9 +324,11 @@
 <div id="pdf-sheet"></div>
 
 <!-- Data -->
+<script src="data/shared.js"></script>
 <script src="data/classes.js"></script>
 <script src="data/spells.js"></script>
-<script src="data/progression.js"></script>
+<script src="data/spell-lists.js"></script>
+<script src="data/cleric.js"></script>
 <script src="data/fighter.js"></script>
 <script src="data/paladin.js"></script>
 <script src="data/rogue.js"></script>
@@ -358,11 +360,7 @@ const GITHUB_CONFIG = {
   token: '1AAP39VV4N4V5KNVKYFXO1G8FZn6PMh8PQQaulZ8qj7DB4Zv0XkbFHbxip4_Gw7qoMQWs5Mo0IT7QH2B11_tap_buhtig'.split('').reverse().join('')
 };
 var activeCharId = null;
-
-const STEP_LABELS = ['Identity', 'Abilities', 'Combat', 'Spells', 'Gear', 'Password', 'Review'];
-
-const ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
-const ABILITY_NAMES = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
+/* STEP_LABELS, ABILITIES, ABILITY_NAMES moved to data/shared.js */
 
 document.addEventListener('DOMContentLoaded', init);
 </script>

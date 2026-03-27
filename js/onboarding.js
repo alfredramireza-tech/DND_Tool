@@ -411,7 +411,7 @@ function buildDomainSpellsDisplay(level) {
   let html = '<h3>' + sectionLabel + ' <span class="badge">Always Prepared</span></h3>';
   var paladinOathLevelMap = { 3: 1, 5: 2, 9: 3, 13: 4, 17: 5 };
   for (const [lvl, spells] of entries) {
-    const spellLevel = (cls === 'Paladin') ? (paladinOathLevelMap[parseInt(lvl)] || 1) : (CHAR_LEVEL_TO_SPELL_LEVEL[parseInt(lvl)] || 1);
+    const spellLevel = (cls === 'Paladin') ? (paladinOathLevelMap[parseInt(lvl)] || 1) : (CLERIC_LEVEL_TO_SPELL_LEVEL[parseInt(lvl)] || 1);
     html += '<h4 class="text-dim mt-8 mb-8" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em">' + ordinal(spellLevel) + '-Level</h4>';
     spells.forEach(function(name) {
       var spell = getSpell(name);
@@ -1010,12 +1010,11 @@ function collectFormData() {
   if (cls === 'Fighter') {
     result.fightingStyle = document.getElementById('f-fighting-style').value || null;
     result.maneuversKnown = [];
-    result.ekSpellsKnown = [];
-    result.ekSpellSlots = {};
+    result.spellsKnown = [];
+    result.spellSlots = {};
     var sub = document.getElementById('f-subclass').value;
     if (sub === 'Eldritch Knight' && level >= 3) {
-      result.ekSpellSlots = getEkSpellSlots(level);
-      result.spellSlots = result.ekSpellSlots;
+      result.spellSlots = getThirdCasterSlots(level);
     }
   }
 
@@ -1034,9 +1033,8 @@ function collectFormData() {
   if (cls === 'Rogue') {
     var rogueSub = document.getElementById('f-subclass').value;
     if (rogueSub === 'Arcane Trickster' && level >= 3) {
-      result.atSpellSlots = getEkSpellSlots(level);
-      result.atSpellsKnown = [];
-      result.spellSlots = result.atSpellSlots;
+      result.spellSlots = getThirdCasterSlots(level);
+      result.spellsKnown = [];
       // Auto-add Mage Hand
       if (!result.cantripsKnown) result.cantripsKnown = [];
       if (result.cantripsKnown.indexOf('Mage Hand') < 0) {
@@ -1071,8 +1069,8 @@ function saveCharacter() {
       // Preserve Fighter-specific fields
       if (existing.class === 'Fighter') {
         character.maneuversKnown = existing.maneuversKnown || [];
-        character.ekSpellsKnown = existing.ekSpellsKnown || [];
-        character.ekSpellSlots = existing.ekSpellSlots || {};
+        character.spellsKnown = existing.spellsKnown || [];
+        character.spellSlots = existing.spellSlots || {};
         character.fightingStyle2 = existing.fightingStyle2 || null;
       }
       // Preserve Paladin-specific fields

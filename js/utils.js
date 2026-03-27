@@ -49,11 +49,20 @@ function migrateCharacter(c) {
   if (!c.journal) c.journal = [];
   if (!c.externalBuffs) c.externalBuffs = [];
   if (!c.maxHpBoost) c.maxHpBoost = { value: 0, source: '' };
+  // Migrate old EK/AT field names to unified fields
+  if (c.ekSpellSlots) { c.spellSlots = c.ekSpellSlots; delete c.ekSpellSlots; }
+  if (c.ekSlotsUsed) { c.spellSlotsUsed = c.ekSlotsUsed; delete c.ekSlotsUsed; }
+  if (c.ekSpellsKnown) { c.spellsKnown = c.ekSpellsKnown; delete c.ekSpellsKnown; }
+  if (c.atSpellSlots) { c.spellSlots = c.atSpellSlots; delete c.atSpellSlots; }
+  if (c.atSlotsUsed) { c.spellSlotsUsed = c.atSlotsUsed; delete c.atSlotsUsed; }
+  if (c.atSpellsKnown) { c.spellsKnown = c.atSpellsKnown; delete c.atSpellsKnown; }
   // Fighter-specific fields
   if (c.class === 'Fighter') {
     if (!c.maneuversKnown) c.maneuversKnown = [];
-    if (!c.ekSpellsKnown) c.ekSpellsKnown = [];
-    if (!c.ekSpellSlots && c.subclass === 'Eldritch Knight') c.ekSpellSlots = getEkSpellSlots(c.level);
+    if (!c.spellsKnown) c.spellsKnown = [];
+    if (c.subclass === 'Eldritch Knight' && (!c.spellSlots || Object.keys(c.spellSlots).length === 0)) {
+      c.spellSlots = getThirdCasterSlots(c.level);
+    }
     if (!c.fightingStyle) c.fightingStyle = null;
     if (c.features && c.features.length === 0) c.features = getFighterFeatures(c.level, c.subclass);
   }
@@ -61,9 +70,8 @@ function migrateCharacter(c) {
   if (c.class === 'Rogue') {
     if (c.features && c.features.length === 0) c.features = getRogueFeatures(c.level, c.subclass);
     if (c.subclass === 'Arcane Trickster' && c.level >= 3) {
-      if (!c.atSpellSlots) c.atSpellSlots = getEkSpellSlots(c.level);
-      if (!c.atSpellsKnown) c.atSpellsKnown = [];
-      if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = c.atSpellSlots;
+      if (!c.spellsKnown) c.spellsKnown = [];
+      if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = getThirdCasterSlots(c.level);
       if (!c.cantripsKnown) c.cantripsKnown = [];
       if (c.cantripsKnown.indexOf('Mage Hand') < 0) c.cantripsKnown.push('Mage Hand');
     }
@@ -72,7 +80,7 @@ function migrateCharacter(c) {
   if (c.class === 'Paladin') {
     if (!c.fightingStyle) c.fightingStyle = null;
     if (c.features && c.features.length === 0) c.features = getPaladinFeatures(c.level, c.subclass);
-    if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = getPaladinSpellSlots(c.level);
+    if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = getHalfCasterSlots(c.level);
     if (!c.domainSpells) c.domainSpells = getDomainSpells(c.level, 'Paladin', c.subclass);
   }
   return c;
@@ -488,12 +496,21 @@ function getFeatures(level) {
 }
 
 function getSpellSlots(level, cls) {
-  if (cls === 'Paladin') return getPaladinSpellSlots(level);
-  return CLERIC_SPELL_SLOTS[Math.min(Math.max(level, 1), 20)] || { 1: 2 };
+  if (cls === 'Paladin') return getHalfCasterSlots(level);
+  return FULL_CASTER_SLOTS[Math.min(Math.max(level, 1), 20)] || { 1: 2 };
 }
 
 function ordinal(n) {
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function getFeatureDescription(name) {
+  return (typeof CLERIC_FEATURE_DESCRIPTIONS !== 'undefined' && CLERIC_FEATURE_DESCRIPTIONS[name])
+    || (typeof FIGHTER_FEATURE_DESCRIPTIONS !== 'undefined' && FIGHTER_FEATURE_DESCRIPTIONS[name])
+    || (typeof PALADIN_FEATURE_DESCRIPTIONS !== 'undefined' && PALADIN_FEATURE_DESCRIPTIONS[name])
+    || (typeof ROGUE_FEATURE_DESCRIPTIONS !== 'undefined' && ROGUE_FEATURE_DESCRIPTIONS[name])
+    || (typeof WIZARD_FEATURE_DESCRIPTIONS !== 'undefined' && WIZARD_FEATURE_DESCRIPTIONS[name])
+    || null;
 }

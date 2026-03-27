@@ -168,12 +168,9 @@ function renderResourceStrip(c) {
   if (isCaster && c.spellSlots && Object.keys(c.spellSlots).length > 0) {
     slotsObj = c.spellSlots;
     slotsUsed = c.spellSlotsUsed || {};
-  } else if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight' && c.ekSpellSlots) {
-    slotsObj = c.ekSpellSlots;
-    slotsUsed = c.ekSlotsUsed || {};
-  } else if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster' && c.atSpellSlots) {
-    slotsObj = c.atSpellSlots;
-    slotsUsed = c.atSlotsUsed || {};
+  } else if (c.spellSlots && Object.keys(c.spellSlots).length > 0) {
+    slotsObj = c.spellSlots;
+    slotsUsed = c.spellSlotsUsed || {};
   }
   if (slotsObj) {
     Object.entries(slotsObj).forEach(function(entry) {
@@ -479,7 +476,7 @@ function showSetConcentration() {
       allSpells = allSpells.concat(domainList);
     }
     if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
-      allSpells = allSpells.concat(c.ekSpellsKnown || []).concat(c.atSpellsKnown || []);
+      allSpells = allSpells.concat(c.spellsKnown || []);
     }
     // Deduplicate
     var seen = {};
@@ -949,20 +946,14 @@ function showCastSpellPrompt(spellName, rollType) {
   // Get available slots
   var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
   var slots = c.spellSlots || {};
-  if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') slots = c.ekSpellSlots || {};
-  if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') slots = c.atSpellSlots || {};
   var html = '<h3>Cast ' + escapeHtml(spellName) + '</h3>';
   html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:12px">Cast at what level?</p>';
   var hasSlot = false;
-  var isThirdCaster = (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') || (c.class === 'Rogue' && c.subclass === 'Arcane Trickster');
   for (var lvl = spell.level; lvl <= 9; lvl++) {
     var total = slots[lvl] || 0;
     if (total === 0) continue;
     var used = 0;
-    if (isThirdCaster) {
-      var tcUsed = c.class === 'Fighter' ? (c.ekSlotsUsed || {}) : (c.atSlotsUsed || {});
-      used = tcUsed[lvl] || 0;
-    } else {
+    {
       used = (c.spellSlotsUsed && c.spellSlotsUsed[lvl]) || 0;
     }
     var remaining = total - used;
@@ -981,15 +972,8 @@ function castSpellAtLevel(spellName, rollType, castLevel) {
   var c = loadCharacter();
   if (!c) return;
   // Spend the slot
-  var isTC = (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') || (c.class === 'Rogue' && c.subclass === 'Arcane Trickster');
-  if (isTC) {
-    var tcKey = c.class === 'Fighter' ? 'ekSlotsUsed' : 'atSlotsUsed';
-    if (!c[tcKey]) c[tcKey] = {};
-    c[tcKey][castLevel] = (c[tcKey][castLevel] || 0) + 1;
-  } else {
-    if (!c.spellSlotsUsed) c.spellSlotsUsed = {};
-    c.spellSlotsUsed[castLevel] = (c.spellSlotsUsed[castLevel] || 0) + 1;
-  }
+  if (!c.spellSlotsUsed) c.spellSlotsUsed = {};
+  c.spellSlotsUsed[castLevel] = (c.spellSlotsUsed[castLevel] || 0) + 1;
   // Check if concentration spell
   var spell = getSpell(spellName);
   var _castIsConc = false;
@@ -1002,9 +986,7 @@ function castSpellAtLevel(spellName, rollType, castLevel) {
     logEvent('Began concentrating on ' + spellName);
     _castIsConc = true;
   }
-  var slotsObj = isTC ? (c.class === 'Fighter' ? c.ekSpellSlots : c.atSpellSlots) : c.spellSlots;
-  var usedObj = isTC ? c[tcKey] : c.spellSlotsUsed;
-  var remaining = (slotsObj[castLevel] || 0) - ((usedObj && usedObj[castLevel]) || 0);
+  var remaining = (c.spellSlots[castLevel] || 0) - ((c.spellSlotsUsed && c.spellSlotsUsed[castLevel]) || 0);
   logEvent('Cast ' + spellName + ' at ' + ordinal(castLevel) + ' level (' + remaining + ' slots remaining)');
   saveCurrentCharacter(c);
   closeModal();
@@ -1355,7 +1337,7 @@ function showPartyCharDetail(idx) {
   }
 
   // Prepared / Known Spells
-  var spellList = c.currentPreparedSpells || c.ekSpellsKnown || c.atSpellsKnown || [];
+  var spellList = c.currentPreparedSpells || c.spellsKnown || [];
   if (spellList.length > 0) {
     var spellLabel = c.currentPreparedSpells ? 'Prepared Spells' : 'Known Spells';
     html += '<h3 style="margin-top:12px">' + spellLabel + '</h3><div style="display:flex;flex-wrap:wrap;gap:4px">';
