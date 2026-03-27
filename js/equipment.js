@@ -257,46 +257,8 @@ function renderSpellCard(spell, char, options) {
    DASHBOARD ROLLER SECTIONS
    ═══════════════════════════════════════════ */
 
-function renderDiceRollers(c) {
-  let html = '<div class="dash-section"><details class="dice-rolls-outer"><summary>All Rolls &amp; Checks</summary>';
-
-  // General Purpose Roller
-  html += `<details class="roller-section">
-    <summary>General Dice Roller</summary>
-    <div class="roller-controls">
-      <div class="form-group"><label style="font-size:0.75rem;color:var(--text-dim)">Count</label><input type="number" id="gr-count" value="1" min="1" max="10"></div>
-      <div class="form-group"><label style="font-size:0.75rem;color:var(--text-dim)">Die</label>
-        <select id="gr-sides"><option value="4">d4</option><option value="6">d6</option><option value="8">d8</option><option value="10">d10</option><option value="12">d12</option><option value="20" selected>d20</option><option value="100">d100</option></select></div>
-      <div class="form-group"><label style="font-size:0.75rem;color:var(--text-dim)">Modifier</label><input type="number" id="gr-mod" value="0"></div>
-      <button class="btn btn-primary" onclick="doGeneralRoll()" style="padding:10px 20px;min-height:44px;align-self:end">Roll</button>
-    </div>
-  </details>`;
-
-  // Attack Roller (Weapons)
-  if (c.weapons && c.weapons.length > 0) {
-    html += '<details class="roller-section"><summary>Weapon Attacks</summary>';
-    c.weapons.forEach((w, i) => {
-      const abilMod = mod(c.abilityScores[w.ability] || 10);
-      const profB = w.proficient ? c.proficiencyBonus : 0;
-      const magB = w.magicBonus || 0;
-      const atkB = abilMod + profB + magB;
-      const dmgMod = abilMod + magB;
-      html += `<div class="attack-weapon">
-        <div>
-          <div class="aw-name">${w.name}${magB ? ' <span style="color:var(--accent);font-size:0.8rem">+' + magB + '</span>' : ''}</div>
-          <div class="aw-stats">+${atkB} to hit · ${w.damage}${dmgMod >= 0 ? '+' : ''}${dmgMod} ${w.damageType}${w.notes ? ' · ' + w.notes : ''}</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-primary aw-btn" onclick="doWeaponRoll(${i},'attack')">Attack</button>
-          <button class="btn btn-secondary aw-btn" onclick="doWeaponRoll(${i},'damage')">Damage</button>
-        </div>
-      </div>`;
-    });
-    html += '</details>';
-  }
-
-  // Saving Throw & Ability Check Roller
-  html += '<details class="roller-section"><summary>Saving Throws &amp; Ability Checks</summary>';
+function renderAbilityChecks(c) {
+  let html = '<div class="dash-section"><details class="dice-rolls-outer"><summary style="text-align:center">Ability Checks</summary>';
   // Roll reminders from active buffs (externalBuffs only)
   var saveReminders = [];
   if (c.externalBuffs) {
@@ -334,8 +296,6 @@ function renderDiceRollers(c) {
     });
     html += '</div></div>';
   }
-  html += '</details>';
-
   html += '</details></div>';
   return html;
 }

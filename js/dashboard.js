@@ -59,7 +59,17 @@ function renderDashboard(c, preserveScroll) {
   html += '<button class="hp-btn damage" onclick="showHpInput(\'damage\')">Dmg</button>';
   html += '<button class="hp-btn heal" onclick="showHpInput(\'heal\')">Heal</button>';
   html += '<button class="hp-btn temp" onclick="showHpInput(\'temp\')">Temp</button>';
-  html += '</div></div>';
+  html += '</div>';
+  // HUD dice roller
+  html += '<div class="hud-dice-roller">';
+  html += '<input type="number" id="gr-count" value="1" min="1" max="10" class="hud-dice-input" title="Count">';
+  html += '<select id="gr-sides" class="hud-dice-select" title="Die">';
+  html += '<option value="4">d4</option><option value="6">d6</option><option value="8">d8</option><option value="10">d10</option><option value="12">d12</option><option value="20" selected>d20</option><option value="100">d100</option>';
+  html += '</select>';
+  html += '<input type="number" id="gr-mod" value="0" class="hud-dice-input" title="Modifier" placeholder="+0">';
+  html += '<button class="hud-dice-roll-btn" onclick="doGeneralRoll()" title="Roll">&#127922;</button>';
+  html += '</div>';
+  html += '</div>';
 
   // Right column: Quick Action
   html += renderQuickAction(c);
@@ -95,8 +105,8 @@ function renderDashboard(c, preserveScroll) {
   html += '<button class="btn btn-secondary" onclick="showMaxHpBoostPrompt()" style="font-size:0.8rem;padding:6px 12px">+ Max HP</button>';
   html += '</div>';
 
-  // Dice & Rolls (directly below HP for combat use)
-  html += renderDiceRollers(c);
+  // Ability Checks (saving throws & ability checks only — dice roller moved to HUD, weapon attacks in HUD)
+  html += renderAbilityChecks(c);
 
   // Compute AC buff annotation (from externalBuffs only)
   var acBuff = 0;
@@ -105,6 +115,8 @@ function renderDashboard(c, preserveScroll) {
   }
   var acNote = acBuff > 0 ? ' <span style="font-size:0.7rem;color:var(--accent)">(+' + acBuff + ')</span>' : '';
 
+  // Stats — collapsible, collapsed by default
+  html += '<div class="dash-section"><details><summary><h2 style="display:inline">Stats</h2></summary>';
   // Stat cards
   html += '<div class="stat-grid">';
   html += '<div class="stat-card"><div class="stat-value">' + ac + acNote + '</div><div class="stat-label">Armor Class</div></div>';
@@ -116,6 +128,31 @@ function renderDashboard(c, preserveScroll) {
     html += '<div class="stat-card"><div class="stat-value">+' + spellAtk + '</div><div class="stat-label">Spell Attack</div></div>';
   }
   html += '</div>';
+  // Ability Scores sub-section
+  html += '<details open><summary><h3 style="display:inline;font-size:1rem">Ability Scores</h3></summary><div class="ability-row-dash">';
+  ABILITIES.forEach(function(ab) {
+    html += '<div class="ability-card"><div class="ab-name">' + ABILITY_NAMES[ab] + '</div>';
+    html += '<div class="ab-mod">' + modStr(c.abilityScores[ab]) + '</div>';
+    html += '<div class="ab-score">' + c.abilityScores[ab] + '</div></div>';
+  });
+  html += '</div></details>';
+  // Proficiencies sub-section
+  html += '<details open><summary><h3 style="display:inline;font-size:1rem">Proficiencies</h3></summary>';
+  html += '<div style="margin:8px 0"><span class="text-dim" style="font-size:0.85rem">Saving Throws: </span>';
+  (c.savingThrows || []).forEach(function(st) {
+    var bonus = mod(c.abilityScores[st]) + c.proficiencyBonus;
+    html += '<span class="tag accent">' + ABILITY_NAMES[st] + ' +' + bonus + '</span> ';
+  });
+  html += '</div><div><span class="text-dim" style="font-size:0.85rem">Skills: </span>';
+  (c.skillProficiencies || []).forEach(function(sk) {
+    var skill = SKILLS.find(function(s) { return s.name.toLowerCase() === sk.toLowerCase(); });
+    if (!skill) { html += '<span class="tag">' + sk + '</span> '; return; }
+    var isExpertise = c.expertiseSkills && c.expertiseSkills.indexOf(sk.toLowerCase()) >= 0;
+    var bonus = mod(c.abilityScores[skill.ability]) + c.proficiencyBonus * (isExpertise ? 2 : 1);
+    html += '<span class="tag accent">' + skill.name + ' +' + bonus + (isExpertise ? ' (E)' : '') + '</span> ';
+  });
+  html += '</div></details>';
+  html += '</details></div>';
 
   // Channel Divinity Tracker (Cleric or Paladin level 3+)
   if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 3)) {
@@ -244,31 +281,7 @@ function renderDashboard(c, preserveScroll) {
   html += '<button class="rest-btn" onclick="confirmLongRest()">Long Rest<span class="rest-label">Restores everything</span></button>';
   html += '</div></div></div>';
 
-  // Ability Scores — collapsible, default open
-  html += '<div class="dash-section combat-hide"><details open><summary><h2 style="display:inline">Ability Scores</h2></summary><div class="ability-row-dash">';
-  ABILITIES.forEach(function(ab) {
-    html += '<div class="ability-card"><div class="ab-name">' + ABILITY_NAMES[ab] + '</div>';
-    html += '<div class="ab-mod">' + modStr(c.abilityScores[ab]) + '</div>';
-    html += '<div class="ab-score">' + c.abilityScores[ab] + '</div></div>';
-  });
-  html += '</div></details></div>';
-
-  // Proficiencies
-  html += '<div class="dash-section"><h2>Proficiencies</h2>';
-  html += '<div style="margin-bottom:8px"><span class="text-dim" style="font-size:0.85rem">Saving Throws: </span>';
-  (c.savingThrows || []).forEach(function(st) {
-    var bonus = mod(c.abilityScores[st]) + c.proficiencyBonus;
-    html += '<span class="tag accent">' + ABILITY_NAMES[st] + ' +' + bonus + '</span> ';
-  });
-  html += '</div><div><span class="text-dim" style="font-size:0.85rem">Skills: </span>';
-  (c.skillProficiencies || []).forEach(function(sk) {
-    var skill = SKILLS.find(function(s) { return s.name.toLowerCase() === sk.toLowerCase(); });
-    if (!skill) { html += '<span class="tag">' + sk + '</span> '; return; }
-    var isExpertise = c.expertiseSkills && c.expertiseSkills.indexOf(sk.toLowerCase()) >= 0;
-    var bonus = mod(c.abilityScores[skill.ability]) + c.proficiencyBonus * (isExpertise ? 2 : 1);
-    html += '<span class="tag accent">' + skill.name + ' +' + bonus + (isExpertise ? ' (E)' : '') + '</span> ';
-  });
-  html += '</div></div>';
+  // (Ability Scores and Proficiencies now inside Stats section above)
 
   // Cantrips — compact chips with tap-to-expand
   var displayCantrips = (c.cantripsKnown || []).slice();

@@ -564,8 +564,9 @@ function showOnboarding() {
 
 function showDashboard(character, preserveScroll) {
   var savedScroll = preserveScroll ? window.scrollY : 0;
-  // Snapshot <details> open/closed state before re-render
+  // Snapshot <details> open/closed state and expanded cards before re-render
   var detailsState = {};
+  var expandedCards = {};
   if (preserveScroll) {
     var allDetails = document.querySelectorAll('#dashboard-content details');
     allDetails.forEach(function(d) {
@@ -574,6 +575,11 @@ function showDashboard(character, preserveScroll) {
         var key = summary.textContent.trim();
         detailsState[key] = d.open;
       }
+    });
+    // Snapshot expanded spell-cards, cd-cards (CSS class toggle)
+    document.querySelectorAll('#dashboard-content .spell-card.expanded, #dashboard-content .cd-card.expanded').forEach(function(el) {
+      var nameEl = el.querySelector('.sc-name, .cd-name');
+      if (nameEl) expandedCards[nameEl.textContent.trim()] = true;
     });
   }
   showView('dashboard');
@@ -589,6 +595,13 @@ function showDashboard(character, preserveScroll) {
         if (key in detailsState) {
           d.open = detailsState[key];
         }
+      }
+    });
+    // Restore expanded spell-cards, cd-cards
+    document.querySelectorAll('#dashboard-content .spell-card, #dashboard-content .cd-card').forEach(function(el) {
+      var nameEl = el.querySelector('.sc-name, .cd-name');
+      if (nameEl && expandedCards[nameEl.textContent.trim()]) {
+        el.classList.add('expanded');
       }
     });
     window.scrollTo(0, savedScroll);

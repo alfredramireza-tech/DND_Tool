@@ -560,6 +560,24 @@ details[open] summary::before { content: '▾ '; }
 .hud-left {
   padding: 8px 10px; position: relative;
 }
+/* ── HUD Dice Roller ── */
+.hud-dice-roller {
+  display: flex; align-items: center; gap: 4px; margin-top: 6px; justify-content: center;
+}
+.hud-dice-input {
+  width: 36px; padding: 4px; font-size: 0.75rem; text-align: center;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text);
+}
+.hud-dice-select {
+  padding: 4px 2px; font-size: 0.75rem;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text);
+}
+.hud-dice-roll-btn {
+  padding: 4px 8px; font-size: 0.9rem; cursor: pointer;
+  background: var(--accent); border: none; border-radius: 4px; color: var(--bg);
+  min-height: 28px; line-height: 1;
+}
+.hud-dice-roll-btn:active { opacity: 0.7; }
 .hud-right {
   padding: 8px 10px; border-left: 1px solid var(--border);
 }
