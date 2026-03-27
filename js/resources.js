@@ -134,10 +134,13 @@ function applyHpChange(mode) {
 function toggleSlot(level, idx) {
   var c = loadCharacter();
   if (!c) return;
-  if (!c.spellSlotsUsed) c.spellSlotsUsed = {};
-  var used = c.spellSlotsUsed[level] || 0;
-  if (idx < used) c.spellSlotsUsed[level] = idx;
-  else c.spellSlotsUsed[level] = idx + 1;
+  var key = 'spellSlotsUsed';
+  if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') key = 'ekSlotsUsed';
+  if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') key = 'atSlotsUsed';
+  if (!c[key]) c[key] = {};
+  var used = c[key][level] || 0;
+  if (idx < used) c[key][level] = idx;
+  else c[key][level] = idx + 1;
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }

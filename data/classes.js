@@ -157,6 +157,27 @@ const CLASS_DATA = {
     recommendedStats: { str: 15, dex: 10, con: 13, int: 8, wis: 12, cha: 14 },
     recommendedSkills: ['athletics', 'persuasion'],
     recommendedExpertise: []
+  },
+  Wizard: {
+    hitDice: 6,
+    savingThrows: ['int', 'wis'],
+    skillChoices: ['arcana', 'history', 'insight', 'investigation', 'medicine', 'religion'],
+    skillCount: 2,
+    expertiseCount: 0,
+    subclasses: ['School of Abjuration', 'School of Conjuration', 'School of Divination',
+                 'School of Enchantment', 'School of Evocation', 'School of Illusion',
+                 'School of Necromancy', 'School of Transmutation'],
+    subclassLabel: 'Arcane Tradition',
+    isCaster: true,
+    spellcastingAbility: 'int',
+    defaultTheme: 'wizardBlue',
+    unarmoredDefense: null,
+    unarmoredNoShield: false,
+    shortRestResets: [],
+    longRestResets: ['arcaneRecovery', 'spellSlots'],
+    recommendedStats: { str: 8, dex: 14, con: 13, int: 15, wis: 12, cha: 10 },
+    recommendedSkills: ['arcana', 'investigation'],
+    recommendedExpertise: []
   }
 };
 
@@ -202,5 +223,12 @@ const COLOR_THEMES = {
     bg: '#121418', surface: '#1a1e24', surfaceRaised: '#242830',
     border: '#2d3340', text: '#e0e4ec', textDim: '#8890a0',
     error: '#c45a5a', success: '#6aaa5a', inputBg: '#161a20'
+  },
+  wizardBlue: {
+    name: 'Wizard Blue',
+    accent: '#6a8cc8', accentHover: '#7a9cd8', accentDim: '#4a6ca0',
+    bg: '#10141c', surface: '#181e2a', surfaceRaised: '#202838',
+    border: '#283048', text: '#d8e0f0', textDim: '#8898b8',
+    error: '#c45a5a', success: '#6aaa5a', inputBg: '#141a26'
   }
 };
