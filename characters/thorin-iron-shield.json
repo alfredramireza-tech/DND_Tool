@@ -153,10 +153,7 @@
   "id": "mn12z7a2x0032",
   "currentHp": 34,
   "tempHp": 0,
-  "spellSlotsUsed": {
-    "1": 0,
-    "2": 0
-  },
+  "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
   "equippedItems": [
     {
@@ -195,9 +192,7 @@
     "active": false,
     "spellName": ""
   },
-  "activeConditions": [
-    "Blinded"
-  ],
+  "activeConditions": [],
   "sessionLog": [
     {
       "time": "4:26 PM",
