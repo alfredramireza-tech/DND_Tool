@@ -154,8 +154,8 @@
   "currentHp": 34,
   "tempHp": 0,
   "spellSlotsUsed": {
-    "1": 1,
-    "2": 1
+    "1": 0,
+    "2": 0
   },
   "channelDivinityUsed": 0,
   "equippedItems": [
@@ -195,249 +195,19 @@
     "active": false,
     "spellName": ""
   },
-  "activeConditions": [
-    "Blinded"
-  ],
+  "activeConditions": [],
   "sessionLog": [
     {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 7"
+      "time": "3:54 PM",
+      "text": "Death Save: 14"
     },
     {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 2"
+      "time": "3:54 PM",
+      "text": "Death Save: 8"
     },
     {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 6"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 5"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 3"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 7"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 7"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 2"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 5"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 5"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 2"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 7"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 3"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 7"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 3"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 0"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 1"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 6"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 5"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 2"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 3"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 0"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — piercing: 6"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — Attack: 19"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — Attack: 12"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — Attack: 10"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — Attack: 3"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — Attack: 17"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — Attack: 8"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Light Crossbow — Attack: 8"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Sacred Flame — radiant: 8"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Sacred Flame — radiant: 6"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Sacred Flame — radiant: 3"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Sacred Flame — radiant: 3"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Sacred Flame — radiant: 5"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Sacred Flame — radiant: 1"
-    },
-    {
-      "time": "4:22 PM",
-      "text": "Sacred Flame — radiant: 3"
-    },
-    {
-      "time": "4:14 PM",
-      "text": "Initiative: 17"
-    },
-    {
-      "time": "4:14 PM",
-      "text": "Initiative: 17"
-    },
-    {
-      "time": "4:14 PM",
-      "text": "Brain Smoothie — piercing: 14"
-    },
-    {
-      "time": "4:14 PM",
-      "text": "Brain Smoothie — Attack: 13"
-    },
-    {
-      "time": "4:13 PM",
-      "text": "Guiding Bolt — radiant: 11"
-    },
-    {
-      "time": "4:13 PM",
-      "text": "Guiding Bolt — Attack: 12"
-    },
-    {
-      "time": "4:12 PM",
-      "text": "Initiative: 10"
-    },
-    {
-      "time": "4:12 PM",
-      "text": "Initiative: 10"
-    },
-    {
-      "time": "4:03 PM",
-      "text": "Initiative: 5"
-    },
-    {
-      "time": "4:03 PM",
-      "text": "Initiative: 5"
-    },
-    {
-      "time": "4:01 PM",
-      "text": "Initiative: 11"
-    },
-    {
-      "time": "4:01 PM",
-      "text": "Initiative: 11"
-    },
-    {
-      "time": "4:00 PM",
-      "text": "Initiative: 17"
-    },
-    {
-      "time": "4:00 PM",
-      "text": "Initiative: 17"
-    },
-    {
-      "time": "4:00 PM",
-      "text": "Initiative: 10"
-    },
-    {
-      "time": "4:00 PM",
-      "text": "Initiative: 10"
-    },
-    {
-      "time": "4:00 PM",
-      "text": "Initiative: 6"
-    },
-    {
-      "time": "4:00 PM",
-      "text": "Initiative: 6"
-    },
-    {
-      "time": "3:59 PM",
-      "text": "Initiative: 17"
-    },
-    {
-      "time": "3:59 PM",
-      "text": "Initiative: 17"
-    },
-    {
-      "time": "3:57 PM",
-      "text": "Prayer of Healing — Healing: 22"
-    },
-    {
-      "time": "3:56 PM",
-      "text": "Guiding Bolt — radiant: 14"
-    },
-    {
-      "time": "3:56 PM",
-      "text": "Guiding Bolt — Attack: 15"
+      "time": "3:53 PM",
+      "text": "Death Save: 1"
     },
     {
       "time": "8:37 PM",
@@ -504,7 +274,7 @@
       "text": "Brain Smoothie — Attack: 17"
     }
   ],
-  "inspiration": false,
+  "inspiration": true,
   "journal": [],
   "externalBuffs": [],
   "maxHpBoost": {
