@@ -36,3 +36,16 @@ sessions:
       - "No parse-time cross-file dependencies in this codebase — all cross-references are runtime calls, so plain <script> load order just needs data before utils before features"
       - "git pull during deploy can trigger a vim merge prompt when remote has auto-saved characters — suggested setting git editor to notepad for Windows comfort"
     next: "Class implementations. Roll system needs flat bonus + damage roll type before Barbarian can ship. Then Rogue/Barbarian/Monk, then Paladin/Wizard."
+
+  - date: "2026-03-26"
+    session: 4
+    summary: "Paladin full implementation (4 handoffs), 3-class PHB audit cycle, Wizard spell infrastructure, DM Screen spec"
+    learned:
+      - "Adding spells to shared SPELL_DB without filtering derived arrays (CLERIC_SPELLS) causes cross-class spell leaks — always add a class-specific spell list filter when the shared DB grows"
+      - "getSpellSummaryLine() and renderSpellCard() had parallel hardcoded WIS paths — both need updating when making spell rendering class-aware"
+      - "spell.healing.mod should be treated as a boolean signal (truthy = add spellcasting mod), not as a literal ability name — the actual ability comes from CLASS_DATA"
+      - "CLERIC_PROGRESSION was missing levels 2-3 because the app was originally designed for level 3+ characters — any class progression table must cover level 2 minimum"
+      - "PHB audits catch real errors: 10 total across 3 classes. Worth the investment before players use the tool"
+      - "Wizard spell name list (199 names, levels 1-9) can be built ahead of data — pays off as a routing table for spell lookups and future class implementation"
+      - "DM's primary combat bottleneck is Deal Damage (number input, not +/- buttons) and attack rolls (structured attackBonus/damageDice fields, not just text)"
+    next: "Rogue class implementation. Then Wizard. Then DM Screen build from SPEC_DM_SCREEN.md."

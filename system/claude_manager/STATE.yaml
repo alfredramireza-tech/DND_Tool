@@ -6,49 +6,50 @@
 # =============================================================================
 
 current:
-  task: "File split (T4)"
+  task: "Paladin class + audits + DM Screen spec"
   status: "COMPLETE"
 
 resume_point: |
-  Monolithic index.html (10,990 lines) split into 17 modular files + HTML shell (385 lines).
-  Deployed to alfredramireza-tech.github.io/DND_Tool/ and verified working.
+  Paladin fully implemented and audited (4 handoffs + audit + fixes).
+  Cleric audited and fixed (levels 2-3 added, spell list leak sealed, domains restricted to Life).
+  Fighter audited and fixed (Fire Shield school corrected).
+  Wizard spell deduplication complete — WIZARD_SPELL_LIST (199 names, levels 1-9) ready for Wizard class.
+  DM Screen spec written (SPEC_DM_SCREEN.md) — awaiting implementation.
 
-  New file structure:
-    styles.css          — All CSS (1,029 lines)
-    data/classes.js     — AASIMAR_SUBRACES, CLASS_DATA, COLOR_THEMES (180 lines)
-    data/spells.js      — CANTRIP_DATA, SPELL_DB, spell enhancements, derived arrays (1,333 lines)
-    data/progression.js — SKILLS, SAMPLE_CHARACTER, BLANK_DEFAULTS, CLERIC_PROGRESSION (308 lines)
-    data/fighter.js     — FIGHTING_STYLES, MANEUVERS, FIGHTER_PROGRESSION, EK data (323 lines)
-    js/utils.js         — mod(), AC calc, themes, character storage (461 lines)
-    js/onboarding.js    — init(), form building, step navigation (1,144 lines)
-    js/dashboard.js     — renderDashboard(), fighter dashboard (663 lines)
-    js/levelup.js       — Full level-up wizard (1,352 lines)
-    js/session.js       — Event log, roll history, dice animation (205 lines)
-    js/combat.js        — Death saves, concentration, conditions, buffs, party view (1,390 lines)
-    js/rolls.js         — Dice engine, weapon/ability/skill rolls (383 lines)
-    js/equipment.js     — Selection cards, spell cards, dashboard rollers (333 lines)
-    js/pdf-export.js    — PDF character sheet generation (517 lines)
-    js/home.js          — Home screen, character management (233 lines)
-    js/resources.js     — HP, spell slots, rest system, equipment forms (573 lines)
-    js/cloud-sync.js    — GitHub API save/load (206 lines)
-    index.html          — HTML shell + script tags + pdf-lib + boot (385 lines)
+  New/modified file inventory:
+    data/paladin.js      — NEW: PALADIN_PROGRESSION, PALADIN_SPELL_SLOTS, OATH_SPELLS, PALADIN_FIGHTING_STYLES, feature descriptions, helpers
+    data/classes.js      — CLASS_DATA.Paladin added, paladinSilver theme, Cleric domains restricted to Life only
+    data/spells.js       — 28 new spell entries, PALADIN_SPELL_LIST, CLERIC_SPELL_LIST (99 names), PALADIN_SPELLS/CLERIC_SPELLS filtered builds
+    data/progression.js  — CLERIC_PROGRESSION levels 2-3 added
+    data/fighter.js      — WIZARD_SPELL_LIST (199 names, levels 1-9), 6 duplicates removed, getAllEkSpells(), Fire Shield school fix
+    js/utils.js          — getSpellSlots/getDomainSpells/getChannelDivUses/getCantripsCount all class-aware, Paladin migration
+    js/onboarding.js     — Paladin onboarding flow (step 4 spells, fighting style, CHA prep, oath spells, level 1 skip)
+    js/dashboard.js      — renderPaladinDashboard(), oath CD cards, Paladin gates in shared sections, getWizardSpell bounded fallback
+    js/levelup.js        — Paladin level-up (all screens), getAllEkSpells() in EK picker, Cleric prep min
+    js/resources.js      — Lay on Hands modal + pool tracker, Paladin rest descriptions
+    js/equipment.js      — Spell rendering: WIS→class-aware castMod, DoL/Supreme guards, healing.mod boolean
+    js/combat.js         — DoL/Supreme guards, healing.mod boolean, party view Paladin support
+    js/rolls.js          — DoL/Supreme guards, healing.mod boolean
+    index.html           — Paladin script tag, Paladin in class dropdown
 
-  PM can now load individual files instead of the full monolith.
-  NEXT PRIORITY: Class implementations. Roll system needs flat bonus support and damage roll type before Barbarian can ship.
+  NEXT PRIORITY: Rogue class implementation (active party member). Then Wizard. Then DM Screen.
 
 open_loops:
-  - "Rogue/Barbarian/Monk at 25-30% — CLASS_DATA exists, no dashboard/level-up/subclass features. SPEC_BARBARIAN amended with roll system prerequisites."
-  - "Paladin and Wizard at 0% — blocked on class implementation. SPEC_PALADIN amended with buff integration notes."
-  - "Avatar images — designed but not spec'd (base64, 150x150, canvas resize, initials fallback)"
+  - "Rogue at 25-30% — CLASS_DATA exists, no dashboard/level-up/subclass features. Next class to build."
+  - "Wizard at 0% — WIZARD_SPELL_LIST (199 names) ready, SPEC_WIZARD.md exists. After Rogue."
+  - "DM Screen — SPEC_DM_SCREEN.md complete. Build after Rogue and Wizard."
+  - "Barbarian/Monk at 25-30% — stubs only, not needed by current party. Barbarian still blocked on roll system (flat bonus + damage roll type)."
+  - "Avatar images — designed but not spec'd"
   - "PDF filler gaps — checkbox mapping, expertise handling, page 2 biographical fields"
-  - "Roll system needs flat bonus support and damage roll type before Barbarian can ship (see SPEC_BARBARIAN amendment)"
+  - "Roll system needs flat bonus support and damage roll type before Barbarian can ship"
+  - "WIZARD_SPELL_DB still has ~97 level 1-4 spell entries that could eventually migrate to SPELL_DB when Wizard ships (low priority dedup)"
 
 recent:
-  - "2026-03-26: File Split (T4) — 10,990-line index.html split into 17 modular files, index.html reduced to 385 lines"
-  - "2026-03-26: Max HP Boost — getEffectiveMaxHp() helper, 24 hp.max refs audited, boost display, long rest clears"
-  - "2026-03-26: Spec Amendments — SPEC_BARBARIAN roll prerequisites, SPEC_PALADIN buff integration notes"
-  - "2026-03-26: Concentration/Buff Separation — 'Are you a target?' flow, custom buff editor, roll integration"
-  - "2026-03-26: Dashboard Bug Fixes — scroll fix, condition rendering, modal overflow, Drop button fix, popovers"
+  - "2026-03-26 S4: Paladin fully implemented (4 handoffs: data, onboarding, dashboard, level-up)"
+  - "2026-03-26 S4: Paladin audit — 5 errors fixed (missing spells, Divine Sense min, Branding Smite, Scrying dupe)"
+  - "2026-03-26 S4: Cross-class spell rendering fix — WIS hardcode → class-aware, healing.mod boolean, DoL/Supreme guards"
+  - "2026-03-26 S4: Cleric audit — 4 errors fixed (levels 2-3, spell leak, domains, DoL display, prep min)"
+  - "2026-03-26 S4: Fighter audit — 1 error fixed (Fire Shield school). Wizard spell dedup (6 spells consolidated, WIZARD_SPELL_LIST 199 names)"
 
 gap_log:
   - date: "2026-03-26"
@@ -71,3 +72,23 @@ gap_log:
     cause: "All code in single file from project start. Each feature session added ~500-1500 lines with no split point"
     resolution: "T4 file split into 17 modules. PM can now load any individual file. Session ran in CC with CC acting as both PM and CC."
     severity: "high — PM was unable to fulfill navigator/translator role without loading the codebase"
+  - date: "2026-03-26"
+    gap: "SPELL_DB growth leaked non-Cleric spells into CLERIC_SPELLS derived array"
+    cause: "CLERIC_SPELLS was built with an unfiltered SPELL_DB.forEach() loop. When Paladin spells were added to SPELL_DB, they automatically appeared in the Cleric picker."
+    resolution: "Added CLERIC_SPELL_LIST constant (99 PHB Cleric spells) and filtered the build loop against it. Same pattern as PALADIN_SPELL_LIST."
+    severity: "high — Clerics could prepare non-Cleric spells (Searing Smite, Hunter's Mark, etc.)"
+  - date: "2026-03-26"
+    gap: "Spell card rendering (getSpellSummaryLine + renderSpellCard) hardcoded WIS for DC, attack, and healing calculations"
+    cause: "Original implementation was Cleric-only. When Paladin (CHA caster) was added, the hardcode wasn't caught until Handoff 4 audit"
+    resolution: "Replaced wisMod with class-aware castMod from CLASS_DATA[char.class].spellcastingAbility in all spell rendering functions"
+    severity: "high — all Paladin spell cards showed wrong DC, attack bonus, and healing values"
+  - date: "2026-03-26"
+    gap: "CLERIC_PROGRESSION missing levels 2 and 3 — level 1 Clerics could not level up"
+    cause: "App originally designed around level 3 starting character (Thorin). Levels 2-3 were never added to the progression table."
+    resolution: "Added CLERIC_PROGRESSION entries for levels 2 (Channel Divinity) and 3 (2nd-level slots, domain spells)"
+    severity: "critical — level 1-2 Clerics were completely stuck"
+  - date: "2026-03-26"
+    gap: "6 spells duplicated across WIZARD_SPELL_DB and SPELL_DB with divergent descriptions"
+    cause: "Paladin audit fix added spells to SPELL_DB that already existed in WIZARD_SPELL_DB (fighter.js) for Eldritch Knight"
+    resolution: "Removed duplicates from WIZARD_SPELL_DB, created WIZARD_SPELL_LIST (199 names), added bounded getWizardSpell() fallback and getAllEkSpells() helper"
+    severity: "low — functionally working but data divergence risk"
