@@ -6,7 +6,7 @@
   "subclass": "Oath of Devotion",
   "background": "",
   "alignment": "Lawful Good",
-  "level": 1,
+  "level": 2,
   "abilityScores": {
     "str": 15,
     "dex": 10,
@@ -16,10 +16,17 @@
     "cha": 14
   },
   "hp": {
-    "max": 11,
+    "max": 21,
     "hitDiceType": 10,
-    "hitDiceCount": 1,
-    "hpHistory": []
+    "hitDiceCount": 2,
+    "hpHistory": [
+      {
+        "level": 2,
+        "gained": 10,
+        "method": "roll",
+        "notes": "9 (roll) + 1 CON"
+      }
+    ]
   },
   "proficiencyBonus": 2,
   "ac": 19,
@@ -36,19 +43,35 @@
     "perception"
   ],
   "cantripsKnown": [],
-  "spellSlots": {},
-  "preparedSpellCount": 0,
+  "spellSlots": {
+    "1": 2
+  },
+  "preparedSpellCount": 3,
   "currentPreparedSpells": [],
   "domainSpells": {},
   "features": [
     "Divine Sense",
-    "Lay on Hands"
+    "Lay on Hands",
+    "Divine Smite",
+    "Spellcasting",
+    "Fighting Style"
   ],
   "channelDivinityUses": 0,
   "equipment": "",
   "notes": "",
   "weapons": [],
-  "levelHistory": [],
+  "levelHistory": [
+    {
+      "level": 2,
+      "from": 1,
+      "hpMethod": "roll",
+      "hpRoll": 9,
+      "hpGained": 10,
+      "retroHp": false,
+      "retroHpAmount": 0,
+      "fightingStyle": "Protection"
+    }
+  ],
   "expertiseSkills": [],
   "resources": {},
   "currency": {
@@ -58,9 +81,9 @@
     "gp": 0,
     "pp": 0
   },
-  "fightingStyle": null,
+  "fightingStyle": "Protection",
   "id": "mn8dsrm9e3vng",
-  "currentHp": 11,
+  "currentHp": 21,
   "tempHp": 0,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
