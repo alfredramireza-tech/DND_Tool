@@ -151,7 +151,7 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 39,
+  "currentHp": 34,
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 0,
@@ -266,7 +266,7 @@
   "journal": [],
   "externalBuffs": [],
   "maxHpBoost": {
-    "value": 5,
-    "source": "Aid"
+    "value": 0,
+    "source": ""
   }
 }
