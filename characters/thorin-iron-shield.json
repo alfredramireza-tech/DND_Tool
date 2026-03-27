@@ -47,7 +47,7 @@
     ]
   },
   "proficiencyBonus": 2,
-  "ac": 17,
+  "ac": 19,
   "speed": 25,
   "initiative": -1,
   "savingThrows": [
@@ -172,19 +172,19 @@
   "quickItems": [],
   "bulkGear": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope, mason's tools, playing cards, trophy, pouch, common clothes, rank insignia (sergeant), 3 apples, gem eye patch, semi-precious stones, ring from 2x Rivas, scroll of augury, 3 gold idols, Tressender Family Rings x2",
   "colorTheme": {
-    "name": "Cleric Gold",
-    "accent": "#c4a35a",
-    "accentHover": "#d4b36a",
-    "accentDim": "#8a7340",
-    "bg": "#1a1410",
-    "surface": "#241e16",
-    "surfaceRaised": "#2e2720",
-    "border": "#3d3428",
-    "text": "#e8dcc8",
-    "textDim": "#a89880",
+    "name": "Fighter Steel",
+    "accent": "#6a9bc5",
+    "accentHover": "#7aadd5",
+    "accentDim": "#4a7090",
+    "bg": "#121820",
+    "surface": "#1a2230",
+    "surfaceRaised": "#222c3a",
+    "border": "#2e3a4d",
+    "text": "#d8e0ec",
+    "textDim": "#8898aa",
     "error": "#c45a5a",
     "success": "#6aaa5a",
-    "inputBg": "#1e1812"
+    "inputBg": "#141c28"
   },
   "passwordHash": "h2gm6377ivp",
   "deathSaves": {
@@ -192,55 +192,11 @@
     "failures": 0
   },
   "concentration": {
-    "active": false,
-    "spellName": ""
+    "active": true,
+    "spellName": "Shield of Faith"
   },
   "activeConditions": [],
   "sessionLog": [
-    {
-      "time": "7:43 PM",
-      "text": "Initiative: 16"
-    },
-    {
-      "time": "7:43 PM",
-      "text": "Initiative: 16"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — piercing: 8"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — piercing: 16"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — piercing: 6"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — piercing: 12"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — piercing: 10"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — piercing: 9"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — piercing: 17"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — piercing: 8"
-    },
-    {
-      "time": "7:39 PM",
-      "text": "Brain Smoothie — Attack: 8"
-    },
     {
       "time": "3:57 PM",
       "text": "Brain Smoothie — piercing: 12"
@@ -264,7 +220,18 @@
   ],
   "inspiration": true,
   "journal": [],
-  "externalBuffs": [],
+  "externalBuffs": [
+    {
+      "spellName": "Shield of Faith",
+      "effects": [
+        {
+          "type": "acBonus",
+          "value": 2
+        }
+      ],
+      "linkedToConcentration": true
+    }
+  ],
   "maxHpBoost": {
     "value": 0,
     "source": ""
