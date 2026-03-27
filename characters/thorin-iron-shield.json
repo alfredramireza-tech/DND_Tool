@@ -155,7 +155,7 @@
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 2,
-    "2": 0
+    "2": 1
   },
   "channelDivinityUsed": 0,
   "equippedItems": [
@@ -197,6 +197,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "3:57 PM",
+      "text": "Prayer of Healing — Healing: 22"
+    },
     {
       "time": "3:56 PM",
       "text": "Guiding Bolt — radiant: 14"
