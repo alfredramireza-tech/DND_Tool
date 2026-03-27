@@ -6,36 +6,45 @@
 # =============================================================================
 
 current:
-  task: "Spell Buff System implementation"
+  task: "Testing pass + buff architecture redesign"
   status: "COMPLETE"
 
 resume_point: |
-  File: index.html (10,580 lines) at alfredramireza-tech.github.io/DND_Tool/
-  Three CC handoffs completed this session cycle:
-    1. UX Enhancements (9 tasks) — 9,828 → 10,268 lines
-    2. Combat HUD Redesign (8 steps) — 10,268 → 10,475 lines
-    3. Sticky Fix + Spell Buff System (6 steps) — 10,475 → 10,580 lines
-  Dashboard now has: two-column sticky HUD, Quick Action weapon/cantrip selector,
-  resource strip with spell slot dots, concentration with mechanical buff effects
-  (AC bonuses, roll reminders, reminder text), collapsible spells, compact cantrips,
-  auto cloud save, session journal, enhanced party view with drill-down.
-  Next likely work: testing pass (recommended), then class implementations or avatars.
+  File: index.html (10,990 lines) at alfredramireza-tech.github.io/DND_Tool/
+  Four CC handoffs completed this session:
+    1. Dashboard Bug Fixes — scroll preservation, condition rendering, modal overflow, concentration Drop button fix, tappable condition/buff popovers
+    2. Concentration/Buff Separation — "Are you a target?" flow, custom buff editor, roll integration with buff dice in output
+    3. Spec Amendments — SPEC_BARBARIAN and SPEC_PALADIN updated with roll system prerequisites and buff integration notes
+    4. Max HP Boost — getEffectiveMaxHp() helper, 24 hp.max refs audited, boost UI in HUD, long rest clears boost
+  Architecture now: concentration tracks spell maintenance only (no stat effects), externalBuffs is single source of truth for all stat modifications (self-cast linked buffs + external buffs + custom buffs), roll system auto-applies buff dice to attacks/saves/checks with labeled breakdown.
+  NEXT PRIORITY: File split (T4) before building remaining classes. Then class implementations.
 
 open_loops:
-  - "Testing pass — 3 handoffs shipped without a play-test. iPad Safari is primary platform."
-  - "Rogue/Barbarian/Monk at 25-30% — CLASS_DATA exists, no dashboard/level-up/subclass features"
-  - "Paladin and Wizard at 0% — blocked on class implementation"
+  - "File split (T4) — split index.html into modular JS files BEFORE building remaining classes. At 10,990 lines, split is a half-day task. At 20,000+ it becomes multi-session. Design spec needed."
+  - "Rogue/Barbarian/Monk at 25-30% — CLASS_DATA exists, no dashboard/level-up/subclass features. SPEC_BARBARIAN amended with roll system prerequisites."
+  - "Paladin and Wizard at 0% — blocked on class implementation. SPEC_PALADIN amended with buff integration notes."
   - "Avatar images — designed but not spec'd (base64, 150x150, canvas resize, initials fallback)"
   - "PDF filler gaps — checkbox mapping, expertise handling, page 2 biographical fields"
+  - "Roll system needs flat bonus support and damage roll type before Barbarian can ship (see SPEC_BARBARIAN amendment)"
 
 recent:
-  - "2026-03-26: Spell Buff System — 12-spell effects map, AC calculation with buffs, buffed AC display, roll reminders, Set Concentration modal with spell buttons"
-  - "2026-03-26: Sticky Overflow Fix — removed max-height/overflow from hp-sticky CSS"
-  - "2026-03-26: Combat HUD Redesign — two-column sticky HUD, Quick Action, resource strip, die shortcuts removed"
-  - "2026-03-26: UX Enhancements — inspiration toggle, temp HP display, collapsible sections, sticky HP, session log wiring, journal, party view drill-down, auto cloud save, polish"
-  - "2026-03-26: Full spec-vs-code audit — all active specs audited against 9,828-line codebase"
+  - "2026-03-26: Max HP Boost — getEffectiveMaxHp() helper, 24 hp.max refs audited, boost display, long rest clears"
+  - "2026-03-26: Spec Amendments — SPEC_BARBARIAN roll prerequisites, SPEC_PALADIN buff integration notes"
+  - "2026-03-26: Concentration/Buff Separation — 'Are you a target?' flow, custom buff editor, roll integration"
+  - "2026-03-26: Dashboard Bug Fixes — scroll fix, condition rendering, modal overflow, Drop button fix, popovers"
+  - "2026-03-26: Spell Buff System — 12-spell effects map, AC calculation with buffs, buffed AC display"
 
 gap_log:
+  - date: "2026-03-26"
+    gap: "renderConcentrationBanner() orphaned during HUD redesign — never called from dashboard"
+    cause: "Combat HUD handoff replaced the HP tracker block that contained the banner call, and the new HUD only added a small concentration badge without Drop/Change controls"
+    resolution: "Re-added renderConcentrationBanner(c) call below the sticky HUD"
+    severity: "high — core feature (dropping concentration) was completely inaccessible"
+  - date: "2026-03-26"
+    gap: "Concentration auto-applied buff effects to caster regardless of spell target"
+    cause: "Buff system and concentration were built in the same handoff and merged — no separation between 'I hold this spell' and 'this effect is on me'"
+    resolution: "Full architectural separation — concentration tracks spell maintenance, externalBuffs tracks all stat effects, 'Are you a target?' prompt bridges them"
+    severity: "high — caused incorrect AC calculations when casting buffs on teammates"
   - date: "2026-03-26"
     gap: "Max-height cap in sticky HUD spec caused visible slot clipping"
     cause: "Spec'd max-height: 160px looked reasonable on paper but clipped real content when resource strip wrapped to 2 lines"

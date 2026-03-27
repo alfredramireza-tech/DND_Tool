@@ -6,6 +6,7 @@
 
 sessions:
   - date: "2026-03-26"
+    session: 1
     summary: "Full audit + 3 CC handoffs: UX Enhancements (9 tasks), Combat HUD Redesign, Sticky Fix + Spell Buff System"
     learned:
       - "Spec'd max-height constraints can clip real content — enumerate worst-case content before capping"
@@ -13,3 +14,15 @@ sessions:
       - "Sacred Flame and Toll the Dead are save-based, not attack-roll cantrips — caught in handoff review before CC implemented it wrong"
       - "Quick Action scope should be weapons + rollable cantrips only — leveled spells need slot selection modal and clutter the dropdown"
     next: "Testing pass recommended before adding more features. Then class implementations (Rogue/Barbarian/Monk) or avatar images."
+
+  - date: "2026-03-26"
+    session: 2
+    summary: "Testing pass: 6 bugs fixed, concentration/buff architecture redesigned, custom buff editor, roll integration, max HP boost feature"
+    learned:
+      - "renderConcentrationBanner() was orphaned during HUD redesign — always verify render calls after major layout changes"
+      - "Concentration and buffs are independent systems: 'I hold this spell' vs 'this effect is on me' — merging them caused wrong AC on teammate-targeted spells"
+      - "Temp HP (damage buffer) and max HP boost (ceiling raise) are different D&D mechanics — both now supported"
+      - "SPELL_BUFF_EFFECTS needed structured rollBonus data alongside display-only rollReminder strings for auto-apply to work"
+      - "File split should happen before remaining classes, not after — dependency graph grows exponentially"
+      - "concentration.effects was an array of typed objects in live data, not a flat object — always check actual data shape before writing migration code"
+    next: "File split (T4) — design spec for modular JS architecture. Then class implementations starting with whichever class the party needs next."
