@@ -1372,7 +1372,7 @@ const SPELL_DB = [
     range: "Self",
     components: "V",
     duration: "Concentration, up to 1 minute",
-    description: "The next time you hit a creature with a melee weapon attack before this spell ends, the weapon gleams with astral radiance. The attack deals an extra 2d6 radiant damage. The target becomes visible if it's invisible, and it sheds dim light in a 5-foot radius and can't become invisible until the spell ends.",
+    description: "The next time you hit a creature with a weapon attack before this spell ends, the weapon gleams with astral radiance. The attack deals an extra 2d6 radiant damage. The target becomes visible if it's invisible, and it sheds dim light in a 5-foot radius and can't become invisible until the spell ends.",
     damage: { dice: "2d6", type: "radiant" },
     upcast: { perLevel: "+1d6 damage", note: "Add 1d6 radiant damage per slot level above 2nd" },
     tags: ["damage", "concentration", "bonus action"]
@@ -1612,17 +1612,76 @@ const SPELL_DB = [
     upcast: { perLevel: "+1 target", note: "One additional target per slot level above 5th" },
     tags: ["control", "concentration"]
   },
+  // ===================== SHARED SPELLS (Wizard/Paladin) =====================
   {
-    name: "Scrying",
-    level: 5,
-    school: "Divination",
-    castingTime: "10 minutes",
+    name: "Magic Weapon",
+    level: 2,
+    school: "Transmutation",
+    castingTime: "1 bonus action",
+    range: "Touch",
+    components: "V, S",
+    duration: "Concentration, up to 1 hour",
+    description: "You touch a nonmagical weapon. Until the spell ends, that weapon becomes a magic weapon with a +1 bonus to attack rolls and damage rolls. At 4th-level slot: +2 bonus. At 6th-level slot: +3 bonus.",
+    upcast: { perLevel: "Increased bonus", note: "+2 bonus at 4th level slot, +3 at 6th level slot" },
+    tags: ["buff", "concentration"]
+  },
+  {
+    name: "Misty Step",
+    level: 2,
+    school: "Conjuration",
+    castingTime: "1 bonus action",
     range: "Self",
-    components: "V, S, M (a focus worth at least 1,000 gp, such as a crystal ball, a silver mirror, or a font filled with holy water)",
-    duration: "Concentration, up to 10 minutes",
-    description: "You can see and hear a particular creature you choose that is on the same plane of existence as you. The target must make a WIS save, which is modified by how well you know the target and the sort of physical connection you have to it. On a failed save, you can see and hear the target through an invisible sensor that appears within 10 feet of the target.",
-    save: "wis",
-    tags: ["utility", "concentration"]
+    components: "V",
+    duration: "Instantaneous",
+    description: "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see.",
+    tags: ["utility"]
+  },
+  {
+    name: "Haste",
+    level: 3,
+    school: "Transmutation",
+    castingTime: "1 action",
+    range: "30 feet",
+    components: "V, S, M (a shaving of licorice root)",
+    duration: "Concentration, up to 1 minute",
+    description: "Choose a willing creature that you can see within range. Until the spell ends, the target's speed is doubled, it gains a +2 bonus to AC, it has advantage on DEX saving throws, and it gains an additional action on each of its turns. That action can be used only to take the Attack (one weapon attack only), Dash, Disengage, Hide, or Use an Object action. When the spell ends, the target can't move or take actions until after its next turn, as a wave of lethargy sweeps over it.",
+    tags: ["buff", "concentration"]
+  },
+  {
+    name: "Ice Storm",
+    level: 4,
+    school: "Evocation",
+    castingTime: "1 action",
+    range: "300 feet",
+    components: "V, S, M (a pinch of dust and a few drops of water)",
+    duration: "Instantaneous",
+    description: "A hail of rock-hard ice pounds to the ground in a 20-foot-radius, 40-foot-high cylinder centered on a point within range. Each creature in the cylinder must make a DEX saving throw. A creature takes 2d8 bludgeoning damage and 4d6 cold damage on a failed save, or half as much damage on a successful one. The storm turns the area into difficult terrain until the end of your next turn.",
+    damage: { dice: "2d8+4d6", type: "bludgeoning/cold" },
+    save: "dex",
+    upcast: { perLevel: "+1d8 bludgeoning", note: "Add 1d8 bludgeoning damage per slot level above 4th" },
+    tags: ["damage"]
+  },
+  {
+    name: "Stoneskin",
+    level: 4,
+    school: "Abjuration",
+    castingTime: "1 action",
+    range: "Touch",
+    components: "V, S, M (diamond dust worth 100 gp, consumed)",
+    duration: "Concentration, up to 1 hour",
+    description: "This spell turns the flesh of a willing creature you touch as hard as stone. Until the spell ends, the target has resistance to nonmagical bludgeoning, piercing, and slashing damage.",
+    tags: ["defense", "concentration"]
+  },
+  {
+    name: "Dimension Door",
+    level: 4,
+    school: "Conjuration",
+    castingTime: "1 action",
+    range: "500 feet",
+    components: "V",
+    duration: "Instantaneous",
+    description: "You teleport yourself from your current location to any other spot within range. You arrive at exactly the spot desired. It can be a place you can see, one you can visualize, or one you can describe by stating direction and distance. You can bring along objects as long as their weight doesn't exceed what you can carry. You can also bring one willing creature of your size or smaller who is carrying gear up to its carrying capacity. If you would arrive in a place already occupied by an object or a creature, you and any creature traveling with you each take 4d6 force damage, and the spell fails to teleport you.",
+    tags: ["utility"]
   }
 ];
 

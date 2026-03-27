@@ -681,7 +681,7 @@ function renderPaladinDashboard(c) {
   html += '</div>';
 
   // Divine Sense (level 1+)
-  var dsDivUses = Math.max(1, 1 + chaMod);
+  var dsDivUses = Math.max(0, 1 + chaMod);
   html += renderResourceTracker('Divine Sense', 'divineSense', dsDivUses, c, {
     icon: '&#128065;',
     description: 'Action: detect celestials, fiends, or undead within 60 ft, and consecrated/desecrated places. ' + dsDivUses + ' uses per long rest.',
