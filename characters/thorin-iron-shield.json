@@ -47,7 +47,7 @@
     ]
   },
   "proficiencyBonus": 2,
-  "ac": 19,
+  "ac": 17,
   "speed": 25,
   "initiative": -1,
   "savingThrows": [
@@ -192,8 +192,8 @@
     "failures": 0
   },
   "concentration": {
-    "active": true,
-    "spellName": "Shield of Faith"
+    "active": false,
+    "spellName": ""
   },
   "activeConditions": [],
   "sessionLog": [
@@ -220,18 +220,7 @@
   ],
   "inspiration": true,
   "journal": [],
-  "externalBuffs": [
-    {
-      "spellName": "Shield of Faith",
-      "effects": [
-        {
-          "type": "acBonus",
-          "value": 2
-        }
-      ],
-      "linkedToConcentration": true
-    }
-  ],
+  "externalBuffs": [],
   "maxHpBoost": {
     "value": 0,
     "source": ""
