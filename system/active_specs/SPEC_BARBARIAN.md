@@ -10,6 +10,43 @@
 
 ---
 
+## Prerequisites — Roll & Buff System Gaps
+
+The following roll system capabilities DO NOT EXIST yet and must be built before or during Barbarian implementation. These were identified during the Cleric buff/concentration separation work (March 2026).
+
+**1. Flat roll bonus support.**
+The `rollBonus` field in `SPELL_BUFF_EFFECTS` and `externalBuffs` currently only supports dice expressions (`"1d4"`, `"1d8"`). Rage damage is a flat number (+2/+3/+4). The roll system needs to accept both dice expressions and flat integers. The `rollBonus` structure should handle:
+```
+// Dice expression (existing):
+rollBonus: { dice: "1d4", appliesTo: ["attacks", "saves"] }
+
+// Flat bonus (new):
+rollBonus: { flat: 2, appliesTo: ["damage"] }
+
+// Both formats must work in the roll output:
+// "d20 [14] + 5 (STR) + 1d4 [3] (Bless) = 22"     <- dice
+// "1d12 [7] + 3 (STR) + 2 (Rage) = 12"              <- flat
+```
+
+**2. Damage roll type in `appliesTo`.**
+Currently `appliesTo` supports `["attacks", "saves", "checks"]`. Rage bonus applies to melee STR *damage* rolls, not attack rolls. Add `"damage"` as a valid roll type. The roll system must check active buffs/effects when building damage rolls, not just attack/save/check rolls.
+
+Further, Rage damage only applies to **STR-based melee** weapon attacks. The roll integration needs to know which stat a weapon uses. When the weapon roller calculates damage, it should check: is this a STR-based melee weapon AND is Rage active? If yes, include rage damage bonus. This is narrower than the generic buff system — implement it as Rage-specific logic in the weapon damage roller, not as a generic buff `appliesTo` filter.
+
+**3. Advantage/disadvantage is NOT modeled in the buff system.**
+Rage grants advantage on STR checks and STR saves. Reckless Attack grants advantage on your melee attacks (and gives enemies advantage on attacks against you). These are tracked as active states (`rageActive`, `recklessActive`) with dashboard reminders — they are NOT buff entries. Do not try to model advantage/disadvantage through `externalBuffs`. Instead:
+- When rolling a STR check or STR save while `rageActive === true`: auto-roll 2d20, take higher, show both in output: `"2d20 [8, 15] + 4 (STR) = 19 (Advantage - Rage)"`
+- When rolling a melee attack while `recklessActive === true`: same 2d20 advantage format
+- Condition-based disadvantage (Poisoned, Frightened, etc.) already shows reminders — these can evolve into auto-applied disadvantage using the same 2d20 mechanic
+
+**4. AC formula overrides vs. bonuses.**
+Barbarian Unarmored Defense (10 + DEX + CON) is an AC *formula*, not a +X bonus. It replaces the base AC calculation when no armor is equipped. This goes in `calculateAC()` as a class-specific branch, NOT through the buff system. The existing spec already describes this correctly (see Unarmored Defense section) — this note is here to prevent confusion with the `acBonus` field in `externalBuffs`, which is additive only.
+
+**5. Rage is NOT a buff — keep it separate.**
+Rage has its own activation rules, visual treatment, and status card as specced. Do not model Rage as an `externalBuffs` entry. The Rage toggle, damage integration, and status display are a dedicated system. The buff system is for spells and external effects. Rage interacts with the roll system directly through `rageActive` state checks in the weapon damage roller.
+
+---
+
 ## Barbarian Progression (Levels 1-20)
 
 ```

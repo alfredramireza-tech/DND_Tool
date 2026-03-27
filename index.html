@@ -3561,6 +3561,7 @@ function migrateCharacter(c) {
   if (c.inspiration === undefined) c.inspiration = false;
   if (!c.journal) c.journal = [];
   if (!c.externalBuffs) c.externalBuffs = [];
+  if (!c.maxHpBoost) c.maxHpBoost = { value: 0, source: '' };
   // Fighter-specific fields
   if (c.class === 'Fighter') {
     if (!c.maneuversKnown) c.maneuversKnown = [];
@@ -3570,6 +3571,10 @@ function migrateCharacter(c) {
     if (c.features && c.features.length === 0) c.features = getFighterFeatures(c.level, c.subclass);
   }
   return c;
+}
+
+function getEffectiveMaxHp(c) {
+  return (c.hp ? c.hp.max : 10) + (c.maxHpBoost ? c.maxHpBoost.value : 0);
 }
 
 function calculateAC(c) {
@@ -5132,7 +5137,8 @@ function renderDashboard(c, preserveScroll) {
   var spellDC = isCaster ? 8 + c.proficiencyBonus + mod(c.abilityScores[cd.spellcastingAbility]) : 0;
   var spellAtk = isCaster ? c.proficiencyBonus + mod(c.abilityScores[cd.spellcastingAbility]) : 0;
   var ac = (c.equippedItems && c.equippedItems.length > 0) ? calculateAC(c) : c.ac;
-  var currentHp = c.currentHp !== undefined ? c.currentHp : c.hp.max;
+  var effectiveMax = getEffectiveMaxHp(c);
+  var currentHp = c.currentHp !== undefined ? c.currentHp : effectiveMax;
   var tempHp = c.tempHp || 0;
 
   var html = '';
@@ -5162,8 +5168,14 @@ function renderDashboard(c, preserveScroll) {
   var effectiveHp = currentHp + tempHp;
   html += '<div class="hud-left">';
   html += '<span class="hud-insp' + (c.inspiration ? ' active' : '') + '" onclick="toggleInspiration()" title="Inspiration">' + (c.inspiration ? '\u2605' : '\u2606') + '</span>';
-  html += '<div class="hud-hp-big"><span class="hp-current">' + effectiveHp + '</span><span class="hp-separator"> / </span><span class="hp-max">' + c.hp.max + '</span></div>';
+  var boostLabel = (c.maxHpBoost && c.maxHpBoost.value > 0) ? ' <span style="font-size:0.7rem;color:var(--success)">[+' + c.maxHpBoost.value + ']</span>' : '';
+  html += '<div class="hud-hp-big"><span class="hp-current">' + effectiveHp + '</span><span class="hp-separator"> / </span><span class="hp-max">' + effectiveMax + '</span>' + boostLabel + '</div>';
   if (tempHp > 0) html += '<div class="hud-hp-sub">+' + tempHp + ' temp (' + currentHp + ' real)</div>';
+  if (c.maxHpBoost && c.maxHpBoost.value > 0) {
+    var boostSrc = c.maxHpBoost.source || 'boost';
+    var safeBoostSrc = boostSrc.replace(/'/g, "\\'");
+    html += '<div class="hud-hp-sub" style="cursor:pointer" onclick="event.stopPropagation();showBadgePopover(\'Max HP +' + c.maxHpBoost.value + '\',\'' + safeBoostSrc + '. Tap X on badge to remove.\',event)">base ' + c.hp.max + ' + ' + c.maxHpBoost.value + ' ' + escapeHtml(boostSrc) + ' <span style="cursor:pointer;opacity:0.6" onclick="event.stopPropagation();removeMaxHpBoost()">\u00d7</span></div>';
+  }
   html += '<div class="hud-hp-btns">';
   html += '<button class="hp-btn damage" onclick="showHpInput(\'damage\')">Dmg</button>';
   html += '<button class="hp-btn heal" onclick="showHpInput(\'heal\')">Heal</button>';
@@ -5194,6 +5206,7 @@ function renderDashboard(c, preserveScroll) {
   html += '<button class="btn btn-secondary" onclick="showConditionsPanel()" style="font-size:0.8rem;padding:6px 12px">Conditions</button>';
   html += '<button class="btn btn-secondary" onclick="showSetConcentration()" style="font-size:0.8rem;padding:6px 12px">Set Concentration</button>';
   html += '<button class="btn btn-secondary" onclick="showAddBuff()" style="font-size:0.8rem;padding:6px 12px">+ Buff</button>';
+  html += '<button class="btn btn-secondary" onclick="showMaxHpBoostPrompt()" style="font-size:0.8rem;padding:6px 12px">+ Max HP</button>';
   html += '</div>';
 
   // Dice & Rolls (directly below HP for combat use)
@@ -5629,7 +5642,7 @@ function renderFighterDashboard(c) {
   // Champion: Survivor
   if (sub === 'Champion' && c.level >= 18) {
     var survivorHeal = 5 + mod(c.abilityScores.con);
-    var halfMax = Math.floor(c.hp.max / 2);
+    var halfMax = Math.floor(getEffectiveMaxHp(c) / 2);
     html += '<div class="dash-section"><h2>Survivor</h2>';
     html += '<p class="text-dim" style="font-size:0.85rem">Regain ' + survivorHeal + ' HP per turn when below ' + halfMax + ' HP (and above 0 HP).</p></div>';
   }
@@ -5755,7 +5768,7 @@ function rollSecondWind() {
 function applySecondWind(amount) {
   var c = loadCharacter();
   if (!c) return;
-  c.currentHp = Math.min((c.currentHp || 0) + amount, c.hp.max);
+  c.currentHp = Math.min((c.currentHp || 0) + amount, getEffectiveMaxHp(c));
   // Mark Second Wind as used
   if (!c.resources) c.resources = {};
   if (!c.resources.secondWind) c.resources.secondWind = { used: 0, max: 1 };
@@ -8505,7 +8518,8 @@ function renderPartyGrid(container) {
   html += '<p class="text-dim" style="margin-bottom:16px">' + chars.length + ' character(s)' + (agoText ? ' \u2022 Last updated: ' + agoText : '') + '</p>';
   html += '<div class="pv-grid">';
   chars.forEach(function(c, idx) {
-    var hpPct = c.hp && c.hp.max > 0 ? (c.currentHp / c.hp.max) * 100 : 100;
+    var pvEffMax = getEffectiveMaxHp(c);
+    var hpPct = pvEffMax > 0 ? (c.currentHp / pvEffMax) * 100 : 100;
     var hpClass = hpPct > 50 ? 'hp-green' : hpPct > 25 ? 'hp-yellow' : 'hp-red';
     var ac = (c.equippedItems && c.equippedItems.length > 0) ? calculateAC(c) : c.ac;
     html += '<div class="pv-card" onclick="showPartyCharDetail(' + idx + ')">';
@@ -8513,7 +8527,7 @@ function renderPartyGrid(container) {
     var pvRace = c.subrace ? c.subrace + ' ' + c.race : c.race;
     html += '<div class="pv-detail">' + pvRace + ' ' + c.class + (c.subclass ? ' (' + c.subclass + ')' : '') + ' \u2014 Level ' + c.level + '</div>';
     var pvEffective = c.currentHp + (c.tempHp || 0);
-    var pvHpText = 'HP: ' + pvEffective + ' / ' + c.hp.max;
+    var pvHpText = 'HP: ' + pvEffective + ' / ' + pvEffMax;
     if (c.tempHp > 0) pvHpText += ' (' + c.currentHp + '+' + c.tempHp + ' temp)';
     var pvAcBuff = 0;
     if (c.externalBuffs) { c.externalBuffs.forEach(function(b) { (b.effects||[]).forEach(function(e) { if (e.type==='acBonus') pvAcBuff+=e.value; }); }); }
@@ -8564,11 +8578,12 @@ function showPartyCharDetail(idx) {
   html += '<div class="text-dim" style="font-size:0.85rem">' + escapeHtml(c.background || '') + (c.alignment ? ' \u2022 ' + c.alignment : '') + '</div>';
 
   // HP
+  var detEffMax = getEffectiveMaxHp(c);
   var effectiveHp = c.currentHp + (c.tempHp || 0);
-  var hpPct = c.hp && c.hp.max > 0 ? (c.currentHp / c.hp.max) * 100 : 100;
+  var hpPct = detEffMax > 0 ? (c.currentHp / detEffMax) * 100 : 100;
   var hpColor = hpPct > 50 ? 'var(--success)' : hpPct > 25 ? '#f9a825' : 'var(--error)';
   html += '<div style="text-align:center;margin:16px 0;padding:16px;background:var(--surface);border-radius:var(--radius);border:2px solid ' + hpColor + '">';
-  html += '<div style="font-size:2.5rem;font-weight:bold;color:' + hpColor + '">' + effectiveHp + ' / ' + c.hp.max + '</div>';
+  html += '<div style="font-size:2.5rem;font-weight:bold;color:' + hpColor + '">' + effectiveHp + ' / ' + detEffMax + '</div>';
   if (c.tempHp > 0) html += '<div style="color:var(--accent);font-size:0.9rem">+' + c.tempHp + ' temp HP (' + c.currentHp + ' real + ' + c.tempHp + ' temp)</div>';
   var detailAcBuff = 0;
   if (c.externalBuffs) { c.externalBuffs.forEach(function(b) { (b.effects||[]).forEach(function(e) { if (e.type==='acBonus') detailAcBuff+=e.value; }); }); }
@@ -10173,6 +10188,59 @@ function loadSampleCharacter() {
    HP TRACKER
    ═══════════════════════════════════════════ */
 
+function showMaxHpBoostPrompt() {
+  var c = loadCharacter();
+  if (!c) return;
+  var current = c.maxHpBoost && c.maxHpBoost.value > 0 ? c.maxHpBoost : null;
+  var html = '<h3>Max HP Boost</h3>';
+  if (current) {
+    html += '<p class="text-dim" style="font-size:0.85rem">Current: +' + current.value + (current.source ? ' (' + escapeHtml(current.source) + ')' : '') + '</p>';
+    html += '<p class="text-dim" style="font-size:0.8rem">A new boost will replace the current one.</p>';
+  }
+  html += '<div style="text-align:left;margin-bottom:12px">';
+  html += '<label style="font-size:0.8rem;color:var(--text-dim)">Amount</label>';
+  html += '<input type="number" id="boost-amount" min="1" placeholder="e.g., 5" onclick="event.stopPropagation()" style="width:100%;box-sizing:border-box;margin-bottom:8px">';
+  html += '<label style="font-size:0.8rem;color:var(--text-dim)">Source (optional)</label>';
+  html += '<input type="text" id="boost-source" placeholder="e.g., Aid, Heroes\' Feast" onclick="event.stopPropagation()" style="width:100%;box-sizing:border-box">';
+  html += '</div>';
+  html += '<div class="confirm-actions">';
+  html += '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>';
+  html += '<button class="btn btn-primary" onclick="applyMaxHpBoost()">Apply</button></div>';
+  showModal(html);
+  setTimeout(function() { var el = document.getElementById('boost-amount'); if (el) el.focus(); }, 100);
+}
+
+function applyMaxHpBoost() {
+  var amount = parseInt(document.getElementById('boost-amount').value) || 0;
+  if (amount <= 0) return;
+  var source = (document.getElementById('boost-source').value || '').trim();
+  var c = loadCharacter();
+  if (!c) return;
+  var oldMax = getEffectiveMaxHp(c);
+  c.maxHpBoost = { value: amount, source: source };
+  // Aid also raises current HP by the boost amount
+  c.currentHp = (c.currentHp || 0) + amount;
+  var newMax = getEffectiveMaxHp(c);
+  logEvent('Max HP boosted by ' + amount + (source ? ' (' + source + ')' : '') + ' \u2014 HP max ' + oldMax + ' \u2192 ' + newMax);
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
+}
+
+function removeMaxHpBoost() {
+  var c = loadCharacter();
+  if (!c || !c.maxHpBoost || c.maxHpBoost.value <= 0) return;
+  var oldMax = getEffectiveMaxHp(c);
+  var source = c.maxHpBoost.source;
+  c.maxHpBoost = { value: 0, source: '' };
+  // Cap current HP at base max
+  if (c.currentHp > c.hp.max) c.currentHp = c.hp.max;
+  var newMax = c.hp.max;
+  logEvent('Max HP boost removed' + (source ? ' (' + source + ')' : '') + ' \u2014 HP max ' + oldMax + ' \u2192 ' + newMax);
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
 function showHpInput(mode) {
   var title = mode === 'damage' ? 'Take Damage' : mode === 'heal' ? 'Heal' : 'Set Temp HP';
   var btnClass = mode === 'damage' ? 'btn-danger' : 'btn-primary';
@@ -10192,7 +10260,8 @@ function applyHpChange(mode) {
   if (val <= 0) { closeModal(); return; }
   var c = loadCharacter();
   if (!c) return;
-  if (c.currentHp === undefined) c.currentHp = c.hp.max;
+  var effMax = getEffectiveMaxHp(c);
+  if (c.currentHp === undefined) c.currentHp = effMax;
   if (c.tempHp === undefined) c.tempHp = 0;
   var oldHp = c.currentHp;
   if (mode === 'damage') {
@@ -10228,7 +10297,7 @@ function applyHpChange(mode) {
       return;
     }
   } else if (mode === 'heal') {
-    c.currentHp = Math.min(c.hp.max, c.currentHp + val);
+    c.currentHp = Math.min(effMax, c.currentHp + val);
     logEvent('Healed ' + val + ' HP \u2014 HP ' + oldHp + '\u2192' + c.currentHp);
     // Clear death saves when healed above 0
     if (oldHp === 0 && c.currentHp > 0) {
@@ -10372,7 +10441,12 @@ function doLongRest() {
   var c = loadCharacter();
   if (!c) return;
   var cdInfo = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
-  c.currentHp = c.hp.max;
+  // Clear max HP boost first (before healing)
+  if (c.maxHpBoost && c.maxHpBoost.value > 0) {
+    logEvent('Max HP boost expired' + (c.maxHpBoost.source ? ' (' + c.maxHpBoost.source + ')' : ''));
+    c.maxHpBoost = { value: 0, source: '' };
+  }
+  c.currentHp = c.hp.max; // Heal to base max (boost is gone)
   c.tempHp = 0;
   if (cdInfo.isCaster || (c.class === 'Fighter' && c.subclass === 'Eldritch Knight')) c.spellSlotsUsed = {};
   if (c.class === 'Cleric') c.channelDivinityUsed = 0;

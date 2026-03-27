@@ -98,6 +98,48 @@ Each spell needs structured data (same format as Cleric spells): name, level, sc
 
 ---
 
+## Buff System Integration Notes
+
+The dashboard uses a separated concentration/buff architecture built during Cleric implementation (March 2026). These notes clarify how Paladin features interact with that system.
+
+**1. Concentration works identically to Cleric.**
+Paladin is a half-caster with concentration spells. The "Set Concentration" -> "Are you a target?" -> buff flow works the same. No changes needed.
+
+**2. Add Paladin buff spells to `SPELL_BUFF_EFFECTS`.**
+The current map has 12 Cleric spells. Paladin shares some (Bless, Shield of Faith, Protection from Evil and Good) but also has unique buff spells that need entries:
+
+| Spell | Effects to add |
+|-------|---------------|
+| Divine Favor | `rollBonus: { dice: "1d4", appliesTo: ["damage"] }` — adds 1d4 radiant to weapon damage. Concentration. |
+| Crusader's Mantle | `rollBonus: { dice: "1d4", appliesTo: ["damage"] }` — allies within 30ft add 1d4 radiant to weapon damage. Concentration. |
+| Aura of Vitality | `reminderText: "Bonus action: heal 2d6 HP to a creature within 30ft"` — no stat effect, reminder only. Concentration. |
+| Magic Weapon | `attackBonus: X` — +1/+2/+3 to attack and damage (depends on slot level). Concentration. Needs a new effect type or use `rollBonus: { flat: 1, appliesTo: ["attacks", "damage"] }`. |
+| Elemental Weapon | Same pattern as Magic Weapon but adds elemental damage dice. |
+| Aura of Life | `reminderText: "Allies within 30ft can't have max HP reduced, regain 1 HP if at 0 HP at start of turn"` — no stat effect. Concentration. |
+| Aura of Purity | `reminderText: "Allies within 30ft can't be diseased, resistance to poison, advantage on saves vs conditions"` — too complex to automate, keep as reminder. Concentration. |
+| Circle of Power | `reminderText: "Allies within 30ft have advantage on saves vs spells. Successful save = no damage"` — reminder only. Concentration. |
+
+Note: `appliesTo: ["damage"]` requires the damage roll type addition flagged in SPEC_BARBARIAN amendment. If Paladin ships before Barbarian, this prerequisite still applies — implement damage roll integration at that time.
+
+**3. Smite spells are concentration reminders, not auto-applied buffs.**
+Searing Smite, Thunderous Smite, Wrathful Smite, Branding Smite, Blinding Smite, Staggering Smite, and Banishing Smite are concentration spells that trigger on your *next weapon hit* and then end. They don't fit the persistent buff model. Handle them as:
+- Concentration tracker shows the spell name and "Triggers on next melee hit"
+- Do NOT add a buff entry — no persistent stat change
+- After the hit resolves, player manually drops concentration (or it auto-drops since the spell ends)
+- `SPELL_BUFF_EFFECTS` entries for smite spells should use `reminderText` only: e.g., "On next melee hit: +2d6 fire damage. Target makes CON save or ignites (1d6 fire/turn)."
+
+**4. Aura of Protection is a passive, not a buff.**
+Starting at level 6, the Paladin adds CHA modifier to all saving throws for themselves and allies within 10ft (30ft at level 18). This is always on (while conscious) — not a spell, not concentration, not a buff.
+
+For the Paladin's own dashboard: integrate into save roll calculations directly. When rolling any save, add CHA mod and show it: `"d20 [11] + 2 (CON) + 1 (CHA, Aura of Protection) = 14"`. This is a class-specific modifier in the save roller, not a buff system entry.
+
+For party members: they can use "Add Buff" to manually add "Aura of Protection" as a custom buff with a flat roll bonus equal to the Paladin's CHA mod applied to saves. The app does not auto-detect proximity to the Paladin — manual tracking is appropriate for a tabletop game.
+
+**5. Lay on Hands is a point pool, not a buff.**
+Already specced as a dedicated resource tracker. Does not interact with the buff system at all. Noting this to prevent anyone from trying to model it as a buff.
+
+---
+
 ## Divine Smite (Level 2)
 
 The Paladin's signature burst damage. This is NOT a spell — it uses spell slots but doesn't count as casting.
