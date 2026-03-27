@@ -6,21 +6,37 @@
 # =============================================================================
 
 current:
-  task: "Testing pass + buff architecture redesign"
+  task: "File split (T4)"
   status: "COMPLETE"
 
 resume_point: |
-  File: index.html (10,990 lines) at alfredramireza-tech.github.io/DND_Tool/
-  Four CC handoffs completed this session:
-    1. Dashboard Bug Fixes — scroll preservation, condition rendering, modal overflow, concentration Drop button fix, tappable condition/buff popovers
-    2. Concentration/Buff Separation — "Are you a target?" flow, custom buff editor, roll integration with buff dice in output
-    3. Spec Amendments — SPEC_BARBARIAN and SPEC_PALADIN updated with roll system prerequisites and buff integration notes
-    4. Max HP Boost — getEffectiveMaxHp() helper, 24 hp.max refs audited, boost UI in HUD, long rest clears boost
-  Architecture now: concentration tracks spell maintenance only (no stat effects), externalBuffs is single source of truth for all stat modifications (self-cast linked buffs + external buffs + custom buffs), roll system auto-applies buff dice to attacks/saves/checks with labeled breakdown.
-  NEXT PRIORITY: File split (T4) before building remaining classes. Then class implementations.
+  Monolithic index.html (10,990 lines) split into 17 modular files + HTML shell (385 lines).
+  Deployed to alfredramireza-tech.github.io/DND_Tool/ and verified working.
+
+  New file structure:
+    styles.css          — All CSS (1,029 lines)
+    data/classes.js     — AASIMAR_SUBRACES, CLASS_DATA, COLOR_THEMES (180 lines)
+    data/spells.js      — CANTRIP_DATA, SPELL_DB, spell enhancements, derived arrays (1,333 lines)
+    data/progression.js — SKILLS, SAMPLE_CHARACTER, BLANK_DEFAULTS, CLERIC_PROGRESSION (308 lines)
+    data/fighter.js     — FIGHTING_STYLES, MANEUVERS, FIGHTER_PROGRESSION, EK data (323 lines)
+    js/utils.js         — mod(), AC calc, themes, character storage (461 lines)
+    js/onboarding.js    — init(), form building, step navigation (1,144 lines)
+    js/dashboard.js     — renderDashboard(), fighter dashboard (663 lines)
+    js/levelup.js       — Full level-up wizard (1,352 lines)
+    js/session.js       — Event log, roll history, dice animation (205 lines)
+    js/combat.js        — Death saves, concentration, conditions, buffs, party view (1,390 lines)
+    js/rolls.js         — Dice engine, weapon/ability/skill rolls (383 lines)
+    js/equipment.js     — Selection cards, spell cards, dashboard rollers (333 lines)
+    js/pdf-export.js    — PDF character sheet generation (517 lines)
+    js/home.js          — Home screen, character management (233 lines)
+    js/resources.js     — HP, spell slots, rest system, equipment forms (573 lines)
+    js/cloud-sync.js    — GitHub API save/load (206 lines)
+    index.html          — HTML shell + script tags + pdf-lib + boot (385 lines)
+
+  PM can now load individual files instead of the full monolith.
+  NEXT PRIORITY: Class implementations. Roll system needs flat bonus support and damage roll type before Barbarian can ship.
 
 open_loops:
-  - "File split (T4) — split index.html into modular JS files BEFORE building remaining classes. At 10,990 lines, split is a half-day task. At 20,000+ it becomes multi-session. Design spec needed."
   - "Rogue/Barbarian/Monk at 25-30% — CLASS_DATA exists, no dashboard/level-up/subclass features. SPEC_BARBARIAN amended with roll system prerequisites."
   - "Paladin and Wizard at 0% — blocked on class implementation. SPEC_PALADIN amended with buff integration notes."
   - "Avatar images — designed but not spec'd (base64, 150x150, canvas resize, initials fallback)"
@@ -28,11 +44,11 @@ open_loops:
   - "Roll system needs flat bonus support and damage roll type before Barbarian can ship (see SPEC_BARBARIAN amendment)"
 
 recent:
+  - "2026-03-26: File Split (T4) — 10,990-line index.html split into 17 modular files, index.html reduced to 385 lines"
   - "2026-03-26: Max HP Boost — getEffectiveMaxHp() helper, 24 hp.max refs audited, boost display, long rest clears"
   - "2026-03-26: Spec Amendments — SPEC_BARBARIAN roll prerequisites, SPEC_PALADIN buff integration notes"
   - "2026-03-26: Concentration/Buff Separation — 'Are you a target?' flow, custom buff editor, roll integration"
   - "2026-03-26: Dashboard Bug Fixes — scroll fix, condition rendering, modal overflow, Drop button fix, popovers"
-  - "2026-03-26: Spell Buff System — 12-spell effects map, AC calculation with buffs, buffed AC display"
 
 gap_log:
   - date: "2026-03-26"
@@ -50,3 +66,8 @@ gap_log:
     cause: "Spec'd max-height: 160px looked reasonable on paper but clipped real content when resource strip wrapped to 2 lines"
     resolution: "Removed max-height and overflow: hidden. Compact HUD design keeps it short naturally."
     severity: "medium — resource strip was visually broken until caught"
+  - date: "2026-03-26"
+    gap: "PM could not load full index.html — context window exceeded by 10,990-line monolith"
+    cause: "All code in single file from project start. Each feature session added ~500-1500 lines with no split point"
+    resolution: "T4 file split into 17 modules. PM can now load any individual file. Session ran in CC with CC acting as both PM and CC."
+    severity: "high — PM was unable to fulfill navigator/translator role without loading the codebase"

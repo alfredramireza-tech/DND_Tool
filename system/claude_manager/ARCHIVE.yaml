@@ -26,3 +26,13 @@ sessions:
       - "File split should happen before remaining classes, not after — dependency graph grows exponentially"
       - "concentration.effects was an array of typed objects in live data, not a flat object — always check actual data shape before writing migration code"
     next: "File split (T4) — design spec for modular JS architecture. Then class implementations starting with whichever class the party needs next."
+
+  - date: "2026-03-26"
+    session: 3
+    summary: "File split (T4) — split monolithic index.html (10,990 lines) into 17 modular files. index.html reduced to 385-line HTML shell. Deployed and verified working."
+    learned:
+      - "PM could not load the full index.html — this blocked the standard PM/CC workflow. Session ran with CC acting as both PM and CC."
+      - "The file had clean section comment headers (/* ═══ SECTION NAME ═══ */) that made cut points obvious — worth maintaining in future work"
+      - "No parse-time cross-file dependencies in this codebase — all cross-references are runtime calls, so plain <script> load order just needs data before utils before features"
+      - "git pull during deploy can trigger a vim merge prompt when remote has auto-saved characters — suggested setting git editor to notepad for Windows comfort"
+    next: "Class implementations. Roll system needs flat bonus + damage roll type before Barbarian can ship. Then Rogue/Barbarian/Monk, then Paladin/Wizard."
