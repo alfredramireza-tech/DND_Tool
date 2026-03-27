@@ -3,7 +3,7 @@
    DASHBOARD RENDERING
    ═══════════════════════════════════════════ */
 
-function getShortRestDescription(cls, sub) {
+function getShortRestDescription(cls, sub, level) {
   if (cls === 'Cleric') return 'Restores Channel Divinity';
   if (cls === 'Paladin') return 'Restores Channel Divinity';
   if (cls === 'Fighter') {
@@ -11,6 +11,7 @@ function getShortRestDescription(cls, sub) {
     if (sub === 'Battle Master') parts.push('Superiority Dice');
     return 'Restores ' + parts.join(', ');
   }
+  if (cls === 'Rogue') return (level || 0) >= 20 ? 'Restores Stroke of Luck' : 'Recover hit dice';
   return 'Recover hit dice, some abilities';
 }
 
@@ -179,8 +180,13 @@ function renderDashboard(c, preserveScroll) {
     html += renderPaladinDashboard(c);
   }
 
+  // Rogue class features
+  if (c.class === 'Rogue') {
+    html += renderRogueDashboard(c);
+  }
+
   // "Coming Soon" placeholder for classes without full implementation
-  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin') {
+  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin' && c.class !== 'Rogue') {
     html += '<div style="border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;margin:16px 0">';
     html += '<p class="text-dim" style="font-size:0.95rem">Class features coming soon — <strong>' + escapeHtml(c.class) + '</strong>.</p>';
     html += '<p class="text-dim" style="font-size:0.85rem;margin-top:4px">Class-specific resources and abilities will appear here in a future update.</p>';
@@ -233,7 +239,7 @@ function renderDashboard(c, preserveScroll) {
   html += '<div class="rest-header" onclick="toggleRestSection()">';
   html += '<h2>Rest</h2><span class="rest-toggle">options</span></div>';
   html += '<div class="rest-body"><div class="rest-buttons">';
-  html += '<button class="rest-btn" onclick="confirmShortRest()">Short Rest<span class="rest-label">' + getShortRestDescription(c.class, c.subclass) + '</span></button>';
+  html += '<button class="rest-btn" onclick="confirmShortRest()">Short Rest<span class="rest-label">' + getShortRestDescription(c.class, c.subclass, c.level) + '</span></button>';
   html += '<button class="rest-btn" onclick="confirmLongRest()">Long Rest<span class="rest-label">Restores everything</span></button>';
   html += '</div></div></div>';
 
@@ -421,7 +427,7 @@ function renderDashboard(c, preserveScroll) {
 
   // Actions — 2-column grid
   html += '<div class="dash-actions-grid combat-hide">';
-  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin') {
+  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin' && c.class !== 'Rogue') {
     html += '<button class="btn btn-primary btn-large btn-full" disabled style="opacity:0.4">Level Up — ' + escapeHtml(c.class) + ' coming in a future update</button>';
   } else {
     var lvlUpDisabled = c.level >= 20;
@@ -779,6 +785,218 @@ function renderPaladinDashboard(c) {
         });
       });
     }
+  }
+
+  return html;
+}
+
+/* ═══════════════════════════════════════════
+   ROGUE DASHBOARD
+   ═══════════════════════════════════════════ */
+
+function renderRogueDashboard(c) {
+  var html = '';
+  var sub = c.subclass || '';
+  var saDice = getSneakAttackDice(c.level);
+
+  // Sneak Attack — large, prominent
+  html += '<div class="dash-section" style="text-align:center;padding:16px;border:2px solid var(--accent);border-radius:var(--radius)">';
+  html += '<div style="font-size:2rem;font-weight:bold;color:var(--accent)">Sneak Attack: ' + saDice + 'd6</div>';
+  html += '<button class="btn btn-primary" onclick="rollSneakAttack()" style="margin:12px 0;font-size:1rem;padding:10px 24px">Roll ' + saDice + 'd6</button>';
+  html += '<div class="cd-card expanded" style="border-color:var(--border);text-align:left;margin-top:8px">';
+  html += '<div class="cd-card-body" style="font-size:0.85rem">';
+  html += '<p style="font-weight:bold;margin-bottom:6px">SNEAK ATTACK — once per turn</p>';
+  html += '<p>You need ONE of:</p>';
+  html += '<p style="margin-left:8px;color:var(--success)">\u2713 Advantage on the attack roll</p>';
+  html += '<p style="margin-left:8px;color:var(--success)">\u2713 An ally within 5ft of the target (and you don\'t have disadvantage)</p>';
+  html += '<p style="margin-top:6px;color:var(--text-dim)">Must use a finesse or ranged weapon.</p>';
+  html += '</div></div></div>';
+
+  // Cunning Action (level 2+)
+  if (c.level >= 2) {
+    html += '<div class="dash-section"><h2>Cunning Action</h2>';
+    html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:8px">Bonus action: choose one</p>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+    html += '<div class="cd-card" style="flex:1;min-width:120px" onclick="this.classList.toggle(\'expanded\')">';
+    html += '<div class="cd-card-header"><span class="cd-name">Dash</span><span class="cd-expand">&#9654;</span></div>';
+    html += '<div class="cd-card-body"><p>Double your movement this turn.</p></div></div>';
+    html += '<div class="cd-card" style="flex:1;min-width:120px" onclick="this.classList.toggle(\'expanded\')">';
+    html += '<div class="cd-card-header"><span class="cd-name">Disengage</span><span class="cd-expand">&#9654;</span></div>';
+    html += '<div class="cd-card-body"><p>Your movement doesn\'t provoke opportunity attacks this turn.</p></div></div>';
+    html += '<div class="cd-card" style="flex:1;min-width:120px" onclick="this.classList.toggle(\'expanded\')">';
+    html += '<div class="cd-card-header"><span class="cd-name">Hide</span><span class="cd-expand">&#9654;</span></div>';
+    html += '<div class="cd-card-body"><p>Make a Stealth check. Success = hidden (advantage on next attack).</p>';
+    html += '<button class="btn btn-secondary" onclick="event.stopPropagation();doSkillRoll(\'Stealth\')" style="margin-top:6px;font-size:0.8rem;padding:4px 12px">Roll Stealth</button>';
+    html += '</div></div>';
+    html += '</div>';
+
+    // Thief: Fast Hands adds extra Cunning Action options
+    if (sub === 'Thief' && c.level >= 3) {
+      html += '<p class="text-dim" style="font-size:0.8rem;margin-top:8px"><strong>Fast Hands:</strong> Also Use an Object, Sleight of Hand check, or thieves\' tools.</p>';
+    }
+    // Thief: Supreme Sneak note
+    if (sub === 'Thief' && c.level >= 9) {
+      html += '<p class="text-dim" style="font-size:0.8rem;margin-top:4px"><strong>Supreme Sneak:</strong> Advantage on Stealth if you move \u2264 half speed.</p>';
+    }
+    html += '</div>';
+  }
+
+  // Uncanny Dodge (level 5+)
+  if (c.level >= 5) {
+    html += '<div class="dash-section"><h2>Uncanny Dodge</h2>';
+    html += '<p class="text-dim" style="font-size:0.85rem">Reaction: When an attacker you can see hits you, halve the damage. Uses your reaction for the round.</p>';
+    html += '</div>';
+  }
+
+  // Evasion (level 7+)
+  if (c.level >= 7) {
+    html += '<div class="dash-section"><h2>Evasion</h2>';
+    html += '<p class="text-dim" style="font-size:0.85rem">DEX saves: success = no damage. Failure = half damage. Doesn\'t work if incapacitated.</p>';
+    html += '</div>';
+  }
+
+  // Reliable Talent (level 11+)
+  if (c.level >= 11) {
+    html += '<div class="dash-section" style="text-align:center;padding:12px">';
+    html += '<div style="font-size:1.1rem;color:var(--accent);font-weight:bold">Reliable Talent</div>';
+    html += '<div class="text-dim" style="font-size:0.85rem">Minimum d20 roll of 10 on proficient skill checks.</div>';
+    html += '</div>';
+  }
+
+  // Blindsense (level 14+)
+  if (c.level >= 14) {
+    html += '<div class="dash-section"><h2>Blindsense</h2>';
+    html += '<p class="text-dim" style="font-size:0.85rem">You know the location of any hidden or invisible creature within 10 feet, if you can hear.</p>';
+    html += '</div>';
+  }
+
+  // Slippery Mind (level 15+)
+  if (c.level >= 15) {
+    html += '<div class="dash-section"><h2>Slippery Mind</h2>';
+    html += '<p class="text-dim" style="font-size:0.85rem">Proficiency in Wisdom saving throws.</p>';
+    html += '</div>';
+  }
+
+  // Elusive (level 18+)
+  if (c.level >= 18) {
+    html += '<div class="dash-section"><h2>Elusive</h2>';
+    html += '<p class="text-dim" style="font-size:0.85rem">No attack roll has advantage against you while you aren\'t incapacitated.</p>';
+    html += '</div>';
+  }
+
+  // Subclass feature cards (non-core features)
+  var subFeats = ROGUE_SUBCLASS_FEATURES[sub];
+  if (subFeats) {
+    var shownFeats = [];
+    Object.keys(subFeats).forEach(function(lvl) {
+      if (c.level >= parseInt(lvl)) {
+        subFeats[lvl].forEach(function(featName) {
+          // Skip features already shown inline (Fast Hands, Supreme Sneak are in Cunning Action)
+          if (featName === 'Fast Hands' || featName === 'Supreme Sneak') return;
+          // Skip Spellcasting for AT (handled separately in Handoff 4)
+          if (featName === 'Spellcasting') return;
+          shownFeats.push(featName);
+        });
+      }
+    });
+    if (shownFeats.length > 0) {
+      html += '<div class="dash-section"><h2>' + escapeHtml(sub) + ' Features</h2>';
+      shownFeats.forEach(function(featName) {
+        var desc = ROGUE_FEATURE_DESCRIPTIONS[featName] || '';
+        // Assassinate gets a special prominent layout
+        if (featName === 'Assassinate') {
+          html += '<div class="cd-card expanded" style="border-color:var(--accent)">';
+          html += '<div class="cd-card-body">';
+          html += '<p style="font-weight:bold;margin-bottom:6px">ASSASSINATE</p>';
+          html += '<p style="color:var(--success)">\u2713 Advantage vs creatures that haven\'t acted yet</p>';
+          html += '<p style="color:var(--success)">\u2713 Auto-crit on surprised creatures</p>';
+          html += '<p style="margin-top:8px;font-size:0.85rem;color:var(--text-dim)">Surprised target: weapon dice \u00d72 + sneak attack dice \u00d72</p>';
+          html += '</div></div>';
+        } else if (featName === 'Death Strike') {
+          var dsDC = 8 + mod(c.abilityScores.dex) + c.proficiencyBonus;
+          html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+          html += '<div class="cd-card-header"><span class="cd-name">Death Strike</span>';
+          html += '<span class="cd-brief">CON save DC ' + dsDC + '</span>';
+          html += '<span class="cd-expand">&#9654;</span></div>';
+          html += '<div class="cd-card-body"><p>' + desc + '</p>';
+          html += '<p style="margin-top:8px;color:var(--accent);font-weight:bold">Save DC: ' + dsDC + '</p>';
+          html += '</div></div>';
+        } else {
+          html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+          html += '<div class="cd-card-header"><span class="cd-name">' + escapeHtml(featName) + '</span>';
+          html += '<span class="cd-expand">&#9654;</span></div>';
+          html += '<div class="cd-card-body"><p>' + desc + '</p></div></div>';
+        }
+      });
+      html += '</div>';
+    }
+  }
+
+  // Arcane Trickster spell section (level 3+)
+  if (sub === 'Arcane Trickster' && c.level >= 3) {
+    var atIntMod = mod(c.abilityScores.int);
+    var atDC = 8 + c.proficiencyBonus + atIntMod;
+    var atAtk = c.proficiencyBonus + atIntMod;
+    html += '<div class="stat-grid" style="margin-bottom:16px">';
+    html += '<div class="stat-card"><div class="stat-value">' + atDC + '</div><div class="stat-label">Spell Save DC</div></div>';
+    html += '<div class="stat-card"><div class="stat-value">+' + atAtk + '</div><div class="stat-label">Spell Attack</div></div>';
+    html += '</div>';
+
+    // AT Spell Slots
+    var atSlots = c.atSpellSlots || getEkSpellSlots(c.level);
+    if (atSlots && Object.keys(atSlots).length > 0) {
+      html += '<div class="dash-section"><h2>Spell Slots</h2>';
+      Object.entries(atSlots).forEach(function(entry) {
+        var level = entry[0], count = entry[1];
+        var used = (c.atSlotsUsed && c.atSlotsUsed[level]) || 0;
+        html += '<div class="slot-row"><span class="slot-label">' + ordinal(parseInt(level)) + ' Level</span>';
+        for (var si = 0; si < count; si++) {
+          html += '<span class="slot-dot filled interactive' + (si < used ? ' spent' : '') + '" onclick="toggleSlot(' + level + ',' + si + ')"></span>';
+        }
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // AT Cantrips
+    if (c.cantripsKnown && c.cantripsKnown.length > 0) {
+      html += '<div class="dash-section"><h2>Cantrips</h2>';
+      c.cantripsKnown.forEach(function(name) {
+        var sp = getWizardSpell(name) || getSpell(name);
+        if (sp) html += renderSpellCard(sp, c);
+        else html += '<span class="tag">' + escapeHtml(name) + '</span>';
+      });
+      html += '</div>';
+    }
+
+    // AT Known Spells
+    if (c.atSpellsKnown && c.atSpellsKnown.length > 0) {
+      html += '<div class="dash-section"><h2>Spells Known <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + c.atSpellsKnown.length + ')</span></h2>';
+      c.atSpellsKnown.forEach(function(name) {
+        var sp = getWizardSpell(name) || getSpell(name);
+        if (sp) html += renderSpellCard(sp, c);
+        else html += '<span class="tag">' + escapeHtml(name) + '</span>';
+      });
+      html += '</div>';
+    }
+
+    // Spell Thief (level 17+)
+    if (c.level >= 17) {
+      html += renderResourceTracker('Spell Thief', 'spellThief', 1, c, {
+        icon: '&#10024;',
+        description: 'Reaction: When targeted by a spell, make ability check (DC 10 + spell level). On success, negate the spell and learn it for 8 hours. 1 use per long rest.',
+        restType: 'long rest'
+      });
+    }
+  }
+
+  // Stroke of Luck (level 20)
+  if (c.level >= 20) {
+    html += renderResourceTracker('Stroke of Luck', 'strokeOfLuck', 1, c, {
+      icon: '&#9733;',
+      description: 'Turn a missed attack into a hit, or treat an ability check as a 20. 1 use per short rest.',
+      restType: 'short rest'
+    });
   }
 
   return html;

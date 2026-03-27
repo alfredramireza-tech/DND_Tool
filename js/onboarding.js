@@ -989,7 +989,7 @@ function collectFormData() {
     preparedSpellCount: isCaster ? (cls === 'Paladin' ? Math.max(1, mod(abilityScores[cd.spellcastingAbility]) + Math.floor(level / 2)) : Math.max(1, level + mod(abilityScores[cd.spellcastingAbility]))) : 0,
     currentPreparedSpells: isCaster ? prepared : [],
     domainSpells: (cls === 'Cleric' || cls === 'Paladin') ? getDomainSpells(level, cls, document.getElementById('f-subclass').value) : [],
-    features: (cls === 'Cleric') ? getFeatures(level) : (cls === 'Fighter') ? getFighterFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Paladin') ? getPaladinFeatures(level, document.getElementById('f-subclass').value) : [],
+    features: (cls === 'Cleric') ? getFeatures(level) : (cls === 'Fighter') ? getFighterFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Paladin') ? getPaladinFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Rogue') ? getRogueFeatures(level, document.getElementById('f-subclass').value) : [],
     channelDivinityUses: (cls === 'Cleric' || cls === 'Paladin') ? getChannelDivUses(level, cls) : 0,
     equipment: document.getElementById('f-equipment').value,
     notes: document.getElementById('f-notes').value,
@@ -1027,6 +1027,21 @@ function collectFormData() {
       result.spellSlots = {};
       result.preparedSpellCount = 0;
       result.currentPreparedSpells = [];
+    }
+  }
+
+  // Rogue Arcane Trickster fields
+  if (cls === 'Rogue') {
+    var rogueSub = document.getElementById('f-subclass').value;
+    if (rogueSub === 'Arcane Trickster' && level >= 3) {
+      result.atSpellSlots = getEkSpellSlots(level);
+      result.atSpellsKnown = [];
+      result.spellSlots = result.atSpellSlots;
+      // Auto-add Mage Hand
+      if (!result.cantripsKnown) result.cantripsKnown = [];
+      if (result.cantripsKnown.indexOf('Mage Hand') < 0) {
+        result.cantripsKnown.push('Mage Hand');
+      }
     }
   }
 
@@ -1142,8 +1157,8 @@ function renderReview() {
     html += `<div class="review-row"><span class="rlabel">Spell Save DC</span><span class="rvalue">${spellDC}</span></div>
     <div class="review-row"><span class="rlabel">Spell Attack</span><span class="rvalue">+${spellAtk}</span></div>`;
   }
-  // EK: show spell stats even though isCaster is false
-  if (d.class === 'Fighter' && d.subclass === 'Eldritch Knight') {
+  // EK/AT: show spell stats even though isCaster is false
+  if ((d.class === 'Fighter' && d.subclass === 'Eldritch Knight') || (d.class === 'Rogue' && d.subclass === 'Arcane Trickster')) {
     var ekDC = 8 + d.proficiencyBonus + mod(d.abilityScores.int);
     var ekAtk = d.proficiencyBonus + mod(d.abilityScores.int);
     html += `<div class="review-row"><span class="rlabel">Spell Save DC</span><span class="rvalue">${ekDC}</span></div>

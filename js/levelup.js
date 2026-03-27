@@ -20,6 +20,8 @@ function startLevelUp() {
     prog = FIGHTER_PROGRESSION[newLevel];
   } else if (cls === 'Paladin') {
     prog = PALADIN_PROGRESSION[newLevel];
+  } else if (cls === 'Rogue') {
+    prog = ROGUE_PROGRESSION[newLevel];
   } else {
     prog = CLERIC_PROGRESSION[newLevel];
   }
@@ -64,6 +66,8 @@ function startLevelUp() {
     ekCantripSelections: [],
     ekSpellSelections: [],
     ekSpellSwap: { from: null, to: null },
+    // Rogue-specific
+    newExpertiseSkills: [],
     // Screens
     screens: [],
     currentScreen: 0,
@@ -126,6 +130,27 @@ function startLevelUp() {
     // Features
     var palFeats = getPaladinLevelFeatures(newLevel, palSub);
     if (palFeats.length > 0) screens.push('features');
+  } else if (cls === 'Rogue') {
+    var rogueSub = char.subclass || '';
+    // Subclass selection at level 3
+    if (newLevel === 3 && !rogueSub) screens.push('subclassSelect');
+    // Expertise selection at level 6
+    if (newLevel === 6) screens.push('expertiseSelect');
+    // Arcane Trickster: spell screens (same tables as EK)
+    if (rogueSub === 'Arcane Trickster') {
+      var atCantOld = EK_CANTRIPS_KNOWN[char.level] || 0;
+      var atCantNew = EK_CANTRIPS_KNOWN[newLevel] || 0;
+      if (atCantNew > atCantOld) screens.push('ekCantripSelect');
+      var atSpOld = EK_SPELLS_KNOWN[char.level] || 0;
+      var atSpNew = EK_SPELLS_KNOWN[newLevel] || 0;
+      if (atSpNew > atSpOld) screens.push('ekSpellSelect');
+      var oldAtSlots = getEkSpellSlots(char.level);
+      var newAtSlots = getEkSpellSlots(newLevel);
+      if (JSON.stringify(oldAtSlots) !== JSON.stringify(newAtSlots)) screens.push('spellslots');
+    }
+    // Features
+    var rogueFeats = getRogueLevelFeatures(newLevel, rogueSub);
+    if (rogueFeats.length > 0) screens.push('features');
   } else {
     // Cleric screens
     if (prog.newCantrip) screens.push('cantrip');
@@ -166,6 +191,7 @@ function renderLuScreen() {
     case 'ekCantripSelect': container.innerHTML = renderEkCantripSelectScreen(); break;
     case 'ekSpellSelect': container.innerHTML = renderEkSpellSelectScreen(); break;
     case 'paladinFightingStyle': container.innerHTML = renderPaladinFightingStyleScreen(); break;
+    case 'expertiseSelect': container.innerHTML = renderExpertiseSelectScreen(); break;
   }
 
   // Update nav buttons
@@ -262,6 +288,9 @@ function validateLuScreen() {
     }
     case 'paladinFightingStyle':
       if (!luState.fightingStyleSelection) { alert('Please choose a fighting style.'); return false; }
+      return true;
+    case 'expertiseSelect':
+      if (luState.newExpertiseSkills.length !== 2) { alert('Please choose exactly 2 skills for Expertise.'); return false; }
       return true;
     default:
       return true;
@@ -540,6 +569,18 @@ function getAsiDerivedChanges(changes, scores, s) {
       }
     }
   }
+  // Rogue AT: INT affects Spell DC / Attack (same as EK)
+  if (s.cls === 'Rogue') {
+    var rSub = s.char.subclass || s.subclassSelection;
+    if (rSub === 'Arcane Trickster' && changes.int) {
+      var oldIntMod2 = mod(scores.int);
+      var newIntMod2 = mod(scores.int + changes.int);
+      if (newIntMod2 !== oldIntMod2) {
+        derived.push({ label: 'Spell Save DC', old: 8 + newProfBonus + oldIntMod2, new_: 8 + newProfBonus + newIntMod2 });
+        derived.push({ label: 'Spell Attack', old: '+' + (newProfBonus + oldIntMod2), new_: '+' + (newProfBonus + newIntMod2) });
+      }
+    }
+  }
   // Paladin: CHA affects Spell DC / Attack / Prepared Spells
   if (s.cls === 'Paladin') {
     if (changes.cha) {
@@ -602,8 +643,9 @@ function renderCantripScreen() {
 function renderSpellSlotsScreen() {
   const s = luState;
 
-  // EK Fighter: use EK spell slot table
-  if (s.cls === 'Fighter' && (s.char.subclass === 'Eldritch Knight' || s.subclassSelection === 'Eldritch Knight')) {
+  // EK/AT: use 1/3 caster spell slot table
+  if ((s.cls === 'Fighter' && (s.char.subclass === 'Eldritch Knight' || s.subclassSelection === 'Eldritch Knight')) ||
+      (s.cls === 'Rogue' && (s.char.subclass === 'Arcane Trickster' || s.subclassSelection === 'Arcane Trickster'))) {
     return renderEkSpellSlotsScreen();
   }
 
@@ -723,6 +765,9 @@ function renderFeaturesScreen() {
   } else if (s.cls === 'Paladin') {
     features = getPaladinLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
     featureDescriptions = PALADIN_FEATURE_DESCRIPTIONS;
+  } else if (s.cls === 'Rogue') {
+    features = getRogueLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
+    featureDescriptions = ROGUE_FEATURE_DESCRIPTIONS;
   } else {
     features = s.prog.features || [];
     featureDescriptions = FEATURE_DESCRIPTIONS;
@@ -793,6 +838,8 @@ function renderSubclassSelectScreen() {
   var html = '<div class="lu-screen active"><h2>Choose Your ' + cd.subclassLabel + '</h2>';
   var subCallout = s.cls === 'Paladin'
     ? 'At level 3, you swear your Sacred Oath. This determines your oath spells and Channel Divinity options.'
+    : s.cls === 'Rogue'
+    ? 'At level 3, you choose your Roguish Archetype. This determines your specialized abilities.'
     : 'At level 3, you choose your martial archetype. This determines your specialized abilities.';
   html += '<div class="lu-callout">' + subCallout + '</div>';
   html += '<div class="lu-option-group">';
@@ -805,6 +852,9 @@ function renderSubclassSelectScreen() {
     else if (sub === 'Oath of Devotion') desc = 'Honor, virtue, and the protection of the innocent. Buff-focused with Sacred Weapon and aura of anti-charm.';
     else if (sub === 'Oath of the Ancients') desc = 'Preserve the light against darkness. Nature-themed with spell damage resistance aura.';
     else if (sub === 'Oath of Vengeance') desc = 'Punish the wicked with righteous fury. Offense-focused with advantage on specific targets.';
+    else if (sub === 'Thief') desc = 'Quick hands, climbing prowess, and the ultimate ability to use any magic item. Versatile and fast.';
+    else if (sub === 'Assassin') desc = 'Master of surprise and disguise. Devastating first strikes with auto-crits on surprised targets.';
+    else if (sub === 'Arcane Trickster') desc = 'Blend roguish skills with Enchantment and Illusion magic (Wizard spells). Tricky and magical.';
     html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luSelectSubclass(\'' + sub.replace(/'/g, "\\'") + '\')">';
     html += '<div class="opt-title">' + escapeHtml(sub) + '</div>';
     html += '<div class="opt-desc">' + desc + '</div></div>';
@@ -857,6 +907,42 @@ function renderPaladinFightingStyleScreen() {
   return html;
 }
 
+function renderExpertiseSelectScreen() {
+  var s = luState;
+  var existingExpertise = s.char.expertiseSkills || [];
+  var profSkills = (s.char.skillProficiencies || []).filter(function(sk) {
+    return existingExpertise.indexOf(sk.toLowerCase()) < 0;
+  });
+
+  var html = '<div class="lu-screen active"><h2>Choose 2 More Expertise Skills</h2>';
+  html += '<div class="lu-callout">Your proficiency bonus is doubled for the chosen skills. You already have Expertise in: <strong>' + (existingExpertise.length > 0 ? existingExpertise.map(function(s2) { return s2.charAt(0).toUpperCase() + s2.slice(1); }).join(', ') : 'none') + '</strong></div>';
+  html += '<div style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + s.newExpertiseSkills.length + ' / 2</div>';
+  html += '<div class="lu-option-group">';
+  profSkills.forEach(function(sk) {
+    var name = sk.charAt(0).toUpperCase() + sk.slice(1);
+    var skill = SKILLS.find(function(s2) { return s2.name.toLowerCase() === sk.toLowerCase(); });
+    var abilMod = skill ? mod(s.char.abilityScores[skill.ability]) : 0;
+    var expBonus = abilMod + s.char.proficiencyBonus * 2;
+    var selected = s.newExpertiseSkills.indexOf(sk) >= 0;
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luToggleExpertise(\'' + sk.replace(/'/g, "\\'") + '\')">';
+    html += '<div class="opt-title">' + escapeHtml(name) + '</div>';
+    html += '<div class="opt-desc">Current: +' + (abilMod + s.char.proficiencyBonus) + ' \u2192 Expertise: +' + expBonus + '</div></div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function luToggleExpertise(skill) {
+  var s = luState;
+  var idx = s.newExpertiseSkills.indexOf(skill);
+  if (idx >= 0) {
+    s.newExpertiseSkills.splice(idx, 1);
+  } else if (s.newExpertiseSkills.length < 2) {
+    s.newExpertiseSkills.push(skill);
+  }
+  renderLuScreen();
+}
+
 function renderManeuverSelectScreen() {
   var s = luState;
   var knownManeuvers = (s.char.maneuversKnown || []).slice();
@@ -900,6 +986,7 @@ function luToggleManeuver(name) {
 
 function renderEkCantripSelectScreen() {
   var s = luState;
+  var isAT = s.cls === 'Rogue' && (s.char.subclass === 'Arcane Trickster' || s.subclassSelection === 'Arcane Trickster');
   var known = (s.char.cantripsKnown || []).slice();
   var oldCount = EK_CANTRIPS_KNOWN[s.char.level] || 0;
   var newCount = EK_CANTRIPS_KNOWN[s.newLevel] || 0;
@@ -907,6 +994,11 @@ function renderEkCantripSelectScreen() {
 
   var html = '<div class="lu-screen active"><h2>New Cantrip' + (toChoose > 1 ? 's' : '') + '</h2>';
   html += '<div class="lu-callout">Choose ' + toChoose + ' new wizard cantrip' + (toChoose > 1 ? 's' : '') + '.</div>';
+
+  // AT: Mage Hand is a free bonus cantrip at level 3
+  if (isAT && s.newLevel === 3) {
+    html += '<div style="margin-bottom:12px;padding:8px;background:rgba(196,163,90,0.1);border-radius:var(--radius)"><strong style="color:var(--accent)">Mage Hand</strong> — free bonus cantrip (Mage Hand Legerdemain)</div>';
+  }
 
   if (known.length > 0) {
     html += '<div style="margin-bottom:12px"><strong>Known:</strong> ' + known.map(escapeHtml).join(', ') + '</div>';
@@ -916,7 +1008,8 @@ function renderEkCantripSelectScreen() {
   html += '<div class="lu-option-group">';
   WIZARD_CANTRIPS.forEach(function(cantrip) {
     if (known.indexOf(cantrip.name) >= 0) return;
-    if (s.ekCantripSelections.indexOf(cantrip.name) >= 0 && s.ekCantripSelections.indexOf(cantrip.name) !== s.ekCantripSelections.indexOf(cantrip.name)) return;
+    // AT: exclude Mage Hand from picker (it's auto-added)
+    if (isAT && cantrip.name === 'Mage Hand') return;
     var selected = s.ekCantripSelections.indexOf(cantrip.name) >= 0;
     html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luToggleEkCantrip(\'' + cantrip.name.replace(/'/g, "\\'") + '\')">';
     html += '<div class="opt-title">' + escapeHtml(cantrip.name) + ' <span class="text-dim" style="font-size:0.75rem">' + cantrip.school + '</span></div>';
@@ -942,11 +1035,16 @@ function luToggleEkCantrip(name) {
 
 function renderEkSpellSelectScreen() {
   var s = luState;
-  var known = (s.char.ekSpellsKnown || []).slice();
+  var isAT = s.cls === 'Rogue' && (s.char.subclass === 'Arcane Trickster' || s.subclassSelection === 'Arcane Trickster');
+  var known = isAT ? (s.char.atSpellsKnown || []).slice() : (s.char.ekSpellsKnown || []).slice();
   var oldCount = EK_SPELLS_KNOWN[s.char.level] || 0;
   var newCount = EK_SPELLS_KNOWN[s.newLevel] || 0;
   var toChoose = newCount - oldCount;
   var isFreePickLevel = EK_FREE_PICK_LEVELS.indexOf(s.newLevel) >= 0;
+
+  // School filter: EK = Abjuration/Evocation, AT = Enchantment/Illusion
+  var school1 = isAT ? 'Enchantment' : 'Abjuration';
+  var school2 = isAT ? 'Illusion' : 'Evocation';
 
   // Determine max spell level available
   var ekSlots = getEkSpellSlots(s.newLevel);
@@ -958,7 +1056,7 @@ function renderEkSpellSelectScreen() {
   if (isFreePickLevel) {
     html += '<strong style="color:var(--accent)">Free pick!</strong> You can choose from any school.';
   } else {
-    html += 'Must be <strong>Abjuration</strong> or <strong>Evocation</strong>.';
+    html += 'Must be <strong>' + school1 + '</strong> or <strong>' + school2 + '</strong>.';
   }
   html += '</div>';
 
@@ -972,8 +1070,8 @@ function renderEkSpellSelectScreen() {
   var available = getAllEkSpells().filter(function(sp) {
     if (sp.level > maxSpellLevel || sp.level < 1) return false;
     if (known.indexOf(sp.name) >= 0) return false;
-    if (s.ekSpellSelections.indexOf(sp.name) >= 0) return true; // Show selected ones
-    if (!isFreePickLevel && sp.school !== 'Abjuration' && sp.school !== 'Evocation') return false;
+    if (s.ekSpellSelections.indexOf(sp.name) >= 0) return true;
+    if (!isFreePickLevel && sp.school !== school1 && sp.school !== school2) return false;
     return true;
   });
 
@@ -990,7 +1088,7 @@ function renderEkSpellSelectScreen() {
     byLevel[level].forEach(function(sp) {
       var selected = s.ekSpellSelections.indexOf(sp.name) >= 0;
       var schoolTag = '';
-      if (isFreePickLevel && sp.school !== 'Abjuration' && sp.school !== 'Evocation') {
+      if (isFreePickLevel && sp.school !== school1 && sp.school !== school2) {
         schoolTag = ' <span style="font-size:0.7rem;background:var(--surface);padding:2px 6px;border-radius:4px;color:var(--text-dim)">' + sp.school + '</span>';
       }
       html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luToggleEkSpell(\'' + sp.name.replace(/'/g, "\\'") + '\')">';
@@ -1017,7 +1115,7 @@ function renderEkSpellSelectScreen() {
         if (sp.level > maxSpellLevel || sp.level < 1) return false;
         if (known.indexOf(sp.name) >= 0 && sp.name !== s.ekSpellSwap.from) return false;
         if (s.ekSpellSelections.indexOf(sp.name) >= 0) return false;
-        if (!isFreePickLevel && sp.school !== 'Abjuration' && sp.school !== 'Evocation') return false;
+        if (!isFreePickLevel && sp.school !== school1 && sp.school !== school2) return false;
         return true;
       });
       html += '<select onchange="luState.ekSpellSwap.to=this.value" style="min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);width:100%;font-size:0.95rem">';
@@ -1082,6 +1180,16 @@ function renderProfBonusScreen() {
     var palNewDC = 8 + newProf + chaMod;
     changes.push({ label: 'Spell Save DC', old: palOldDC, new_: palNewDC });
     changes.push({ label: 'Spell Attack Bonus', old: '+' + (oldProf + chaMod), new_: '+' + (newProf + chaMod) });
+  } else if (s.cls === 'Rogue') {
+    var rSub2 = s.char.subclass || s.subclassSelection;
+    if (rSub2 === 'Arcane Trickster') {
+      var intChange2 = s.abilityChanges.int || 0;
+      var intMod2 = mod(scores.int + intChange2);
+      var atOldDC = 8 + oldProf + intMod2;
+      var atNewDC = 8 + newProf + intMod2;
+      changes.push({ label: 'Spell Save DC', old: atOldDC, new_: atNewDC });
+      changes.push({ label: 'Spell Attack Bonus', old: '+' + (oldProf + intMod2), new_: '+' + (newProf + intMod2) });
+    }
   } else if (s.cls === 'Fighter') {
     var sub = s.char.subclass || s.subclassSelection;
     if (sub === 'Eldritch Knight') {
@@ -1107,12 +1215,15 @@ function renderProfBonusScreen() {
     changes.push({ label: ABILITY_NAMES[st] + ' Save', old: '+' + (oldProf + stMod), new_: '+' + (newProf + stMod) });
   });
 
-  // Proficient skills
+  // Proficient skills (with expertise awareness)
+  var expSkills = s.char.expertiseSkills || [];
   s.char.skillProficiencies.forEach(function(sk) {
     var skill = SKILLS.find(function(s2) { return s2.name.toLowerCase() === sk.toLowerCase(); });
     if (skill) {
       var sMod = mod(scores[skill.ability] + (s.abilityChanges[skill.ability] || 0));
-      changes.push({ label: skill.name, old: '+' + (oldProf + sMod), new_: '+' + (newProf + sMod) });
+      var isExp = expSkills.indexOf(sk.toLowerCase()) >= 0;
+      var profMult = isExp ? 2 : 1;
+      changes.push({ label: skill.name + (isExp ? ' (E)' : ''), old: '+' + (oldProf * profMult + sMod), new_: '+' + (newProf * profMult + sMod) });
     }
   });
 
@@ -1283,12 +1394,33 @@ function renderLuSummary() {
     }
   }
 
+  // Rogue: Sneak Attack dice change
+  if (s.cls === 'Rogue') {
+    var oldSA = getSneakAttackDice(char.level);
+    var newSA = getSneakAttackDice(s.newLevel);
+    if (oldSA !== newSA) {
+      html += '<div class="lu-summary-section"><div class="lu-change"><span class="change-label">Sneak Attack</span>';
+      html += '<span class="change-old">' + oldSA + 'd6</span><span class="change-arrow">\u2192</span><span class="change-new">' + newSA + 'd6</span></div></div>';
+    }
+    // New expertise at level 6
+    if (s.newExpertiseSkills.length > 0) {
+      html += '<div class="lu-summary-section"><h3>New Expertise</h3>';
+      html += '<div class="tag-list">' + s.newExpertiseSkills.map(function(sk) { return '<span class="tag accent">' + escapeHtml(sk.charAt(0).toUpperCase() + sk.slice(1)) + '</span>'; }).join('') + '</div></div>';
+    }
+    // Slippery Mind at level 15
+    if (s.newLevel === 15) {
+      html += '<div class="lu-summary-section"><div class="tag accent">WIS save proficiency gained (Slippery Mind)</div></div>';
+    }
+  }
+
   // Features
   var allFeatures = [];
   if (s.cls === 'Fighter') {
     allFeatures = getFighterLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
   } else if (s.cls === 'Paladin') {
     allFeatures = getPaladinLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
+  } else if (s.cls === 'Rogue') {
+    allFeatures = getRogueLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
   } else {
     allFeatures = (s.prog.features || []).slice();
     if (s.prog.channelDivinityUses > getChannelDivUses(char.level)) {
@@ -1318,6 +1450,18 @@ function renderLuSummary() {
     var oAtk = oldProf + mod(char.abilityScores.wis);
     var nAtk = newProf + wMod;
     if (oAtk !== nAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oAtk, new_: '+' + nAtk });
+  } else if (s.cls === 'Rogue') {
+    var rSub3 = s.char.subclass || s.subclassSelection;
+    if (rSub3 === 'Arcane Trickster') {
+      var iChg2 = s.abilityChanges.int || 0;
+      var iMod2 = mod(char.abilityScores.int + iChg2);
+      var oAtDC = 8 + oldProf + mod(char.abilityScores.int);
+      var nAtDC = 8 + newProf + iMod2;
+      if (oAtDC !== nAtDC) derivedChanges.push({ label: 'Spell Save DC', old: oAtDC, new_: nAtDC });
+      var oAtAtk = oldProf + mod(char.abilityScores.int);
+      var nAtAtk = newProf + iMod2;
+      if (oAtAtk !== nAtAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oAtAtk, new_: '+' + nAtAtk });
+    }
   } else if (s.cls === 'Paladin') {
     var chaChg2 = s.abilityChanges.cha || 0;
     var cMod = mod(char.abilityScores.cha + chaChg2);
@@ -1464,6 +1608,52 @@ function confirmLevelUp() {
     // Update Fighter features
     char.features = getFighterFeatures(newLevel, char.subclass);
 
+  } else if (cls === 'Rogue') {
+    // Subclass selection (level 3)
+    if (s.subclassSelection) {
+      char.subclass = s.subclassSelection;
+      historyEntry.subclass = s.subclassSelection;
+    }
+    // Expertise (level 6)
+    if (s.newExpertiseSkills.length > 0) {
+      if (!char.expertiseSkills) char.expertiseSkills = [];
+      char.expertiseSkills = char.expertiseSkills.concat(s.newExpertiseSkills);
+      historyEntry.newExpertise = s.newExpertiseSkills;
+    }
+    // Slippery Mind (level 15) — add WIS save proficiency
+    if (newLevel >= 15 && char.savingThrows.indexOf('wis') < 0) {
+      char.savingThrows.push('wis');
+    }
+    // Arcane Trickster: spellcasting
+    if (char.subclass === 'Arcane Trickster') {
+      // Cantrips (auto-add Mage Hand at level 3)
+      if (s.ekCantripSelections.length > 0) {
+        if (!char.cantripsKnown) char.cantripsKnown = [];
+        char.cantripsKnown = char.cantripsKnown.concat(s.ekCantripSelections);
+        historyEntry.atCantrips = s.ekCantripSelections;
+      }
+      if (newLevel === 3 && (char.cantripsKnown || []).indexOf('Mage Hand') < 0) {
+        if (!char.cantripsKnown) char.cantripsKnown = [];
+        char.cantripsKnown.push('Mage Hand');
+      }
+      // Spells
+      if (s.ekSpellSelections.length > 0) {
+        if (!char.atSpellsKnown) char.atSpellsKnown = [];
+        char.atSpellsKnown = char.atSpellsKnown.concat(s.ekSpellSelections);
+        historyEntry.atSpells = s.ekSpellSelections;
+      }
+      // Spell swap
+      if (s.ekSpellSwap.from && s.ekSpellSwap.to && char.atSpellsKnown) {
+        var atSwapIdx = char.atSpellsKnown.indexOf(s.ekSpellSwap.from);
+        if (atSwapIdx >= 0) char.atSpellsKnown[atSwapIdx] = s.ekSpellSwap.to;
+        historyEntry.spellSwap = { from: s.ekSpellSwap.from, to: s.ekSpellSwap.to };
+      }
+      // Spell slots (1/3 caster — same table as EK)
+      char.atSpellSlots = getEkSpellSlots(newLevel);
+      char.spellSlots = char.atSpellSlots;
+    }
+    // Features
+    char.features = getRogueFeatures(newLevel, char.subclass);
   } else if (cls === 'Paladin') {
     // Fighting style (level 2)
     if (s.fightingStyleSelection) {

@@ -171,6 +171,9 @@ function renderResourceStrip(c) {
   } else if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight' && c.ekSpellSlots) {
     slotsObj = c.ekSpellSlots;
     slotsUsed = c.ekSlotsUsed || {};
+  } else if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster' && c.atSpellSlots) {
+    slotsObj = c.atSpellSlots;
+    slotsUsed = c.atSlotsUsed || {};
   }
   if (slotsObj) {
     Object.entries(slotsObj).forEach(function(entry) {
@@ -476,7 +479,7 @@ function showSetConcentration() {
       allSpells = allSpells.concat(domainList);
     }
     if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
-      allSpells = allSpells.concat(c.ekSpellsKnown || []);
+      allSpells = allSpells.concat(c.ekSpellsKnown || []).concat(c.atSpellsKnown || []);
     }
     // Deduplicate
     var seen = {};
@@ -947,15 +950,18 @@ function showCastSpellPrompt(spellName, rollType) {
   var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
   var slots = c.spellSlots || {};
   if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') slots = c.ekSpellSlots || {};
+  if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') slots = c.atSpellSlots || {};
   var html = '<h3>Cast ' + escapeHtml(spellName) + '</h3>';
   html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:12px">Cast at what level?</p>';
   var hasSlot = false;
+  var isThirdCaster = (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') || (c.class === 'Rogue' && c.subclass === 'Arcane Trickster');
   for (var lvl = spell.level; lvl <= 9; lvl++) {
     var total = slots[lvl] || 0;
     if (total === 0) continue;
     var used = 0;
-    if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
-      used = (c.ekSlotsUsed && c.ekSlotsUsed[lvl]) || 0;
+    if (isThirdCaster) {
+      var tcUsed = c.class === 'Fighter' ? (c.ekSlotsUsed || {}) : (c.atSlotsUsed || {});
+      used = tcUsed[lvl] || 0;
     } else {
       used = (c.spellSlotsUsed && c.spellSlotsUsed[lvl]) || 0;
     }
@@ -975,9 +981,11 @@ function castSpellAtLevel(spellName, rollType, castLevel) {
   var c = loadCharacter();
   if (!c) return;
   // Spend the slot
-  if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
-    if (!c.ekSlotsUsed) c.ekSlotsUsed = {};
-    c.ekSlotsUsed[castLevel] = (c.ekSlotsUsed[castLevel] || 0) + 1;
+  var isTC = (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') || (c.class === 'Rogue' && c.subclass === 'Arcane Trickster');
+  if (isTC) {
+    var tcKey = c.class === 'Fighter' ? 'ekSlotsUsed' : 'atSlotsUsed';
+    if (!c[tcKey]) c[tcKey] = {};
+    c[tcKey][castLevel] = (c[tcKey][castLevel] || 0) + 1;
   } else {
     if (!c.spellSlotsUsed) c.spellSlotsUsed = {};
     c.spellSlotsUsed[castLevel] = (c.spellSlotsUsed[castLevel] || 0) + 1;
@@ -994,8 +1002,9 @@ function castSpellAtLevel(spellName, rollType, castLevel) {
     logEvent('Began concentrating on ' + spellName);
     _castIsConc = true;
   }
-  var slotsObj = (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') ? c.ekSpellSlots : c.spellSlots;
-  var remaining = (slotsObj[castLevel] || 0) - ((c.class === 'Fighter' && c.subclass === 'Eldritch Knight' ? c.ekSlotsUsed : c.spellSlotsUsed)[castLevel] || 0);
+  var slotsObj = isTC ? (c.class === 'Fighter' ? c.ekSpellSlots : c.atSpellSlots) : c.spellSlots;
+  var usedObj = isTC ? c[tcKey] : c.spellSlotsUsed;
+  var remaining = (slotsObj[castLevel] || 0) - ((usedObj && usedObj[castLevel]) || 0);
   logEvent('Cast ' + spellName + ' at ' + ordinal(castLevel) + ' level (' + remaining + ' slots remaining)');
   saveCurrentCharacter(c);
   closeModal();
@@ -1346,7 +1355,7 @@ function showPartyCharDetail(idx) {
   }
 
   // Prepared / Known Spells
-  var spellList = c.currentPreparedSpells || c.ekSpellsKnown || [];
+  var spellList = c.currentPreparedSpells || c.ekSpellsKnown || c.atSpellsKnown || [];
   if (spellList.length > 0) {
     var spellLabel = c.currentPreparedSpells ? 'Prepared Spells' : 'Known Spells';
     html += '<h3 style="margin-top:12px">' + spellLabel + '</h3><div style="display:flex;flex-wrap:wrap;gap:4px">';

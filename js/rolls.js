@@ -239,6 +239,37 @@ function doWeaponRoll(idx, rollType) {
     var modLabel = ABILITY_NAMES[w.ability] + (magB ? '+' + magB + ' magic' : '') + (fsDmgBonus ? '+' + fsDmgBonus + ' style' : '');
     const total = diceTotal + dmgMod;
     showRollResult(w.name + ' — ' + (w.damageType || 'Damage'), results, dmgMod, modLabel, total, fsNote, { damage: true });
+    // Rogue: Add Sneak Attack button after damage roll
+    if (char.class === 'Rogue') {
+      var saDice = getSneakAttackDice(char.level);
+      var el = document.getElementById('roll-result');
+      if (el) {
+        var actionsDiv = el.querySelector('.roll-actions');
+        if (actionsDiv) {
+          var saBtn = document.createElement('button');
+          saBtn.className = 'btn btn-primary';
+          saBtn.style.cssText = 'font-size:0.8rem;padding:6px 14px;min-height:36px';
+          saBtn.textContent = '+ Sneak Attack (' + saDice + 'd6)';
+          saBtn.onclick = function() {
+            var saResults = rollDice(saDice, 6);
+            var saTotal = saResults.reduce(function(a, b) { return a + b; }, 0);
+            var newTotal = total + saTotal;
+            var saDiceStr = saResults.map(function(d) { return '<span style="display:inline-block;background:var(--surface);border:1px solid var(--accent);border-radius:4px;padding:2px 6px;margin:0 2px;font-weight:bold;color:var(--accent)">' + d + '</span>'; }).join(' + ');
+            // Update display
+            var totalEl = el.querySelector('.roll-total');
+            if (totalEl) totalEl.textContent = newTotal;
+            var breakdownEl = el.querySelector('.roll-breakdown');
+            if (breakdownEl) breakdownEl.innerHTML += '<br><span style="color:var(--accent)">+ Sneak Attack: </span>' + saDiceStr + ' = <strong>' + saTotal + '</strong>';
+            saBtn.disabled = true;
+            saBtn.textContent = 'Sneak Attack added (+' + saTotal + ')';
+            saBtn.style.opacity = '0.5';
+            logEvent('Sneak Attack: +' + saTotal + ' (' + saDice + 'd6). Total: ' + newTotal);
+            addToRollHistory('+ Sneak Attack', saTotal);
+          };
+          actionsDiv.insertBefore(saBtn, actionsDiv.firstChild);
+        }
+      }
+    }
   }
 }
 
@@ -280,31 +311,48 @@ function doSkillRoll(skillName) {
   const skill = SKILLS.find(s => s.name === skillName);
   if (!skill) return;
   const isProficient = char.skillProficiencies.some(s => s.toLowerCase() === skillName.toLowerCase());
+  const isExpertise = (char.expertiseSkills || []).some(s => s.toLowerCase() === skillName.toLowerCase());
   const abilMod = mod(char.abilityScores[skill.ability]);
   var extraBonus = 0;
   var extraLabel = '';
   // Remarkable Athlete: Champion 7+ adds half prof (round up) to unproficient STR/DEX/CON checks
-  if (!isProficient && char.class === 'Fighter' && char.subclass === 'Champion' && char.level >= 7) {
+  if (!isProficient && !isExpertise && char.class === 'Fighter' && char.subclass === 'Champion' && char.level >= 7) {
     var physAbilities = ['str', 'dex', 'con'];
     if (physAbilities.indexOf(skill.ability) >= 0) {
       extraBonus = Math.ceil(char.proficiencyBonus / 2);
       extraLabel = '+' + extraBonus + ' RA';
     }
   }
-  const bonus = abilMod + (isProficient ? char.proficiencyBonus : 0) + extraBonus;
-  const d20 = rollDie(20);
+  var profMult = isExpertise ? 2 : (isProficient ? 1 : 0);
+  const bonus = abilMod + char.proficiencyBonus * profMult + extraBonus;
+  var d20 = rollDie(20);
+  var reliableTalentNote = '';
+  // Reliable Talent: Rogue 11+, proficient skills, treat d20 below 10 as 10
+  if ((isProficient || isExpertise) && char.class === 'Rogue' && char.level >= 11 && d20 < 10) {
+    reliableTalentNote = 'd20: ' + d20 + ' \u2192 10 (Reliable Talent)';
+    d20 = 10;
+  }
   var total = d20 + bonus;
   var ctx = {};
   if (d20 === 20) ctx.nat20 = true;
-  else if (d20 === 1) ctx.nat1 = true;
-  var modLabel = isProficient ? ABILITY_NAMES[skill.ability] + '+prof' : ABILITY_NAMES[skill.ability];
+  else if (d20 === 1 && !reliableTalentNote) ctx.nat1 = true;
+  var modLabel = isExpertise ? ABILITY_NAMES[skill.ability] + '+Expertise' : (isProficient ? ABILITY_NAMES[skill.ability] + '+prof' : ABILITY_NAMES[skill.ability]);
   if (extraLabel) modLabel += extraLabel;
   var buffInfo = rollBuffBonuses(char, 'checks');
   if (buffInfo.totalBonus !== 0) {
     total += buffInfo.totalBonus;
     buffInfo.results.forEach(function(r) { modLabel += (r.subtract ? '-' : '+') + r.dice + '[' + r.roll + '] ' + r.name; });
   }
-  showRollResult(skillName, [d20], bonus + buffInfo.totalBonus, modLabel, total, '', ctx);
+  showRollResult(skillName, [d20], bonus + buffInfo.totalBonus, modLabel, total, reliableTalentNote, ctx);
+}
+
+function rollSneakAttack() {
+  var char = loadCharacter();
+  if (!char) return;
+  var dice = getSneakAttackDice(char.level);
+  var results = rollDice(dice, 6);
+  var total = results.reduce(function(a, b) { return a + b; }, 0);
+  showRollResult('Sneak Attack', results, 0, dice + 'd6', total, '', { damage: true });
 }
 
 function doGeneralRoll() {

@@ -318,7 +318,7 @@ function doShortRest() {
       }
     });
   }
-  logEvent('Short Rest \u2014 ' + getShortRestDescription(c.class, c.subclass));
+  logEvent('Short Rest \u2014 ' + getShortRestDescription(c.class, c.subclass, c.level));
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c);
@@ -335,7 +335,9 @@ function doLongRest() {
   }
   c.currentHp = c.hp.max; // Heal to base max (boost is gone)
   c.tempHp = 0;
-  if (cdInfo.isCaster || (c.class === 'Fighter' && c.subclass === 'Eldritch Knight')) c.spellSlotsUsed = {};
+  if (cdInfo.isCaster || (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') || (c.class === 'Rogue' && c.subclass === 'Arcane Trickster')) c.spellSlotsUsed = {};
+  if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') c.ekSlotsUsed = {};
+  if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') c.atSlotsUsed = {};
   if (c.class === 'Cleric' || c.class === 'Paladin') c.channelDivinityUsed = 0;
   if (c.resources) {
     Object.keys(c.resources).forEach(function(key) {

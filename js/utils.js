@@ -57,6 +57,17 @@ function migrateCharacter(c) {
     if (!c.fightingStyle) c.fightingStyle = null;
     if (c.features && c.features.length === 0) c.features = getFighterFeatures(c.level, c.subclass);
   }
+  // Rogue-specific fields
+  if (c.class === 'Rogue') {
+    if (c.features && c.features.length === 0) c.features = getRogueFeatures(c.level, c.subclass);
+    if (c.subclass === 'Arcane Trickster' && c.level >= 3) {
+      if (!c.atSpellSlots) c.atSpellSlots = getEkSpellSlots(c.level);
+      if (!c.atSpellsKnown) c.atSpellsKnown = [];
+      if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = c.atSpellSlots;
+      if (!c.cantripsKnown) c.cantripsKnown = [];
+      if (c.cantripsKnown.indexOf('Mage Hand') < 0) c.cantripsKnown.push('Mage Hand');
+    }
+  }
   // Paladin-specific fields
   if (c.class === 'Paladin') {
     if (!c.fightingStyle) c.fightingStyle = null;

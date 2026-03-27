@@ -133,8 +133,8 @@ const CLASS_DATA = {
     defaultTheme: 'roguePurple',
     unarmoredDefense: null,
     unarmoredNoShield: false,
-    shortRestResets: [],
-    longRestResets: [],
+    shortRestResets: ['strokeOfLuck'],
+    longRestResets: ['strokeOfLuck', 'spellThief'],
     recommendedStats: { str: 8, dex: 15, con: 14, int: 12, wis: 13, cha: 10 },
     recommendedSkills: ['acrobatics', 'stealth', 'perception', 'deception'],
     recommendedExpertise: ['stealth', 'perception']
