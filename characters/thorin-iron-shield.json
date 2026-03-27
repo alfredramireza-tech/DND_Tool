@@ -151,7 +151,7 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 34,
+  "currentHp": 39,
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 0,
@@ -197,6 +197,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "7:43 PM",
+      "text": "Initiative: 16"
+    },
+    {
+      "time": "7:43 PM",
+      "text": "Initiative: 16"
+    },
     {
       "time": "7:39 PM",
       "text": "Brain Smoothie — piercing: 8"
@@ -258,7 +266,7 @@
   "journal": [],
   "externalBuffs": [],
   "maxHpBoost": {
-    "value": 0,
-    "source": ""
+    "value": 5,
+    "source": "Aid"
   }
 }
