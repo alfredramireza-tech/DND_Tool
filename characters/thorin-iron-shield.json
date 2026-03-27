@@ -198,6 +198,42 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — piercing: 8"
+    },
+    {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — piercing: 16"
+    },
+    {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — piercing: 6"
+    },
+    {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — piercing: 12"
+    },
+    {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — piercing: 10"
+    },
+    {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — piercing: 9"
+    },
+    {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — piercing: 17"
+    },
+    {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — piercing: 8"
+    },
+    {
+      "time": "7:39 PM",
+      "text": "Brain Smoothie — Attack: 8"
+    },
+    {
       "time": "3:57 PM",
       "text": "Brain Smoothie — piercing: 12"
     },
@@ -220,5 +256,9 @@
   ],
   "inspiration": true,
   "journal": [],
-  "externalBuffs": []
+  "externalBuffs": [],
+  "maxHpBoost": {
+    "value": 0,
+    "source": ""
+  }
 }
