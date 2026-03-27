@@ -969,7 +969,7 @@ function renderEkSpellSelectScreen() {
   html += '<div style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + s.ekSpellSelections.length + ' / ' + toChoose + '</div>';
 
   // Filter available spells
-  var available = WIZARD_SPELL_DB.filter(function(sp) {
+  var available = getAllEkSpells().filter(function(sp) {
     if (sp.level > maxSpellLevel || sp.level < 1) return false;
     if (known.indexOf(sp.name) >= 0) return false;
     if (s.ekSpellSelections.indexOf(sp.name) >= 0) return true; // Show selected ones
@@ -1013,7 +1013,7 @@ function renderEkSpellSelectScreen() {
     html += '</select>';
 
     if (s.ekSpellSwap.from) {
-      var swapAvailable = WIZARD_SPELL_DB.filter(function(sp) {
+      var swapAvailable = getAllEkSpells().filter(function(sp) {
         if (sp.level > maxSpellLevel || sp.level < 1) return false;
         if (known.indexOf(sp.name) >= 0 && sp.name !== s.ekSpellSwap.from) return false;
         if (s.ekSpellSelections.indexOf(sp.name) >= 0) return false;

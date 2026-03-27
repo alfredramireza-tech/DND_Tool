@@ -793,8 +793,16 @@ function renderFightingStyleCard(style) {
 }
 
 function getWizardSpell(name) {
-  return WIZARD_SPELL_DB.find(function(s) { return s.name === name; }) ||
-         WIZARD_CANTRIPS.find(function(s) { return s.name === name; });
+  var found = WIZARD_SPELL_DB.find(function(s) { return s.name === name; }) ||
+              WIZARD_CANTRIPS.find(function(s) { return s.name === name; });
+  if (found) return found;
+  // Bounded fallback: only search SPELL_DB for spells on the Wizard list
+  var allWizNames = [];
+  Object.values(WIZARD_SPELL_LIST).forEach(function(arr) { allWizNames = allWizNames.concat(arr); });
+  if (allWizNames.indexOf(name) >= 0) {
+    return SPELL_DB.find(function(s) { return s.name === name; }) || null;
+  }
+  return null;
 }
 
 function rollSecondWind() {

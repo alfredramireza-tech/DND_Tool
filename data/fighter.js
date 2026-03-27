@@ -43,6 +43,78 @@ const EK_CANTRIPS_KNOWN = {3:2,4:2,5:2,6:2,7:2,8:2,9:2,10:3,11:3,12:3,13:3,14:3,
 /* Levels where EK can pick from ANY school (not just Abj/Evo) */
 const EK_FREE_PICK_LEVELS = [3, 8, 14, 20];
 
+/* PHB Wizard Spell List — levels 1–9 (name roster only, data lives in WIZARD_SPELL_DB or SPELL_DB) */
+const WIZARD_SPELL_LIST = {
+  1: ['Alarm', 'Burning Hands', 'Charm Person', 'Color Spray', 'Comprehend Languages',
+      'Detect Magic', 'Disguise Self', 'Expeditious Retreat', 'False Life',
+      'Feather Fall', 'Find Familiar', 'Fog Cloud', 'Grease', 'Identify',
+      'Illusory Script', 'Jump', 'Longstrider', 'Mage Armor', 'Magic Missile',
+      'Protection from Evil and Good', 'Ray of Sickness', 'Shield', 'Silent Image',
+      'Sleep', "Tasha's Hideous Laughter", "Tenser's Floating Disk", 'Thunderwave',
+      'Unseen Servant', 'Witch Bolt'],
+  2: ['Alter Self', 'Arcane Lock', 'Blindness/Deafness', 'Blur', 'Cloud of Daggers',
+      'Continual Flame', 'Crown of Madness', 'Darkness', 'Darkvision',
+      'Detect Thoughts', 'Enlarge/Reduce', 'Flaming Sphere', 'Gentle Repose',
+      'Gust of Wind', 'Hold Person', 'Invisibility', 'Knock', 'Levitate',
+      'Locate Object', 'Magic Mouth', 'Magic Weapon', "Melf's Acid Arrow",
+      'Mirror Image', 'Misty Step', "Nystul's Magic Aura", 'Phantasmal Force',
+      'Ray of Enfeeblement', 'Rope Trick', 'Scorching Ray', 'See Invisibility',
+      'Shatter', 'Spider Climb', 'Suggestion', 'Web'],
+  3: ['Animate Dead', 'Bestow Curse', 'Blink', 'Clairvoyance', 'Counterspell',
+      'Dispel Magic', 'Fear', 'Feign Death', 'Fireball', 'Fly', 'Gaseous Form',
+      'Glyph of Warding', 'Haste', 'Hypnotic Pattern', "Leomund's Tiny Hut",
+      'Lightning Bolt', 'Magic Circle', 'Major Image', 'Nondetection',
+      'Phantom Steed', 'Protection from Energy', 'Remove Curse', 'Sending',
+      'Sleet Storm', 'Slow', 'Stinking Cloud', 'Tongues', 'Vampiric Touch',
+      'Water Breathing'],
+  4: ['Arcane Eye', 'Banishment', 'Blight', 'Confusion', 'Conjure Minor Elementals',
+      'Control Water', 'Dimension Door', "Evard's Black Tentacles", 'Fabricate',
+      'Fire Shield', 'Greater Invisibility', 'Hallucinatory Terrain', 'Ice Storm',
+      "Leomund's Secret Chest", 'Locate Creature', "Mordenkainen's Faithful Hound",
+      "Mordenkainen's Private Sanctum", "Otiluke's Resilient Sphere",
+      'Phantasmal Killer', 'Polymorph', 'Stone Shape', 'Stoneskin', 'Wall of Fire'],
+  5: ['Animate Objects', "Bigby's Hand", 'Cloudkill', 'Cone of Cold',
+      'Conjure Elemental', 'Contact Other Plane', 'Creation', 'Dominate Person',
+      'Dream', 'Geas', 'Hold Monster', 'Legend Lore', 'Mislead',
+      'Modify Memory', 'Passwall', 'Planar Binding', "Rary's Telepathic Bond",
+      'Scrying', 'Seeming', 'Telekinesis', 'Teleportation Circle', 'Wall of Force',
+      'Wall of Stone'],
+  6: ['Arcane Gate', 'Chain Lightning', 'Circle of Death', 'Contingency',
+      'Create Undead', 'Disintegrate', "Drawmij's Instant Summons",
+      'Eyebite', 'Flesh to Stone', 'Globe of Invulnerability',
+      'Guards and Wards', 'Magic Jar', 'Mass Suggestion',
+      'Move Earth', "Otiluke's Freezing Sphere", "Otto's Irresistible Dance",
+      'Programmed Illusion', 'Sunbeam', 'True Seeing', 'Wall of Ice'],
+  7: ['Delayed Blast Fireball', 'Etherealness', 'Finger of Death',
+      'Forcecage', 'Mirage Arcane', "Mordenkainen's Magnificent Mansion",
+      "Mordenkainen's Sword", 'Plane Shift', 'Prismatic Spray',
+      'Project Image', 'Reverse Gravity', 'Sequester', 'Simulacrum',
+      'Symbol', 'Teleport'],
+  8: ['Antimagic Field', 'Antipathy/Sympathy', 'Clone', 'Control Weather',
+      'Demiplane', 'Dominate Monster', 'Feeblemind', 'Incendiary Cloud',
+      'Maze', 'Mind Blank', 'Power Word Stun', 'Sunburst',
+      'Telepathy', 'Trap the Soul'],
+  9: ['Astral Projection', 'Foresight', 'Gate', 'Imprisonment',
+      'Meteor Swarm', 'Power Word Kill', 'Prismatic Wall',
+      'Shapechange', 'Time Stop', 'True Polymorph', 'Weird', 'Wish']
+};
+
+/* Get all EK-accessible Wizard spell names (levels 1-4 only) */
+function getEkSpellNames() {
+  var names = [];
+  [1, 2, 3, 4].forEach(function(lvl) {
+    if (WIZARD_SPELL_LIST[lvl]) names = names.concat(WIZARD_SPELL_LIST[lvl]);
+  });
+  return names;
+}
+
+/* Get all EK-accessible spell objects (from either WIZARD_SPELL_DB or SPELL_DB) */
+function getAllEkSpells() {
+  return getEkSpellNames().map(function(name) {
+    return getWizardSpell(name);
+  }).filter(Boolean);
+}
+
 /* Wizard Cantrips for Eldritch Knight */
 const WIZARD_CANTRIPS = [
   {name:'Acid Splash',school:'Conjuration',castingTime:'1 action',range:'60 feet',components:'V, S',duration:'Instantaneous',description:'Hurl a bubble of acid. One creature within range, or two creatures within 5ft of each other, must make a DEX save or take 1d6 acid damage. Scales: 2d6 at 5th, 3d6 at 11th, 4d6 at 17th.',save:'dex',tags:['damage']},
@@ -116,8 +188,6 @@ const WIZARD_SPELL_DB = [
   {name:'Knock',level:2,school:'Transmutation',castingTime:'1 action',range:'60 feet',components:'V',duration:'Instantaneous',description:'Choose an object you can see. If it is locked, it becomes unlocked. If it has multiple locks, only one is unlocked. If held shut by Arcane Lock, that spell is suppressed for 10 minutes. The spell produces a loud knock audible within 300ft.',tags:['utility']},
   {name:'Levitate',level:2,school:'Transmutation',castingTime:'1 action',range:'60 feet',components:'V, S, M (either a small leather loop or a piece of golden wire bent into a cup shape with a long shank on one end)',duration:'Concentration, up to 10 minutes',description:'One creature or object (up to 500 lbs) rises vertically up to 20ft and remains suspended. Target can move only by pushing or pulling against fixed objects. Unwilling: CON save.',save:'con',tags:['utility','concentration']},
   {name:'Magic Mouth',level:2,school:'Illusion',castingTime:'1 minute',range:'30 feet',components:'V, S, M (a small bit of honeycomb and jade dust worth at least 10 gp, consumed)',duration:'Until dispelled',description:'Implant a message within an object. When triggered by conditions you set, a mouth appears and speaks the message (up to 25 words). You can make the spell end after the message is delivered or have it remain.',tags:['utility','ritual']},
-  {name:'Magic Weapon',level:2,school:'Transmutation',castingTime:'1 bonus action',range:'Touch',components:'V, S',duration:'Concentration, up to 1 hour',description:'Touch a nonmagical weapon. It becomes +1 (attack and damage). At 4th-level slot: +2. At 6th-level slot: +3.',upcast:{perLevel:'Increased bonus',note:'+2 bonus at 4th level slot, +3 at 6th level slot'},tags:['buff','concentration']},
-  {name:'Misty Step',level:2,school:'Conjuration',castingTime:'1 bonus action',range:'Self',components:'V',duration:'Instantaneous',description:'Teleport up to 30 feet to an unoccupied space that you can see.',tags:['utility']},
   {name:'Mirror Image',level:2,school:'Illusion',castingTime:'1 action',range:'Self',components:'V, S',duration:'1 minute',description:'Three illusory duplicates appear. When attacked, roll d20: 6+ hits a duplicate (AC 10+DEX mod). Duplicates have 1 HP. With 3 remaining: 6+. With 2: 8+. With 1: 11+.',tags:['defense']},
   {name:'Phantasmal Force',level:2,school:'Illusion',castingTime:'1 action',range:'60 feet',components:'V, S, M (a bit of fleece)',duration:'Concentration, up to 1 minute',description:'Craft an illusion in a creature\'s mind (10ft cube). INT save. On failure, the target perceives the illusion as real and rationalizes irrational outcomes. Can deal 1d6 psychic damage per turn. Investigation check to disbelieve.',save:'int',tags:['control','concentration']},
   {name:'Ray of Enfeeblement',level:2,school:'Necromancy',castingTime:'1 action',range:'60 feet',components:'V, S',duration:'Concentration, up to 1 minute',description:'Ranged spell attack. On hit, target deals only half damage with STR-based weapon attacks. Target makes CON save at end of each turn to end the effect.',attack:true,tags:['debuff','concentration']},
@@ -150,7 +220,6 @@ const WIZARD_SPELL_DB = [
   {name:'Feign Death',level:3,school:'Necromancy',castingTime:'1 action',range:'Touch',components:'V, S, M (a pinch of graveyard dirt)',duration:'1 hour',description:'Touch a willing creature. It appears dead (even to magical examination). It is blinded and incapacitated, speed drops to 0, resistance to all damage except psychic. Disease and poison are suspended.',tags:['utility','ritual']},
   {name:'Fly',level:3,school:'Transmutation',castingTime:'1 action',range:'Touch',components:'V, S, M (a wing feather from any bird)',duration:'Concentration, up to 10 minutes',description:'Touch a willing creature. It gains a flying speed of 60 feet. When the spell ends, the creature falls if it is still aloft.',upcast:{perLevel:'+1 target',note:'One additional target per slot level above 3rd'},tags:['utility','concentration']},
   {name:'Gaseous Form',level:3,school:'Transmutation',castingTime:'1 action',range:'Touch',components:'V, S, M (a bit of gauze and a wisp of smoke)',duration:'Concentration, up to 1 hour',description:'Touch a willing creature. It transforms into a misty cloud with a fly speed of 10ft. It can pass through small holes, has resistance to nonmagical damage, advantage on STR/DEX/CON saves.',tags:['utility','concentration']},
-  {name:'Haste',level:3,school:'Transmutation',castingTime:'1 action',range:'30 feet',components:'V, S, M (a shaving of licorice root)',duration:'Concentration, up to 1 minute',description:'Choose a willing creature. Its speed is doubled, +2 AC, advantage on DEX saves, one additional action each turn (Attack [one weapon attack only], Dash, Disengage, Hide, or Use an Object). When the spell ends, the target can\'t move or take actions until after its next turn.',tags:['buff','concentration']},
   {name:'Hypnotic Pattern',level:3,school:'Illusion',castingTime:'1 action',range:'120 feet',components:'S, M (a glowing stick of incense or a crystal vial filled with phosphorescent material)',duration:'Concentration, up to 1 minute',description:'A twisting pattern of colors weaves in a 30ft cube. Each creature that sees it makes WIS save or is charmed: incapacitated and speed 0. Ends if the creature takes damage or someone uses an action to shake it out of it.',save:'wis',tags:['control','concentration']},
   {name:'Major Image',level:3,school:'Illusion',castingTime:'1 action',range:'120 feet',components:'V, S, M (a bit of fleece)',duration:'Concentration, up to 10 minutes',description:'Create the image of an object, creature, or phenomenon no larger than a 20ft cube. It seems real with sound, smell, and temperature. Physical interaction reveals it. Investigation check vs. your spell DC.',upcast:{perLevel:'Permanent at 6th',note:'Cast at 6th level or higher: the spell lasts until dispelled, no concentration'},tags:['utility','concentration']},
   {name:'Phantom Steed',level:3,school:'Illusion',castingTime:'1 minute',range:'30 feet',components:'V, S',duration:'1 hour',description:'A Large quasi-real, horselike creature appears. It has the statistics of a riding horse but speed 100ft. It can travel 13 miles in an hour. When the spell ends, the steed fades, giving the rider 1 minute to dismount.',tags:['utility','ritual']},
@@ -161,17 +230,14 @@ const WIZARD_SPELL_DB = [
   {name:'Water Breathing',level:3,school:'Transmutation',castingTime:'1 action',range:'30 feet',components:'V, S, M (a short reed or piece of straw)',duration:'24 hours',description:'Up to 10 willing creatures can breathe underwater for the duration. Affected creatures also retain their normal breathing.',tags:['utility','ritual']},
   // 4th Level — Abjuration
   {name:'Banishment',level:4,school:'Abjuration',castingTime:'1 action',range:'60 feet',components:'V, S, M (an item distasteful to the target)',duration:'Concentration, up to 1 minute',description:'CHA save. On failure, the target is banished to a harmless demiplane (incapacitated). If native to a different plane: permanent banishment if concentration is maintained for full duration.',save:'cha',upcast:{perLevel:'+1 target',note:'One additional target per slot level above 4th'},tags:['control','concentration']},
-  {name:'Fire Shield',level:4,school:'Abjuration',castingTime:'1 action',range:'Self',components:'V, S, M (a bit of phosphorus or a firefly)',duration:'10 minutes',description:'Choose warm or cold shield. Warm: resistance to cold damage; attackers take 2d8 fire damage. Cold: resistance to fire damage; attackers take 2d8 cold damage.',tags:['defense']},
-  {name:'Stoneskin',level:4,school:'Abjuration',castingTime:'1 action',range:'Touch',components:'V, S, M (diamond dust worth 100 gp, consumed)',duration:'Concentration, up to 1 hour',description:'Touch a willing creature. Its body becomes stone-hard. It has resistance to nonmagical bludgeoning, piercing, and slashing damage.',tags:['defense','concentration']},
+  {name:'Fire Shield',level:4,school:'Evocation',castingTime:'1 action',range:'Self',components:'V, S, M (a bit of phosphorus or a firefly)',duration:'10 minutes',description:'Choose warm or cold shield. Warm: resistance to cold damage; attackers take 2d8 fire damage. Cold: resistance to fire damage; attackers take 2d8 cold damage.',tags:['defense']},
   // 4th Level — Evocation
-  {name:'Ice Storm',level:4,school:'Evocation',castingTime:'1 action',range:'300 feet',components:'V, S, M (a pinch of dust and a few drops of water)',duration:'Instantaneous',description:'Hailstones pound a 20ft-radius, 40ft-high cylinder. Each creature makes DEX save: 2d8 bludgeoning + 4d6 cold damage on failure, half on success. Area becomes difficult terrain until end of your next turn.',save:'dex',upcast:{perLevel:'+1d8 bludgeoning',note:'Add 1d8 bludgeoning damage per slot level above 4th'},tags:['damage']},
   {name:"Otiluke's Resilient Sphere",level:4,school:'Evocation',castingTime:'1 action',range:'30 feet',components:'V, S, M (a hemispherical piece of clear crystal and a matching hemispherical piece of gum arabic)',duration:'Concentration, up to 1 minute',description:'A sphere of shimmering force encloses a creature or object (Large or smaller). DEX save to avoid. Enclosed creature can breathe but is otherwise trapped. Nothing can pass through.',save:'dex',tags:['control','concentration']},
   {name:'Wall of Fire',level:4,school:'Evocation',castingTime:'1 action',range:'120 feet',components:'V, S, M (a small piece of phosphorus)',duration:'Concentration, up to 1 minute',description:'Create a wall of fire up to 60ft long, 20ft high, and 1ft thick (or a 20ft-radius, 20ft-high ring). One side deals 5d8 fire damage to creatures within 10ft (DEX save for half). Entering the wall deals 5d8 fire.',save:'dex',upcast:{perLevel:'+1d8 damage',note:'Add 1d8 fire damage per slot level above 4th'},tags:['damage','concentration']},
   // 4th Level — Other Schools
   {name:'Arcane Eye',level:4,school:'Divination',castingTime:'1 action',range:'30 feet',components:'V, S, M (a bit of bat fur)',duration:'Concentration, up to 1 hour',description:'Create an invisible, magical eye within range that hovers in the air. You receive visual information from it. The eye can move up to 30ft per turn in any direction. It can pass through openings 1 inch in diameter.',tags:['utility','concentration']},
   {name:'Blight',level:4,school:'Necromancy',castingTime:'1 action',range:'30 feet',components:'V, S',duration:'Instantaneous',description:'Necromantic energy washes over a creature. CON save: 8d8 necrotic damage on failure, half on success. Plants and magical plant creatures have disadvantage and take maximum damage.',save:'con',upcast:{perLevel:'+1d8 damage',note:'Add 1d8 necrotic damage per slot level above 4th'},tags:['damage']},
   {name:'Confusion',level:4,school:'Enchantment',castingTime:'1 action',range:'90 feet',components:'V, S, M (three nut shells)',duration:'Concentration, up to 1 minute',description:'10ft-radius sphere. Each creature makes WIS save. On failure, roll d10 each turn to determine action: 1=move randomly, 2-6=no action or movement, 7-8=melee attack random adjacent creature, 9-10=normal action. Repeat save at end of each turn.',save:'wis',upcast:{perLevel:'+5ft radius',note:'Radius increases by 5ft per slot level above 4th'},tags:['control','concentration']},
-  {name:'Dimension Door',level:4,school:'Conjuration',castingTime:'1 action',range:'500 feet',components:'V',duration:'Instantaneous',description:'Teleport to any spot within range. You can describe a specific location or state a direction and distance. Can bring one willing creature of your size or smaller. If you arrive in an occupied space, both take 4d6 force damage.',tags:['utility']},
   {name:"Evard's Black Tentacles",level:4,school:'Conjuration',castingTime:'1 action',range:'90 feet',components:'V, S, M (a piece of tentacle from a giant octopus or a giant squid)',duration:'Concentration, up to 1 minute',description:'Writhing black tentacles fill a 20ft square on the ground. Creatures entering or starting their turn there make DEX save or take 3d6 bludgeoning damage and are restrained. Restrained creatures take 3d6 bludgeoning at start of each turn.',save:'dex',tags:['damage','control','concentration']},
   {name:'Fabricate',level:4,school:'Transmutation',castingTime:'10 minutes',range:'120 feet',components:'V, S',duration:'Instantaneous',description:'Convert raw materials into products of the same material. A 10ft cube of nonmineral material or a 5ft cube of mineral material. If working with mineral, you must be proficient with the relevant artisan\'s tools.',tags:['utility']},
   {name:'Greater Invisibility',level:4,school:'Illusion',castingTime:'1 action',range:'Touch',components:'V, S',duration:'Concentration, up to 1 minute',description:'Touch a willing creature. It becomes invisible for the duration. Unlike regular Invisibility, the invisibility does not end when the target attacks or casts a spell.',tags:['utility','concentration']},
