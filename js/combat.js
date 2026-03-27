@@ -1082,7 +1082,7 @@ function doSpellRollAtLevel(spellName, rollType, castLevel) {
     if (!spell.healing) return;
     var isClericLife = char.class === 'Cleric' && char.subclass === 'Life Domain';
     var dolBonus = isClericLife && castLevel >= 1 ? 2 + castLevel : 0;
-    var healMod = (spell.healing.mod === 'wis' ? castMod : 0) + dolBonus;
+    var healMod = (spell.healing.mod ? castMod : 0) + dolBonus;
     var extraNote = dolBonus > 0 ? 'Includes +' + dolBonus + ' Disciple of Life' : '';
 
     // Upcast healing
@@ -1103,7 +1103,7 @@ function doSpellRollAtLevel(spellName, rollType, castLevel) {
     }
     var parsed = parseDice(healDice);
     if (!parsed) return;
-    var isSupreme = char.level >= 17;
+    var isSupreme = isClericLife && char.level >= 17;
     if (isSupreme) {
       var maxDice = parsed.count * parsed.sides;
       var total = maxDice + healMod;
@@ -1309,10 +1309,15 @@ function showPartyCharDetail(idx) {
   html += '</div>';
 
   // Class resources
-  if (c.class === 'Cleric') {
+  if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 3)) {
     var cdMax = c.channelDivinityUses || 1;
     var cdUsed = c.channelDivinityUsed || 0;
     html += '<h3 style="margin-top:12px">Channel Divinity</h3><div class="text-dim" style="font-size:0.85rem">' + (cdMax - cdUsed) + '/' + cdMax + ' remaining</div>';
+  }
+  if (c.class === 'Paladin') {
+    var pvLohMax = 5 * c.level;
+    var pvLohUsed = (c.resources && c.resources.layOnHands) ? (c.resources.layOnHands.used || 0) : 0;
+    html += '<div class="text-dim" style="font-size:0.85rem;margin-top:4px">Lay on Hands: ' + Math.max(0, pvLohMax - pvLohUsed) + '/' + pvLohMax + ' HP</div>';
   }
   if (c.resources) {
     Object.keys(c.resources).forEach(function(key) {
@@ -1353,11 +1358,12 @@ function showPartyCharDetail(idx) {
     html += '</div>';
   }
 
-  // Domain Spells
-  if (c.class === 'Cleric') {
-    var domainList = getDomainSpellList(c.level);
+  // Domain/Oath Spells
+  if (c.class === 'Cleric' || c.class === 'Paladin') {
+    var pvDomLabel = c.class === 'Paladin' ? 'Oath Spells' : 'Domain Spells';
+    var domainList = getDomainSpellList(c.level, c.class, c.subclass);
     if (domainList.length > 0) {
-      html += '<h3 style="margin-top:12px">Domain Spells</h3><div style="display:flex;flex-wrap:wrap;gap:4px">';
+      html += '<h3 style="margin-top:12px">' + pvDomLabel + '</h3><div style="display:flex;flex-wrap:wrap;gap:4px">';
       domainList.forEach(function(name) { html += '<span class="tag accent">' + escapeHtml(name) + '</span>'; });
       html += '</div>';
     }

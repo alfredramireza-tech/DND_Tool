@@ -18,6 +18,8 @@ function startLevelUp() {
   var prog;
   if (cls === 'Fighter') {
     prog = FIGHTER_PROGRESSION[newLevel];
+  } else if (cls === 'Paladin') {
+    prog = PALADIN_PROGRESSION[newLevel];
   } else {
     prog = CLERIC_PROGRESSION[newLevel];
   }
@@ -107,6 +109,23 @@ function startLevelUp() {
       var newEkSlots = getEkSpellSlots(newLevel);
       if (JSON.stringify(oldEkSlots) !== JSON.stringify(newEkSlots)) screens.push('spellslots');
     }
+  } else if (cls === 'Paladin') {
+    var palSub = char.subclass || '';
+    // Fighting Style at level 2 (if entering from level 1 with no style)
+    if (newLevel === 2 && !char.fightingStyle) screens.push('paladinFightingStyle');
+    // Oath (subclass) selection at level 3
+    if (newLevel === 3 && !palSub) screens.push('subclassSelect');
+    // Spell slot changes
+    var oldPalSlots = getPaladinSpellSlots(char.level);
+    var newPalSlots = getPaladinSpellSlots(newLevel);
+    if (JSON.stringify(oldPalSlots) !== JSON.stringify(newPalSlots)) screens.push('spellslots');
+    // New oath spells
+    var oldOathSpells = getOathSpells(palSub, char.level);
+    var newOathSpells = getOathSpells(palSub, newLevel);
+    if (JSON.stringify(oldOathSpells) !== JSON.stringify(newOathSpells)) screens.push('domainspells');
+    // Features
+    var palFeats = getPaladinLevelFeatures(newLevel, palSub);
+    if (palFeats.length > 0) screens.push('features');
   } else {
     // Cleric screens
     if (prog.newCantrip) screens.push('cantrip');
@@ -146,6 +165,7 @@ function renderLuScreen() {
     case 'maneuverSelect': container.innerHTML = renderManeuverSelectScreen(); break;
     case 'ekCantripSelect': container.innerHTML = renderEkCantripSelectScreen(); break;
     case 'ekSpellSelect': container.innerHTML = renderEkSpellSelectScreen(); break;
+    case 'paladinFightingStyle': container.innerHTML = renderPaladinFightingStyleScreen(); break;
   }
 
   // Update nav buttons
@@ -240,6 +260,9 @@ function validateLuScreen() {
       if (luState.ekSpellSwap.from && !luState.ekSpellSwap.to) { alert('Please select a replacement spell or cancel the swap.'); return false; }
       return true;
     }
+    case 'paladinFightingStyle':
+      if (!luState.fightingStyleSelection) { alert('Please choose a fighting style.'); return false; }
+      return true;
     default:
       return true;
   }
@@ -517,6 +540,20 @@ function getAsiDerivedChanges(changes, scores, s) {
       }
     }
   }
+  // Paladin: CHA affects Spell DC / Attack / Prepared Spells
+  if (s.cls === 'Paladin') {
+    if (changes.cha) {
+      var oldChaMod = mod(scores.cha);
+      var newChaMod = mod(scores.cha + changes.cha);
+      if (newChaMod !== oldChaMod) {
+        derived.push({ label: 'Spell Save DC', old: 8 + newProfBonus + oldChaMod, new_: 8 + newProfBonus + newChaMod });
+        derived.push({ label: 'Spell Attack', old: '+' + (newProfBonus + oldChaMod), new_: '+' + (newProfBonus + newChaMod) });
+        var oldPrep = Math.max(1, oldChaMod + Math.floor(s.newLevel / 2));
+        var newPrep = Math.max(1, newChaMod + Math.floor(s.newLevel / 2));
+        derived.push({ label: 'Prepared Spells', old: oldPrep, new_: newPrep });
+      }
+    }
+  }
   // Fighter EK: INT affects Spell DC / Attack
   if (s.cls === 'Fighter') {
     var sub = s.char.subclass || s.subclassSelection;
@@ -570,19 +607,37 @@ function renderSpellSlotsScreen() {
     return renderEkSpellSlotsScreen();
   }
 
-  // Cleric spell slots
-  const oldSlots = s.char.spellSlots;
-  const newSlots = s.prog.spellSlots;
-  const oldWisMod = mod(s.char.abilityScores.wis);
-  const wisChange = s.abilityChanges.wis || 0;
-  const newWisMod = mod(s.char.abilityScores.wis + wisChange);
-  const oldPrepCount = s.char.level + oldWisMod;
-  const newPrepCount = s.newLevel + newWisMod;
+  // Determine slot tables and prep count based on class
+  var oldSlots, newSlots, oldPrepCount, newPrepCount, prepLabel;
+  if (s.cls === 'Paladin') {
+    oldSlots = getPaladinSpellSlots(s.char.level);
+    newSlots = getPaladinSpellSlots(s.newLevel);
+    var chaChange = s.abilityChanges.cha || 0;
+    var oldChaMod = mod(s.char.abilityScores.cha);
+    var newChaMod = mod(s.char.abilityScores.cha + chaChange);
+    oldPrepCount = Math.max(1, oldChaMod + Math.floor(s.char.level / 2));
+    newPrepCount = Math.max(1, newChaMod + Math.floor(s.newLevel / 2));
+    prepLabel = 'CHA modifier + half paladin level';
+  } else {
+    // Cleric
+    oldSlots = s.char.spellSlots;
+    newSlots = s.prog.spellSlots;
+    var oldWisMod = mod(s.char.abilityScores.wis);
+    var wisChange = s.abilityChanges.wis || 0;
+    var newWisMod = mod(s.char.abilityScores.wis + wisChange);
+    oldPrepCount = s.char.level + oldWisMod;
+    newPrepCount = s.newLevel + newWisMod;
+    prepLabel = 'level + WIS modifier';
+  }
 
   let html = '<div class="lu-screen active"><h2>Spell Slots &amp; Access</h2>';
 
-  if (s.prog.newSpellLevel) {
-    html += '<div class="lu-callout highlight"><strong>New spell level unlocked!</strong> You can now prepare and cast <strong>' + ordinal(s.prog.newSpellLevel) + '-level spells</strong>.</div>';
+  // Check for new spell level
+  var oldMaxLevel = 0, newMaxLevel = 0;
+  Object.keys(oldSlots).forEach(function(k) { oldMaxLevel = Math.max(oldMaxLevel, parseInt(k)); });
+  Object.keys(newSlots).forEach(function(k) { newMaxLevel = Math.max(newMaxLevel, parseInt(k)); });
+  if (newMaxLevel > oldMaxLevel) {
+    html += '<div class="lu-callout highlight"><strong>New spell level unlocked!</strong> You can now prepare and cast <strong>' + ordinal(newMaxLevel) + '-level spells</strong>.</div>';
   }
 
   const allLevels = new Set([...Object.keys(oldSlots).map(Number), ...Object.keys(newSlots).map(Number)]);
@@ -665,6 +720,9 @@ function renderFeaturesScreen() {
   if (s.cls === 'Fighter') {
     features = getFighterLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
     featureDescriptions = FIGHTER_FEATURE_DESCRIPTIONS;
+  } else if (s.cls === 'Paladin') {
+    features = getPaladinLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
+    featureDescriptions = PALADIN_FEATURE_DESCRIPTIONS;
   } else {
     features = s.prog.features || [];
     featureDescriptions = FEATURE_DESCRIPTIONS;
@@ -691,17 +749,36 @@ function renderFeaturesScreen() {
 }
 
 function renderDomainSpellsScreen() {
-  const ds = luState.prog.domainSpells;
-  let html = `<div class="lu-screen active">
-    <h2>New Domain Spells</h2>
-    <div class="lu-callout highlight">These spells are <strong>always prepared</strong> and don't count against your prepared spell limit.</div>`;
+  var s = luState;
+  var isPaladin = s.cls === 'Paladin';
+  var sectionLabel = isPaladin ? 'Oath Spells' : 'Domain Spells';
 
+  // Compute new spells gained at this level
+  var ds;
+  if (isPaladin) {
+    var oath = s.char.subclass || s.subclassSelection || '';
+    var oathTable = OATH_SPELLS[oath];
+    if (oathTable && oathTable[s.newLevel]) {
+      ds = {};
+      ds[s.newLevel] = oathTable[s.newLevel];
+    } else {
+      ds = {};
+    }
+  } else {
+    ds = s.prog.domainSpells || {};
+  }
+
+  let html = '<div class="lu-screen active">';
+  html += '<h2>New ' + sectionLabel + '</h2>';
+  html += '<div class="lu-callout highlight">These spells are <strong>always prepared</strong> and don\'t count against your prepared spell limit.</div>';
+
+  var paladinOathLevelMap = { 3: 1, 5: 2, 9: 3, 13: 4, 17: 5 };
   for (const [lvl, spells] of Object.entries(ds)) {
-    const spellLevel = CHAR_LEVEL_TO_SPELL_LEVEL[parseInt(lvl)] || 1;
-    html += `<div class="lu-feature">
-      <h3>${ordinal(spellLevel)}-Level Domain Spells</h3>
-      <div class="tag-list" style="margin-top:8px">${spells.map(s => `<span class="tag accent">${s}</span>`).join('')}</div>
-    </div>`;
+    var spellLevel = isPaladin ? (paladinOathLevelMap[parseInt(lvl)] || 1) : (CHAR_LEVEL_TO_SPELL_LEVEL[parseInt(lvl)] || 1);
+    html += '<div class="lu-feature">';
+    html += '<h3>' + ordinal(spellLevel) + '-Level ' + sectionLabel + '</h3>';
+    html += '<div class="tag-list" style="margin-top:8px">' + spells.map(function(sp) { return '<span class="tag accent">' + escapeHtml(sp) + '</span>'; }).join('') + '</div>';
+    html += '</div>';
   }
 
   html += '</div>';
@@ -714,7 +791,10 @@ function renderSubclassSelectScreen() {
   var s = luState;
   var cd = s.cd;
   var html = '<div class="lu-screen active"><h2>Choose Your ' + cd.subclassLabel + '</h2>';
-  html += '<div class="lu-callout">At level 3, you choose your martial archetype. This determines your specialized abilities.</div>';
+  var subCallout = s.cls === 'Paladin'
+    ? 'At level 3, you swear your Sacred Oath. This determines your oath spells and Channel Divinity options.'
+    : 'At level 3, you choose your martial archetype. This determines your specialized abilities.';
+  html += '<div class="lu-callout">' + subCallout + '</div>';
   html += '<div class="lu-option-group">';
   cd.subclasses.forEach(function(sub) {
     var selected = s.subclassSelection === sub;
@@ -722,6 +802,9 @@ function renderSubclassSelectScreen() {
     if (sub === 'Champion') desc = 'Improved criticals, remarkable athleticism, and survivability. Simple and powerful.';
     else if (sub === 'Battle Master') desc = 'Tactical superiority dice and combat maneuvers. Strategic and versatile.';
     else if (sub === 'Eldritch Knight') desc = 'Blend martial prowess with arcane magic (Wizard spells). Defensive and offensive casting.';
+    else if (sub === 'Oath of Devotion') desc = 'Honor, virtue, and the protection of the innocent. Buff-focused with Sacred Weapon and aura of anti-charm.';
+    else if (sub === 'Oath of the Ancients') desc = 'Preserve the light against darkness. Nature-themed with spell damage resistance aura.';
+    else if (sub === 'Oath of Vengeance') desc = 'Punish the wicked with righteous fury. Offense-focused with advantage on specific targets.';
     html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luSelectSubclass(\'' + sub.replace(/'/g, "\\'") + '\')">';
     html += '<div class="opt-title">' + escapeHtml(sub) + '</div>';
     html += '<div class="opt-desc">' + desc + '</div></div>';
@@ -756,6 +839,22 @@ function renderFightingStyleSelectScreen() {
 function luSelectFightingStyle(style) {
   luState.fightingStyleSelection = style;
   renderLuScreen();
+}
+
+function renderPaladinFightingStyleScreen() {
+  var s = luState;
+  var html = '<div class="lu-screen active"><h2>Choose Your Fighting Style</h2>';
+  html += '<div class="lu-callout">At level 2, you learn a Fighting Style that enhances your combat technique.</div>';
+  html += '<div class="lu-option-group">';
+  Object.keys(PALADIN_FIGHTING_STYLES).forEach(function(style) {
+    var data = PALADIN_FIGHTING_STYLES[style];
+    var selected = s.fightingStyleSelection === style;
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luSelectFightingStyle(\'' + style.replace(/'/g, "\\'") + '\')">';
+    html += '<div class="opt-title">' + escapeHtml(style) + '</div>';
+    html += '<div class="opt-desc">' + data.effect + '</div></div>';
+  });
+  html += '</div></div>';
+  return html;
 }
 
 function renderManeuverSelectScreen() {
@@ -976,6 +1075,13 @@ function renderProfBonusScreen() {
     changes.push({ label: 'Spell Save DC', old: oldDC, new_: newDC });
     changes.push({ label: 'Spell Attack Bonus', old: '+' + (oldProf + wisMod), new_: '+' + (newProf + wisMod) });
     changes.push({ label: 'Turn Undead DC', old: oldDC, new_: newDC });
+  } else if (s.cls === 'Paladin') {
+    var chaChange = s.abilityChanges.cha || 0;
+    var chaMod = mod(scores.cha + chaChange);
+    var palOldDC = 8 + oldProf + chaMod;
+    var palNewDC = 8 + newProf + chaMod;
+    changes.push({ label: 'Spell Save DC', old: palOldDC, new_: palNewDC });
+    changes.push({ label: 'Spell Attack Bonus', old: '+' + (oldProf + chaMod), new_: '+' + (newProf + chaMod) });
   } else if (s.cls === 'Fighter') {
     var sub = s.char.subclass || s.subclassSelection;
     if (sub === 'Eldritch Knight') {
@@ -1061,10 +1167,12 @@ function renderLuSummary() {
     html += '<div class="lu-summary-section"><h3>Subclass</h3><div class="tag accent">' + escapeHtml(s.subclassSelection) + '</div></div>';
   }
 
-  // Fighter-specific: Fighting Style
+  // Fighting Style (Fighter additional or Paladin first)
   if (s.fightingStyleSelection) {
-    html += '<div class="lu-summary-section"><h3>Additional Fighting Style</h3><div class="tag accent">' + escapeHtml(s.fightingStyleSelection) + '</div>';
-    html += '<div class="text-dim" style="font-size:0.85rem;margin-top:4px">' + FIGHTING_STYLES[s.fightingStyleSelection].effect + '</div></div>';
+    var fsLabel = s.cls === 'Paladin' ? 'Fighting Style' : 'Additional Fighting Style';
+    var fsSource = s.cls === 'Paladin' ? PALADIN_FIGHTING_STYLES : FIGHTING_STYLES;
+    html += '<div class="lu-summary-section"><h3>' + fsLabel + '</h3><div class="tag accent">' + escapeHtml(s.fightingStyleSelection) + '</div>';
+    html += '<div class="text-dim" style="font-size:0.85rem;margin-top:4px">' + fsSource[s.fightingStyleSelection].effect + '</div></div>';
   }
 
   // Fighter-specific: Maneuvers
@@ -1099,16 +1207,16 @@ function renderLuSummary() {
   }
 
   // Spell slots
-  if (s.cls === 'Cleric') {
-    var oldSlots = char.spellSlots;
-    var newSlots = s.prog.spellSlots;
-    var slotsChanged = JSON.stringify(oldSlots) !== JSON.stringify(newSlots);
+  if (s.cls === 'Cleric' || s.cls === 'Paladin') {
+    var sumOldSlots = s.cls === 'Paladin' ? getPaladinSpellSlots(char.level) : char.spellSlots;
+    var sumNewSlots = s.cls === 'Paladin' ? getPaladinSpellSlots(s.newLevel) : s.prog.spellSlots;
+    var slotsChanged = JSON.stringify(sumOldSlots) !== JSON.stringify(sumNewSlots);
     if (slotsChanged) {
       html += '<div class="lu-summary-section"><h3>Spell Slots</h3>';
-      var allLevels = new Set([...Object.keys(oldSlots).map(Number), ...Object.keys(newSlots).map(Number)]);
+      var allLevels = new Set([...Object.keys(sumOldSlots).map(Number), ...Object.keys(sumNewSlots).map(Number)]);
       [...allLevels].sort(function(a,b){return a-b;}).forEach(function(sl) {
-        var old = oldSlots[sl] || 0;
-        var nw = newSlots[sl] || 0;
+        var old = sumOldSlots[sl] || 0;
+        var nw = sumNewSlots[sl] || 0;
         if (old !== nw) {
           html += '<div class="lu-change"><span class="change-label">' + ordinal(sl) + ' Level</span>';
           html += '<span class="change-old">' + old + '</span><span class="change-arrow">→</span><span class="change-new">' + nw + '</span></div>';
@@ -1116,16 +1224,28 @@ function renderLuSummary() {
       });
       html += '</div>';
     }
-    if (s.prog.newSpellLevel) {
-      html += '<div class="lu-callout highlight" style="margin-bottom:16px"><strong>New:</strong> You can now prepare ' + ordinal(s.prog.newSpellLevel) + '-level spells!</div>';
+    // New spell level callout
+    var sumOldMax = 0, sumNewMax = 0;
+    Object.keys(sumOldSlots).forEach(function(k) { sumOldMax = Math.max(sumOldMax, parseInt(k)); });
+    Object.keys(sumNewSlots).forEach(function(k) { sumNewMax = Math.max(sumNewMax, parseInt(k)); });
+    if (sumNewMax > sumOldMax) {
+      html += '<div class="lu-callout highlight" style="margin-bottom:16px"><strong>New:</strong> You can now prepare ' + ordinal(sumNewMax) + '-level spells!</div>';
     }
-    var wisChange = s.abilityChanges.wis || 0;
-    var newWisMod = mod(char.abilityScores.wis + wisChange);
-    var oldPrepCount = char.level + mod(char.abilityScores.wis);
-    var newPrepCount = s.newLevel + newWisMod;
-    if (oldPrepCount !== newPrepCount) {
+    // Prep count
+    var sumOldPrep, sumNewPrep;
+    if (s.cls === 'Paladin') {
+      var chaChg = s.abilityChanges.cha || 0;
+      sumOldPrep = Math.max(1, mod(char.abilityScores.cha) + Math.floor(char.level / 2));
+      sumNewPrep = Math.max(1, mod(char.abilityScores.cha + chaChg) + Math.floor(s.newLevel / 2));
+    } else {
+      var wisChange = s.abilityChanges.wis || 0;
+      var newWisMod = mod(char.abilityScores.wis + wisChange);
+      sumOldPrep = char.level + mod(char.abilityScores.wis);
+      sumNewPrep = s.newLevel + newWisMod;
+    }
+    if (sumOldPrep !== sumNewPrep) {
       html += '<div class="lu-summary-section"><div class="lu-change"><span class="change-label">Prepared Spells</span>';
-      html += '<span class="change-old">' + oldPrepCount + '</span><span class="change-arrow">→</span><span class="change-new">' + newPrepCount + '</span></div></div>';
+      html += '<span class="change-old">' + sumOldPrep + '</span><span class="change-arrow">→</span><span class="change-new">' + sumNewPrep + '</span></div></div>';
     }
   } else if (s.cls === 'Fighter' && (s.char.subclass === 'Eldritch Knight' || s.subclassSelection === 'Eldritch Knight')) {
     var ekOldSlots = getEkSpellSlots(char.level);
@@ -1148,17 +1268,27 @@ function renderLuSummary() {
     }
   }
 
-  // Cleric: Domain spells
+  // Domain/Oath spells
   if (s.cls === 'Cleric' && s.prog.domainSpells) {
     var allNew = Object.values(s.prog.domainSpells).flat();
     html += '<div class="lu-summary-section"><h3>New Domain Spells</h3>';
     html += '<div class="tag-list">' + allNew.map(function(sp) { return '<span class="tag accent">' + escapeHtml(sp) + '</span>'; }).join('') + '</div></div>';
+  }
+  if (s.cls === 'Paladin') {
+    var palOath = s.char.subclass || s.subclassSelection || '';
+    var oathTable = OATH_SPELLS[palOath];
+    if (oathTable && oathTable[s.newLevel]) {
+      html += '<div class="lu-summary-section"><h3>New Oath Spells</h3>';
+      html += '<div class="tag-list">' + oathTable[s.newLevel].map(function(sp) { return '<span class="tag accent">' + escapeHtml(sp) + '</span>'; }).join('') + '</div></div>';
+    }
   }
 
   // Features
   var allFeatures = [];
   if (s.cls === 'Fighter') {
     allFeatures = getFighterLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
+  } else if (s.cls === 'Paladin') {
+    allFeatures = getPaladinLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
   } else {
     allFeatures = (s.prog.features || []).slice();
     if (s.prog.channelDivinityUses > getChannelDivUses(char.level)) {
@@ -1188,6 +1318,15 @@ function renderLuSummary() {
     var oAtk = oldProf + mod(char.abilityScores.wis);
     var nAtk = newProf + wMod;
     if (oAtk !== nAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oAtk, new_: '+' + nAtk });
+  } else if (s.cls === 'Paladin') {
+    var chaChg2 = s.abilityChanges.cha || 0;
+    var cMod = mod(char.abilityScores.cha + chaChg2);
+    var oPalDC = 8 + oldProf + mod(char.abilityScores.cha);
+    var nPalDC = 8 + newProf + cMod;
+    if (oPalDC !== nPalDC) derivedChanges.push({ label: 'Spell Save DC', old: oPalDC, new_: nPalDC });
+    var oPalAtk = oldProf + mod(char.abilityScores.cha);
+    var nPalAtk = newProf + cMod;
+    if (oPalAtk !== nPalAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oPalAtk, new_: '+' + nPalAtk });
   } else if (s.cls === 'Fighter') {
     var fSub = s.char.subclass || s.subclassSelection;
     if (fSub === 'Eldritch Knight') {
@@ -1325,6 +1464,28 @@ function confirmLevelUp() {
     // Update Fighter features
     char.features = getFighterFeatures(newLevel, char.subclass);
 
+  } else if (cls === 'Paladin') {
+    // Fighting style (level 2)
+    if (s.fightingStyleSelection) {
+      char.fightingStyle = s.fightingStyleSelection;
+      historyEntry.fightingStyle = s.fightingStyleSelection;
+    }
+    // Subclass / oath (level 3)
+    if (s.subclassSelection) {
+      char.subclass = s.subclassSelection;
+      historyEntry.subclass = s.subclassSelection;
+    }
+    // Spell slots (half-caster)
+    char.spellSlots = getPaladinSpellSlots(newLevel);
+    // Prepared spell count (CHA-based)
+    var chaModFinal = mod(char.abilityScores.cha);
+    char.preparedSpellCount = Math.max(1, chaModFinal + Math.floor(newLevel / 2));
+    // Channel Divinity
+    char.channelDivinityUses = s.prog.channelDivinityUses || 0;
+    // Features
+    char.features = getPaladinFeatures(newLevel, char.subclass);
+    // Oath spells (stored in domainSpells for backward compat)
+    char.domainSpells = getDomainSpells(newLevel, 'Paladin', char.subclass);
   } else {
     // Cleric
     if (s.prog.newCantrip && s.newCantrip) {

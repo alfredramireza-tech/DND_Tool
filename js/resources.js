@@ -204,10 +204,81 @@ function toggleRestSection() {
   document.getElementById('rest-section').classList.toggle('open');
 }
 
+/* ═══════════════════════════════════════════
+   LAY ON HANDS (Paladin)
+   ═══════════════════════════════════════════ */
+
+function showLayOnHandsPrompt() {
+  var c = loadCharacter();
+  if (!c) return;
+  var lohMax = 5 * c.level;
+  var lohUsed = (c.resources && c.resources.layOnHands) ? (c.resources.layOnHands.used || 0) : 0;
+  var lohRemaining = Math.max(0, lohMax - lohUsed);
+  if (lohRemaining <= 0) {
+    showModal('<h3>Lay on Hands</h3><p>No points remaining. Take a long rest to restore your pool.</p>' +
+      '<div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">OK</button></div>');
+    return;
+  }
+  var html = '<h3>Lay on Hands</h3>';
+  html += '<p class="text-dim" style="font-size:0.85rem">Pool: ' + lohRemaining + ' / ' + lohMax + ' HP remaining</p>';
+  html += '<div style="text-align:left;margin-bottom:12px">';
+  html += '<label style="font-size:0.8rem;color:var(--text-dim)">HP to restore</label>';
+  html += '<input type="number" id="loh-amount" min="1" max="' + lohRemaining + '" placeholder="Amount" onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')useLayOnHands()" style="width:100%;box-sizing:border-box;margin-bottom:8px">';
+  html += '</div>';
+  html += '<div class="confirm-actions" style="flex-wrap:wrap;gap:8px">';
+  if (lohRemaining >= 5) {
+    html += '<button class="btn btn-secondary" onclick="useLayOnHandsCure()" style="font-size:0.85rem">Cure Disease/Poison (5 pts)</button>';
+  }
+  html += '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>';
+  html += '<button class="btn btn-primary" onclick="useLayOnHands()">Heal</button></div>';
+  showModal(html);
+  setTimeout(function() { var el = document.getElementById('loh-amount'); if (el) el.focus(); }, 100);
+}
+
+function useLayOnHands() {
+  var amountEl = document.getElementById('loh-amount');
+  var amount = parseInt(amountEl ? amountEl.value : 0) || 0;
+  if (amount <= 0) return;
+  var c = loadCharacter();
+  if (!c) return;
+  var lohMax = 5 * c.level;
+  if (!c.resources) c.resources = {};
+  if (!c.resources.layOnHands) c.resources.layOnHands = { used: 0, max: lohMax };
+  var lohUsed = c.resources.layOnHands.used || 0;
+  var lohRemaining = Math.max(0, lohMax - lohUsed);
+  if (amount > lohRemaining) amount = lohRemaining;
+  c.resources.layOnHands.used = lohUsed + amount;
+  logEvent('Lay on Hands: healed ' + amount + ' HP (' + (lohRemaining - amount) + '/' + lohMax + ' remaining)');
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
+}
+
+function useLayOnHandsCure() {
+  var c = loadCharacter();
+  if (!c) return;
+  var lohMax = 5 * c.level;
+  if (!c.resources) c.resources = {};
+  if (!c.resources.layOnHands) c.resources.layOnHands = { used: 0, max: lohMax };
+  var lohUsed = c.resources.layOnHands.used || 0;
+  var lohRemaining = Math.max(0, lohMax - lohUsed);
+  if (lohRemaining < 5) {
+    showModal('<h3>Not Enough Points</h3><p>Curing a disease or poison costs 5 points. You have ' + lohRemaining + ' remaining.</p>' +
+      '<div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">OK</button></div>');
+    return;
+  }
+  c.resources.layOnHands.used = lohUsed + 5;
+  logEvent('Lay on Hands: cured disease/poison (' + (lohRemaining - 5) + '/' + lohMax + ' remaining)');
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
+}
+
 function confirmShortRest() {
   var c = loadCharacter();
   var desc = 'This will ';
   if (c && c.class === 'Cleric') desc += 'restore all Channel Divinity uses.';
+  else if (c && c.class === 'Paladin') desc += 'restore Channel Divinity.';
   else desc += 'allow recovery of some abilities.';
   showModal(
     '<h3>Short Rest</h3><p>' + desc + '</p>' +
@@ -223,6 +294,7 @@ function confirmLongRest() {
   var desc = 'This will restore HP to max and clear temp HP';
   if (cdInfo.isCaster) desc += ', restore all spell slots';
   if (c && c.class === 'Cleric') desc += ', restore Channel Divinity';
+  if (c && c.class === 'Paladin') desc += ', restore Channel Divinity, Lay on Hands pool, Divine Sense, and Cleansing Touch';
   desc += '.';
   showModal(
     '<h3>Long Rest</h3><p>' + desc + '</p>' +
@@ -264,7 +336,7 @@ function doLongRest() {
   c.currentHp = c.hp.max; // Heal to base max (boost is gone)
   c.tempHp = 0;
   if (cdInfo.isCaster || (c.class === 'Fighter' && c.subclass === 'Eldritch Knight')) c.spellSlotsUsed = {};
-  if (c.class === 'Cleric') c.channelDivinityUsed = 0;
+  if (c.class === 'Cleric' || c.class === 'Paladin') c.channelDivinityUsed = 0;
   if (c.resources) {
     Object.keys(c.resources).forEach(function(key) {
       c.resources[key].used = 0;

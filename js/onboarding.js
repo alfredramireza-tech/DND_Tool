@@ -165,20 +165,26 @@ function onClassChange() {
   // Update recommended stats button
   updateRecommendedStatsButton(cls);
 
-  // Show/hide Fighting Style picker (Fighter only)
+  // Show/hide Fighting Style picker (Fighter or Paladin)
   var fsSection = document.getElementById('fighting-style-section');
-  if (cls === 'Fighter') {
+  if (cls === 'Fighter' || cls === 'Paladin') {
     fsSection.classList.remove('hidden');
     var fsSelect = document.getElementById('f-fighting-style');
     fsSelect.innerHTML = '<option value="">— Select Fighting Style —</option>';
-    Object.keys(FIGHTING_STYLES).forEach(function(style) {
+    var styleSource = (cls === 'Paladin') ? PALADIN_FIGHTING_STYLES : FIGHTING_STYLES;
+    Object.keys(styleSource).forEach(function(style) {
       fsSelect.innerHTML += '<option value="' + style + '">' + style + '</option>';
     });
     fsSelect.onchange = function() {
       var desc = document.getElementById('fighting-style-desc');
-      var data = FIGHTING_STYLES[this.value];
+      var data = styleSource[this.value];
       desc.textContent = data ? data.effect : '';
     };
+    // For Paladin, add note about level 2 requirement
+    if (cls === 'Paladin') {
+      var desc = document.getElementById('fighting-style-desc');
+      desc.textContent = 'Fighting Style is gained at level 2.';
+    }
   } else {
     fsSection.classList.add('hidden');
   }
@@ -356,13 +362,18 @@ function buildCantripList() {
 
 function buildPreparedSpellList(level) {
   const container = document.getElementById('prepared-spell-list');
-  const domainList = getDomainSpellList(level);
-  const slots = getSpellSlots(level);
-  const maxSpellLevel = Math.max(...Object.keys(slots).map(Number));
+  var cls = document.getElementById('f-class').value || 'Cleric';
+  var subclass = document.getElementById('f-subclass').value || '';
+  const domainList = getDomainSpellList(level, cls, subclass);
+  const slots = getSpellSlots(level, cls);
+  var slotKeys = Object.keys(slots).map(Number);
+  if (slotKeys.length === 0) { container.innerHTML = ''; return; }
+  const maxSpellLevel = Math.max(...slotKeys);
+  var spellSource = (cls === 'Paladin') ? PALADIN_SPELLS : CLERIC_SPELLS;
   var proxy = getOnboardingCharProxy();
   let html = '';
   for (let sl = 1; sl <= maxSpellLevel; sl++) {
-    const spells = (CLERIC_SPELLS[sl] || []).filter(s => !domainList.includes(s));
+    const spells = (spellSource[sl] || []).filter(s => !domainList.includes(s));
     if (spells.length === 0) continue;
     html += `<h4 class="text-dim mt-8 mb-8" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em">${ordinal(sl)}-Level Spells</h4>`;
     spells.forEach(function(name) {
@@ -387,16 +398,20 @@ function buildPreparedSpellList(level) {
 
 function buildDomainSpellsDisplay(level) {
   const container = document.getElementById('domain-spells-display');
-  const ds = getDomainSpells(level);
+  var cls = document.getElementById('f-class').value || 'Cleric';
+  var subclass = document.getElementById('f-subclass').value || '';
+  const ds = getDomainSpells(level, cls, subclass);
   const entries = Object.entries(ds);
+  var sectionLabel = (cls === 'Paladin') ? 'Oath Spells' : 'Domain Spells';
   if (entries.length === 0) {
-    container.innerHTML = '<h3>Domain Spells <span class="badge">Always Prepared</span></h3><p class="text-dim">None at this level</p>';
+    container.innerHTML = '<h3>' + sectionLabel + ' <span class="badge">Always Prepared</span></h3><p class="text-dim">None at this level</p>';
     return;
   }
   var proxy = getOnboardingCharProxy();
-  let html = '<h3>Domain Spells <span class="badge">Always Prepared</span></h3>';
+  let html = '<h3>' + sectionLabel + ' <span class="badge">Always Prepared</span></h3>';
+  var paladinOathLevelMap = { 3: 1, 5: 2, 9: 3, 13: 4, 17: 5 };
   for (const [lvl, spells] of entries) {
-    const spellLevel = CHAR_LEVEL_TO_SPELL_LEVEL[parseInt(lvl)] || 1;
+    const spellLevel = (cls === 'Paladin') ? (paladinOathLevelMap[parseInt(lvl)] || 1) : (CHAR_LEVEL_TO_SPELL_LEVEL[parseInt(lvl)] || 1);
     html += '<h4 class="text-dim mt-8 mb-8" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em">' + ordinal(spellLevel) + '-Level</h4>';
     spells.forEach(function(name) {
       var spell = getSpell(name);
@@ -486,16 +501,53 @@ function showStep(n) {
     var cls4 = document.getElementById('f-class').value;
     var cd4 = CLASS_DATA[cls4];
     if (cd4 && !cd4.isCaster) return; // non-casters skip this step
+    if (cls4 === 'Paladin' && (parseInt(document.getElementById('f-level').value) || 1) < 2) return; // Paladin has no spellcasting until level 2
     const level = parseInt(document.getElementById('f-level').value) || 3;
-    const wisScore = parseInt(document.getElementById('score-wis').value) || 10;
-    const wisMod = mod(wisScore);
-    const prepCount = level + wisMod;
-    const cantripCount = getCantripsCount(level);
+    var castAbil4 = cd4.spellcastingAbility || 'wis';
+    var abilScore4 = parseInt(document.getElementById('score-' + castAbil4).value) || 10;
+    var abilMod4 = mod(abilScore4);
+    var prepCount, prepLabel;
+    if (cls4 === 'Paladin') {
+      prepCount = Math.max(1, abilMod4 + Math.floor(level / 2));
+      prepLabel = `CHA modifier ${abilMod4 >= 0 ? '+' : ''}${abilMod4} + half paladin level ${Math.floor(level / 2)}`;
+    } else {
+      prepCount = level + abilMod4;
+      prepLabel = `level ${level} + WIS modifier ${abilMod4 >= 0 ? '+' : ''}${abilMod4}`;
+    }
+    const cantripCount = getCantripsCount(level, cls4);
+
+    // Hide cantrip section for Paladin (no cantrips)
+    var cantripHeader = document.querySelector('#step-4 > h3');
+    var cantripCountEl = document.getElementById('cantrip-count');
+    var cantripListEl = document.getElementById('cantrip-list');
+    var cantripErr = document.getElementById('err-cantrips');
+    if (cls4 === 'Paladin') {
+      if (cantripHeader) cantripHeader.style.display = 'none';
+      cantripCountEl.style.display = 'none';
+      cantripListEl.style.display = 'none';
+      cantripErr.style.display = 'none';
+      // Update step title
+      document.querySelector('#step-4 > h2').textContent = 'Spells';
+    } else {
+      if (cantripHeader) cantripHeader.style.display = '';
+      cantripCountEl.style.display = '';
+      cantripListEl.style.display = '';
+      cantripErr.style.display = '';
+      document.querySelector('#step-4 > h2').textContent = 'Spells & Cantrips';
+    }
 
     document.getElementById('cantrip-max').textContent = cantripCount;
     document.getElementById('prepared-max').textContent = prepCount;
     document.getElementById('prepared-info').innerHTML =
-      `You can prepare <span class="current">${prepCount}</span> spells (level ${level} + WIS modifier ${wisMod >= 0 ? '+' : ''}${wisMod})`;
+      `You can prepare <span class="current">${prepCount}</span> spells (${prepLabel})`;
+
+    // Update subtitle text for oath vs domain spells
+    var subtitleEl = document.querySelector('#step-4 .subtitle');
+    if (subtitleEl) {
+      subtitleEl.textContent = cls4 === 'Paladin'
+        ? 'These are in addition to your oath spells above. Selection is optional.'
+        : 'These are in addition to your domain spells above. Selection is optional.';
+    }
 
     // Preserve user's prepared spell selections before rebuilding the list
     const prevPrepared = [];
@@ -510,7 +562,7 @@ function showStep(n) {
     document.querySelectorAll('input[name="prepared"]').forEach(cb => {
       cb.checked = spellsToCheck.includes(cb.value);
     });
-    onCantripChange();
+    if (cls4 !== 'Paladin') onCantripChange();
     onPreparedChange();
   }
   if (n === 6) {
@@ -606,8 +658,8 @@ function populateForm(data) {
   document.getElementById('f-notes').value = data.notes || '';
   populateWeapons(data.weapons || []);
 
-  // Fighter: restore fighting style
-  if (data.class === 'Fighter' && data.fightingStyle) {
+  // Fighter/Paladin: restore fighting style
+  if ((data.class === 'Fighter' || data.class === 'Paladin') && data.fightingStyle) {
     var fsEl = document.getElementById('f-fighting-style');
     if (fsEl) fsEl.value = data.fightingStyle;
   }
@@ -623,7 +675,8 @@ function nextStep() {
     currentStep++;
     var cls = document.getElementById('f-class').value;
     var cd = CLASS_DATA[cls];
-    if (currentStep === 4 && cd && !cd.isCaster) currentStep = 5;
+    var level = parseInt(document.getElementById('f-level').value) || 1;
+    if (currentStep === 4 && ((cd && !cd.isCaster) || (cls === 'Paladin' && level < 2))) currentStep = 5;
     showStep(currentStep);
   }
 }
@@ -633,7 +686,8 @@ function prevStep() {
     currentStep--;
     var cls = document.getElementById('f-class').value;
     var cd = CLASS_DATA[cls];
-    if (currentStep === 4 && cd && !cd.isCaster) currentStep = 3;
+    var level = parseInt(document.getElementById('f-level').value) || 1;
+    if (currentStep === 4 && ((cd && !cd.isCaster) || (cls === 'Paladin' && level < 2))) currentStep = 3;
     showStep(currentStep);
   }
 }
@@ -666,10 +720,14 @@ function validateStep(n) {
       const cls = document.getElementById('f-class').value;
       const cd = CLASS_DATA[cls];
       if (cd && !cd.isCaster) return true;
-      const level = parseInt(document.getElementById('f-level').value) || 3;
-      const needed = getCantripsCount(level);
-      const selected = document.querySelectorAll('input[name="cantrip"]:checked').length;
-      if (selected !== needed) { showError('err-cantrips'); return false; }
+      if (cls === 'Paladin' && (parseInt(document.getElementById('f-level').value) || 1) < 2) return true;
+      // Paladin has no cantrips — skip cantrip validation
+      if (cls !== 'Paladin') {
+        const level = parseInt(document.getElementById('f-level').value) || 3;
+        const needed = getCantripsCount(level, cls);
+        const selected = document.querySelectorAll('input[name="cantrip"]:checked').length;
+        if (selected !== needed) { showError('err-cantrips'); return false; }
+      }
       return true;
     }
     case 6:
@@ -857,7 +915,12 @@ function onPreparedChange() {
   var cdPrep = CLASS_DATA[cls] || CLASS_DATA.Cleric;
   var castAbil = cdPrep.spellcastingAbility || 'wis';
   const abilScore = parseInt(document.getElementById('score-' + castAbil).value) || 10;
-  const maxPrep = level + mod(abilScore);
+  var maxPrep;
+  if (cls === 'Paladin') {
+    maxPrep = Math.max(1, mod(abilScore) + Math.floor(level / 2));
+  } else {
+    maxPrep = level + mod(abilScore);
+  }
 
   // Use reusable enforcer — strict disable at limit
   enforceSelectionLimit('prepared', maxPrep, 'prepared-count');
@@ -921,13 +984,13 @@ function collectFormData() {
     initiative: mod(abilityScores.dex),
     savingThrows: cd.savingThrows,
     skillProficiencies: skillProfs,
-    cantripsKnown: isCaster ? cantrips : [],
-    spellSlots: isCaster ? getSpellSlots(level) : {},
-    preparedSpellCount: isCaster ? level + mod(abilityScores[cd.spellcastingAbility]) : 0,
+    cantripsKnown: (isCaster && cls !== 'Paladin') ? cantrips : [],
+    spellSlots: isCaster ? getSpellSlots(level, cls) : {},
+    preparedSpellCount: isCaster ? (cls === 'Paladin' ? Math.max(1, mod(abilityScores[cd.spellcastingAbility]) + Math.floor(level / 2)) : level + mod(abilityScores[cd.spellcastingAbility])) : 0,
     currentPreparedSpells: isCaster ? prepared : [],
-    domainSpells: (cls === 'Cleric') ? getDomainSpells(level) : [],
-    features: (cls === 'Cleric') ? getFeatures(level) : (cls === 'Fighter') ? getFighterFeatures(level, document.getElementById('f-subclass').value) : [],
-    channelDivinityUses: (cls === 'Cleric') ? getChannelDivUses(level) : 0,
+    domainSpells: (cls === 'Cleric' || cls === 'Paladin') ? getDomainSpells(level, cls, document.getElementById('f-subclass').value) : [],
+    features: (cls === 'Cleric') ? getFeatures(level) : (cls === 'Fighter') ? getFighterFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Paladin') ? getPaladinFeatures(level, document.getElementById('f-subclass').value) : [],
+    channelDivinityUses: (cls === 'Cleric' || cls === 'Paladin') ? getChannelDivUses(level, cls) : 0,
     equipment: document.getElementById('f-equipment').value,
     notes: document.getElementById('f-notes').value,
     weapons: collectWeapons(),
@@ -953,6 +1016,17 @@ function collectFormData() {
     if (sub === 'Eldritch Knight' && level >= 3) {
       result.ekSpellSlots = getEkSpellSlots(level);
       result.spellSlots = result.ekSpellSlots;
+    }
+  }
+
+  // Paladin-specific fields
+  if (cls === 'Paladin') {
+    result.fightingStyle = (level >= 2) ? (document.getElementById('f-fighting-style').value || null) : null;
+    // Level 1 Paladin has no spellcasting
+    if (level < 2) {
+      result.spellSlots = {};
+      result.preparedSpellCount = 0;
+      result.currentPreparedSpells = [];
     }
   }
 
@@ -985,6 +1059,10 @@ function saveCharacter() {
         character.ekSpellsKnown = existing.ekSpellsKnown || [];
         character.ekSpellSlots = existing.ekSpellSlots || {};
         character.fightingStyle2 = existing.fightingStyle2 || null;
+      }
+      // Preserve Paladin-specific fields
+      if (existing.class === 'Paladin') {
+        character.fightingStyle = existing.fightingStyle || character.fightingStyle || null;
       }
       // Password: update if new value entered, keep existing if blank
       character.passwordHash = pw ? simpleHash(pw) : (existing.passwordHash || null);
@@ -1071,7 +1149,7 @@ function renderReview() {
     html += `<div class="review-row"><span class="rlabel">Spell Save DC</span><span class="rvalue">${ekDC}</span></div>
     <div class="review-row"><span class="rlabel">Spell Attack</span><span class="rvalue">+${ekAtk}</span></div>`;
   }
-  if (d.class === 'Fighter' && d.fightingStyle) {
+  if ((d.class === 'Fighter' || d.class === 'Paladin') && d.fightingStyle) {
     html += `<div class="review-row"><span class="rlabel">Fighting Style</span><span class="rvalue">${d.fightingStyle}</span></div>`;
   }
   html += `</div>`;
@@ -1092,15 +1170,20 @@ function renderReview() {
   }
 
   // Spells (casters only)
-  if (isCasterRev) {
-    const domainList = getDomainSpellList(d.level);
+  if (isCasterRev && !(d.class === 'Paladin' && d.level < 2)) {
+    const domainList = getDomainSpellList(d.level, d.class, d.subclass);
     const slotEntries = Object.entries(d.spellSlots);
     html += `<div class="review-block">
-      <h3>Spells</h3>
-      <div class="review-row"><span class="rlabel">Cantrips</span><span class="rvalue">${d.cantripsKnown.join(', ')}</span></div>
-      <div class="review-row"><span class="rlabel">Spell Slots</span><span class="rvalue">${slotEntries.map(([l,c]) => `${ordinal(parseInt(l))}: ${c}`).join(' | ')}</span></div>`;
+      <h3>Spells</h3>`;
+    if (d.class !== 'Paladin') {
+      html += `<div class="review-row"><span class="rlabel">Cantrips</span><span class="rvalue">${d.cantripsKnown.join(', ')}</span></div>`;
+    }
+    html += `<div class="review-row"><span class="rlabel">Spell Slots</span><span class="rvalue">${slotEntries.map(([l,c]) => `${ordinal(parseInt(l))}: ${c}`).join(' | ')}</span></div>`;
     if (d.class === 'Cleric') {
       html += `<div class="review-row"><span class="rlabel">Domain Spells</span><span class="rvalue">${domainList.join(', ')}</span></div>`;
+    }
+    if (d.class === 'Paladin' && domainList.length > 0) {
+      html += `<div class="review-row"><span class="rlabel">Oath Spells</span><span class="rvalue">${domainList.join(', ')}</span></div>`;
     }
     html += `<div class="review-row"><span class="rlabel">Prepared (${d.currentPreparedSpells.length}/${d.preparedSpellCount})</span><span class="rvalue">${d.currentPreparedSpells.join(', ') || '—'}</span></div>
     </div>`;

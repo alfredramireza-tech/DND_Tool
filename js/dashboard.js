@@ -5,6 +5,7 @@
 
 function getShortRestDescription(cls, sub) {
   if (cls === 'Cleric') return 'Restores Channel Divinity';
+  if (cls === 'Paladin') return 'Restores Channel Divinity';
   if (cls === 'Fighter') {
     var parts = ['Second Wind', 'Action Surge'];
     if (sub === 'Battle Master') parts.push('Superiority Dice');
@@ -108,14 +109,14 @@ function renderDashboard(c, preserveScroll) {
   html += '<div class="stat-card"><div class="stat-value">' + c.speed + ' ft</div><div class="stat-label">Speed</div></div>';
   html += '<div class="stat-card"><div class="stat-value">' + (c.initiative >= 0 ? '+' : '') + c.initiative + '</div><div class="stat-label">Initiative</div></div>';
   html += '<div class="stat-card"><div class="stat-value">+' + c.proficiencyBonus + '</div><div class="stat-label">Prof. Bonus</div></div>';
-  if (isCaster) {
+  if (isCaster && !(c.class === 'Paladin' && c.level < 2)) {
     html += '<div class="stat-card"><div class="stat-value">' + spellDC + '</div><div class="stat-label">Spell Save DC</div></div>';
     html += '<div class="stat-card"><div class="stat-value">+' + spellAtk + '</div><div class="stat-label">Spell Attack</div></div>';
   }
   html += '</div>';
 
-  // Channel Divinity Tracker (Cleric only)
-  if (c.class === 'Cleric') {
+  // Channel Divinity Tracker (Cleric or Paladin level 3+)
+  if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 3)) {
     var cdMax = c.channelDivinityUses || 1;
     var cdUsed = c.channelDivinityUsed || 0;
     html += '<div class="dash-section"><h2>Channel Divinity <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + cdMax + '/rest)</span></h2>';
@@ -127,30 +128,44 @@ function renderDashboard(c, preserveScroll) {
 
     // Channel Divinity description cards
     html += '<div class="cd-cards">';
-    var destroyThreshold = '';
-    if (c.level >= 17) destroyThreshold = 'CR 4 or lower';
-    else if (c.level >= 14) destroyThreshold = 'CR 3 or lower';
-    else if (c.level >= 11) destroyThreshold = 'CR 2 or lower';
-    else if (c.level >= 8) destroyThreshold = 'CR 1 or lower';
-    else if (c.level >= 5) destroyThreshold = 'CR 1/2 or lower';
-    html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
-    html += '<div class="cd-card-header"><span class="cd-name">Turn Undead</span>';
-    html += '<span class="cd-brief">Action, 30 ft, WIS save DC ' + spellDC + '</span>';
-    html += '<span class="cd-expand">&#9654;</span></div>';
-    html += '<div class="cd-card-body">';
-    html += '<p>Each undead within 30 ft that can see or hear you must make a <span class="cd-highlight">WIS save (DC ' + spellDC + ')</span>. On failure, it is turned for 1 minute &mdash; it must Dash away and cannot take reactions. Ends if it takes damage.</p>';
-    if (destroyThreshold) {
-      html += '<p style="margin-top:8px"><span class="cd-highlight">Destroy Undead:</span> Instantly destroys turned undead of <span class="cd-highlight">' + destroyThreshold + '</span>.</p>';
+    if (c.class === 'Cleric') {
+      var destroyThreshold = '';
+      if (c.level >= 17) destroyThreshold = 'CR 4 or lower';
+      else if (c.level >= 14) destroyThreshold = 'CR 3 or lower';
+      else if (c.level >= 11) destroyThreshold = 'CR 2 or lower';
+      else if (c.level >= 8) destroyThreshold = 'CR 1 or lower';
+      else if (c.level >= 5) destroyThreshold = 'CR 1/2 or lower';
+      html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+      html += '<div class="cd-card-header"><span class="cd-name">Turn Undead</span>';
+      html += '<span class="cd-brief">Action, 30 ft, WIS save DC ' + spellDC + '</span>';
+      html += '<span class="cd-expand">&#9654;</span></div>';
+      html += '<div class="cd-card-body">';
+      html += '<p>Each undead within 30 ft that can see or hear you must make a <span class="cd-highlight">WIS save (DC ' + spellDC + ')</span>. On failure, it is turned for 1 minute &mdash; it must Dash away and cannot take reactions. Ends if it takes damage.</p>';
+      if (destroyThreshold) {
+        html += '<p style="margin-top:8px"><span class="cd-highlight">Destroy Undead:</span> Instantly destroys turned undead of <span class="cd-highlight">' + destroyThreshold + '</span>.</p>';
+      }
+      html += '</div></div>';
+      var plPool = 5 * c.level;
+      html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+      html += '<div class="cd-card-header"><span class="cd-name">Preserve Life</span>';
+      html += '<span class="cd-brief">Action, 30 ft, ' + plPool + ' HP pool</span>';
+      html += '<span class="cd-expand">&#9654;</span></div>';
+      html += '<div class="cd-card-body">';
+      html += '<p>Distribute up to <span class="cd-highlight">' + plPool + ' HP</span> among any creatures within 30 ft. Cannot restore a creature above half its max HP.</p>';
+      html += '</div></div>';
     }
-    html += '</div></div>';
-    var plPool = 5 * c.level;
-    html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
-    html += '<div class="cd-card-header"><span class="cd-name">Preserve Life</span>';
-    html += '<span class="cd-brief">Action, 30 ft, ' + plPool + ' HP pool</span>';
-    html += '<span class="cd-expand">&#9654;</span></div>';
-    html += '<div class="cd-card-body">';
-    html += '<p>Distribute up to <span class="cd-highlight">' + plPool + ' HP</span> among any creatures within 30 ft. Cannot restore a creature above half its max HP.</p>';
-    html += '</div></div>';
+    if (c.class === 'Paladin') {
+      var subFeats = PALADIN_SUBCLASS_FEATURES[c.subclass];
+      if (subFeats && subFeats[3]) {
+        subFeats[3].forEach(function(featName) {
+          var desc = PALADIN_FEATURE_DESCRIPTIONS[featName] || '';
+          html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+          html += '<div class="cd-card-header"><span class="cd-name">' + escapeHtml(featName) + '</span>';
+          html += '<span class="cd-expand">&#9654;</span></div>';
+          html += '<div class="cd-card-body"><p>' + desc + '</p></div></div>';
+        });
+      }
+    }
     html += '</div></div>';
   }
 
@@ -159,8 +174,13 @@ function renderDashboard(c, preserveScroll) {
     html += renderFighterDashboard(c);
   }
 
+  // Paladin class features
+  if (c.class === 'Paladin') {
+    html += renderPaladinDashboard(c);
+  }
+
   // "Coming Soon" placeholder for classes without full implementation
-  if (c.class !== 'Cleric' && c.class !== 'Fighter') {
+  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin') {
     html += '<div style="border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;margin:16px 0">';
     html += '<p class="text-dim" style="font-size:0.95rem">Class features coming soon — <strong>' + escapeHtml(c.class) + '</strong>.</p>';
     html += '<p class="text-dim" style="font-size:0.85rem;margin-top:4px">Class-specific resources and abilities will appear here in a future update.</p>';
@@ -259,10 +279,11 @@ function renderDashboard(c, preserveScroll) {
     html += '</div>';
   }
 
-  // Domain Spells (Cleric only) — collapsible
-  if (c.class === 'Cleric') {
-    var domainList = getDomainSpellList(c.level);
-    html += '<div class="dash-section"><details><summary><h2 style="display:inline">Domain Spells <span class="badge">Always Prepared</span></h2> <span class="text-dim" style="font-size:0.85rem">(' + domainList.length + ')</span></summary>';
+  // Domain/Oath Spells — collapsible
+  if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 2)) {
+    var domainLabel = c.class === 'Paladin' ? 'Oath Spells' : 'Domain Spells';
+    var domainList = getDomainSpellList(c.level, c.class, c.subclass);
+    html += '<div class="dash-section"><details><summary><h2 style="display:inline">' + domainLabel + ' <span class="badge">Always Prepared</span></h2> <span class="text-dim" style="font-size:0.85rem">(' + domainList.length + ')</span></summary>';
     domainList.forEach(function(name) {
       var sp = getSpell(name);
       if (sp) html += renderSpellCard(sp, c, { domain: true });
@@ -271,8 +292,8 @@ function renderDashboard(c, preserveScroll) {
     html += '</details></div>';
   }
 
-  // Prepared Spells (Cleric only) — collapsible
-  if (c.class === 'Cleric') {
+  // Prepared Spells (Cleric or Paladin) — collapsible
+  if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 2)) {
     html += '<div class="dash-section"><details><summary><h2 style="display:inline">Prepared Spells</h2> <span class="text-dim" style="font-size:0.85rem">(' + (c.currentPreparedSpells || []).length + '/' + c.preparedSpellCount + ')</span></summary>';
     if (c.currentPreparedSpells && c.currentPreparedSpells.length > 0) {
       c.currentPreparedSpells.forEach(function(name) {
@@ -298,7 +319,8 @@ function renderDashboard(c, preserveScroll) {
       var dmgTotal = abilMod + magB;
       html += '<div class="equip-item"><div class="ei-info">';
       html += '<div class="ei-name">' + escapeHtml(w.name) + (magB ? ' <span class="text-accent" style="font-size:0.8rem">+' + magB + '</span>' : '') + '</div>';
-      html += '<div class="ei-detail">+' + atkTotal + ' to hit · ' + w.damage + (dmgTotal >= 0 ? '+' : '') + dmgTotal + ' ' + w.damageType + (w.notes ? ' · ' + w.notes : '') + '</div>';
+      var impSmite = (c.class === 'Paladin' && c.level >= 11) ? ' + 1d8 radiant' : '';
+      html += '<div class="ei-detail">+' + atkTotal + ' to hit · ' + w.damage + (dmgTotal >= 0 ? '+' : '') + dmgTotal + ' ' + w.damageType + impSmite + (w.notes ? ' · ' + w.notes : '') + '</div>';
       html += '</div><div class="ei-actions">';
       html += '<button class="ei-btn" onclick="showWeaponForm(' + wi + ')">Edit</button>';
       html += '<button class="ei-btn" onclick="confirmDeleteWeapon(' + wi + ')" style="color:var(--error)">×</button>';
@@ -399,7 +421,7 @@ function renderDashboard(c, preserveScroll) {
 
   // Actions — 2-column grid
   html += '<div class="dash-actions-grid combat-hide">';
-  if (c.class !== 'Cleric' && c.class !== 'Fighter') {
+  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin') {
     html += '<button class="btn btn-primary btn-large btn-full" disabled style="opacity:0.4">Level Up — ' + escapeHtml(c.class) + ' coming in a future update</button>';
   } else {
     var lvlUpDisabled = c.level >= 20;
@@ -610,6 +632,152 @@ function renderFighterDashboard(c) {
       if (c.level >= 10) html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')"><div class="cd-card-header"><span class="cd-name">Eldritch Strike</span><span class="cd-expand">&#9654;</span></div><div class="cd-card-body"><p>' + FIGHTER_FEATURE_DESCRIPTIONS['Eldritch Strike'] + '</p></div></div>';
       if (c.level >= 15) html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')"><div class="cd-card-header"><span class="cd-name">Arcane Charge</span><span class="cd-expand">&#9654;</span></div><div class="cd-card-body"><p>' + FIGHTER_FEATURE_DESCRIPTIONS['Arcane Charge'] + '</p></div></div>';
       html += '</div>';
+    }
+  }
+
+  return html;
+}
+
+/* ═══════════════════════════════════════════
+   PALADIN DASHBOARD
+   ═══════════════════════════════════════════ */
+
+function renderPaladinDashboard(c) {
+  var html = '';
+  var sub = c.subclass || '';
+  var chaMod = mod(c.abilityScores.cha);
+
+  // Divine Smite Reference Card (level 2+)
+  if (c.level >= 2) {
+    html += '<div class="dash-section"><h2>Divine Smite</h2>';
+    html += '<div class="cd-card expanded" style="border-color:var(--accent)">';
+    html += '<div class="cd-card-body">';
+    html += '<p>On a <span class="cd-highlight">melee weapon hit</span>, spend a spell slot for extra radiant damage:</p>';
+    html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px 16px;margin:8px 0;font-size:0.9rem">';
+    html += '<div><span class="cd-highlight">1st:</span> 2d8</div>';
+    html += '<div><span class="cd-highlight">2nd:</span> 3d8</div>';
+    html += '<div><span class="cd-highlight">3rd:</span> 4d8</div>';
+    html += '<div><span class="cd-highlight">4th+:</span> 5d8 (max)</div>';
+    html += '</div>';
+    html += '<p style="font-size:0.85rem;color:var(--accent)">+1d8 vs undead or fiend</p>';
+    if (c.level >= 11) {
+      html += '<p style="margin-top:8px;font-weight:bold;color:var(--success)">Improved Divine Smite: All melee attacks deal +1d8 radiant (automatic, no slot cost)</p>';
+    }
+    html += '</div></div></div>';
+  }
+
+  // Lay on Hands (level 1+)
+  var lohMax = 5 * c.level;
+  var lohUsed = (c.resources && c.resources.layOnHands) ? (c.resources.layOnHands.used || 0) : 0;
+  var lohRemaining = Math.max(0, lohMax - lohUsed);
+  html += '<div class="dash-section"><h2>Lay on Hands</h2>';
+  html += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:8px">';
+  html += '<div style="font-size:2rem;font-weight:bold;color:var(--accent)">' + lohRemaining + '</div>';
+  html += '<div><div style="font-size:0.85rem;color:var(--text-dim)">of ' + lohMax + ' HP remaining</div>';
+  html += '<div style="background:var(--surface-raised);border-radius:4px;height:8px;margin-top:4px;overflow:hidden"><div style="background:var(--accent);height:100%;width:' + (lohMax > 0 ? (lohRemaining / lohMax * 100) : 0) + '%;transition:width 0.3s"></div></div>';
+  html += '</div></div>';
+  html += '<button class="btn btn-primary" onclick="showLayOnHandsPrompt()" style="font-size:0.85rem;padding:8px 16px">Use Lay on Hands</button>';
+  html += '<p class="text-dim" style="font-size:0.85rem;margin-top:8px">Action: touch a creature to restore HP from your pool. Spend 5 points to cure one disease or neutralize one poison.</p>';
+  html += '</div>';
+
+  // Divine Sense (level 1+)
+  var dsDivUses = Math.max(1, 1 + chaMod);
+  html += renderResourceTracker('Divine Sense', 'divineSense', dsDivUses, c, {
+    icon: '&#128065;',
+    description: 'Action: detect celestials, fiends, or undead within 60 ft, and consecrated/desecrated places. ' + dsDivUses + ' uses per long rest.',
+    restType: 'long rest'
+  });
+
+  // Extra Attack (level 5+)
+  if (c.level >= 5) {
+    html += '<div class="dash-section" style="text-align:center;padding:12px">';
+    html += '<div style="font-size:1.4rem;color:var(--accent);font-weight:bold">Attacks per Action: 2</div>';
+    html += '</div>';
+  }
+
+  // Auras (level 6+)
+  if (c.level >= 6) {
+    var auraRange = c.level >= 18 ? 30 : 10;
+    html += '<div class="dash-section"><h2>Active Auras <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + auraRange + ' ft)</span></h2>';
+
+    // Aura of Protection (level 6)
+    var auraBonus = Math.max(1, chaMod);
+    html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+    html += '<div class="cd-card-header"><span class="cd-name">Aura of Protection</span>';
+    html += '<span class="cd-brief">+' + auraBonus + ' to saves, ' + auraRange + ' ft</span>';
+    html += '<span class="cd-expand">&#9654;</span></div>';
+    html += '<div class="cd-card-body"><p>' + PALADIN_FEATURE_DESCRIPTIONS['Aura of Protection'] + '</p></div></div>';
+
+    // Oath-specific aura (level 7)
+    if (c.level >= 7) {
+      var subFeats7 = PALADIN_SUBCLASS_FEATURES[sub];
+      if (subFeats7 && subFeats7[7]) {
+        subFeats7[7].forEach(function(featName) {
+          var desc = PALADIN_FEATURE_DESCRIPTIONS[featName] || '';
+          html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+          html += '<div class="cd-card-header"><span class="cd-name">' + escapeHtml(featName) + '</span>';
+          html += '<span class="cd-brief">' + auraRange + ' ft</span>';
+          html += '<span class="cd-expand">&#9654;</span></div>';
+          html += '<div class="cd-card-body"><p>' + desc + '</p></div></div>';
+        });
+      }
+    }
+
+    // Aura of Courage (level 10)
+    if (c.level >= 10) {
+      html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+      html += '<div class="cd-card-header"><span class="cd-name">Aura of Courage</span>';
+      html += '<span class="cd-brief">Immune to frightened, ' + auraRange + ' ft</span>';
+      html += '<span class="cd-expand">&#9654;</span></div>';
+      html += '<div class="cd-card-body"><p>' + PALADIN_FEATURE_DESCRIPTIONS['Aura of Courage'] + '</p></div></div>';
+    }
+    html += '</div>';
+  }
+
+  // Cleansing Touch (level 14+)
+  if (c.level >= 14) {
+    var ctUses = Math.max(1, chaMod);
+    html += renderResourceTracker('Cleansing Touch', 'cleansingTouch', ctUses, c, {
+      icon: '&#10024;',
+      description: 'Action: end one spell on yourself or a willing creature you touch. ' + ctUses + ' uses per long rest.',
+      restType: 'long rest'
+    });
+  }
+
+  // Fighting Style
+  if (c.fightingStyle) {
+    html += '<div class="dash-section"><h2>Fighting Style</h2>';
+    html += renderFightingStyleCard(c.fightingStyle);
+    html += '</div>';
+  }
+
+  // Oath subclass features (level 15+)
+  if (c.level >= 15) {
+    var subFeats15 = PALADIN_SUBCLASS_FEATURES[sub];
+    if (subFeats15 && subFeats15[15]) {
+      html += '<div class="dash-section"><h2>Oath Features</h2>';
+      subFeats15[15].forEach(function(featName) {
+        var desc = PALADIN_FEATURE_DESCRIPTIONS[featName] || '';
+        html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+        html += '<div class="cd-card-header"><span class="cd-name">' + escapeHtml(featName) + '</span>';
+        html += '<span class="cd-expand">&#9654;</span></div>';
+        html += '<div class="cd-card-body"><p>' + desc + '</p></div></div>';
+      });
+      html += '</div>';
+    }
+  }
+
+  // Oath Capstone (level 20)
+  if (c.level >= 20) {
+    var subFeats20 = PALADIN_SUBCLASS_FEATURES[sub];
+    if (subFeats20 && subFeats20[20]) {
+      subFeats20[20].forEach(function(featName) {
+        html += renderResourceTracker(featName, 'oathCapstone', 1, c, {
+          icon: '&#9733;',
+          description: PALADIN_FEATURE_DESCRIPTIONS[featName] || '',
+          restType: 'long rest'
+        });
+      });
     }
   }
 

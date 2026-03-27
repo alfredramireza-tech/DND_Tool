@@ -57,6 +57,13 @@ function migrateCharacter(c) {
     if (!c.fightingStyle) c.fightingStyle = null;
     if (c.features && c.features.length === 0) c.features = getFighterFeatures(c.level, c.subclass);
   }
+  // Paladin-specific fields
+  if (c.class === 'Paladin') {
+    if (!c.fightingStyle) c.fightingStyle = null;
+    if (c.features && c.features.length === 0) c.features = getPaladinFeatures(c.level, c.subclass);
+    if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = getPaladinSpellSlots(c.level);
+    if (!c.domainSpells) c.domainSpells = getDomainSpells(c.level, 'Paladin', c.subclass);
+  }
   return c;
 }
 
@@ -94,8 +101,8 @@ function calculateAC(c) {
     ac = 10 + dexMod;
   }
   ac += (armor && armor.magicBonus) ? armor.magicBonus : 0;
-  // Fighter: Defense fighting style adds +1 AC while wearing armor
-  if (armor && c.class === 'Fighter' && (c.fightingStyle === 'Defense' || c.fightingStyle2 === 'Defense')) {
+  // Defense fighting style adds +1 AC while wearing armor (Fighter or Paladin)
+  if (armor && (c.class === 'Fighter' || c.class === 'Paladin') && (c.fightingStyle === 'Defense' || c.fightingStyle2 === 'Defense')) {
     ac += 1;
   }
   ac += shieldBonus;
@@ -407,27 +414,45 @@ function getProfBonus(level) {
   return 6;
 }
 
-function getCantripsCount(level) {
+function getCantripsCount(level, cls) {
+  if (cls === 'Paladin') return 0;
   if (level >= 10) return 5;
   if (level >= 4) return 4;
   return 3;
 }
 
-function getChannelDivUses(level) {
+function getChannelDivUses(level, cls) {
+  if (cls === 'Paladin') return level >= 3 ? 1 : 0;
+  // Cleric default
   if (level >= 18) return 3;
   if (level >= 6) return 2;
   return 1;
 }
 
-function getDomainSpells(level) {
-  const result = {};
-  for (const [lvl, spells] of Object.entries(LIFE_DOMAIN_SPELLS)) {
-    if (parseInt(lvl) <= level) result[lvl] = spells;
+function getDomainSpells(level, cls, subclass) {
+  if (cls === 'Paladin') {
+    // Return oath spells keyed by oath-grant level (same format as domain spells)
+    var oathTable = OATH_SPELLS[subclass];
+    if (!oathTable) return {};
+    var result = {};
+    for (var lvl in oathTable) {
+      if (parseInt(lvl) <= level) result[lvl] = oathTable[lvl];
+    }
+    return result;
   }
-  return result;
+  // Cleric default
+  const cresult = {};
+  for (const [lvl, spells] of Object.entries(LIFE_DOMAIN_SPELLS)) {
+    if (parseInt(lvl) <= level) cresult[lvl] = spells;
+  }
+  return cresult;
 }
 
-function getDomainSpellList(level) {
+function getDomainSpellList(level, cls, subclass) {
+  if (cls === 'Paladin') {
+    return (typeof getOathSpells === 'function') ? getOathSpells(subclass, level) : [];
+  }
+  // Cleric default
   const list = [];
   for (const [lvl, spells] of Object.entries(LIFE_DOMAIN_SPELLS)) {
     if (parseInt(lvl) <= level) list.push(...spells);
@@ -450,7 +475,8 @@ function getFeatures(level) {
   return f;
 }
 
-function getSpellSlots(level) {
+function getSpellSlots(level, cls) {
+  if (cls === 'Paladin') return getPaladinSpellSlots(level);
   return CLERIC_SPELL_SLOTS[Math.min(Math.max(level, 1), 20)] || { 1: 2 };
 }
 

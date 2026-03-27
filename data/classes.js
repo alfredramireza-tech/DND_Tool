@@ -138,6 +138,25 @@ const CLASS_DATA = {
     recommendedStats: { str: 8, dex: 15, con: 14, int: 12, wis: 13, cha: 10 },
     recommendedSkills: ['acrobatics', 'stealth', 'perception', 'deception'],
     recommendedExpertise: ['stealth', 'perception']
+  },
+  Paladin: {
+    hitDice: 10,
+    savingThrows: ['wis', 'cha'],
+    skillChoices: ['athletics', 'insight', 'intimidation', 'medicine', 'persuasion', 'religion'],
+    skillCount: 2,
+    expertiseCount: 0,
+    subclasses: ['Oath of Devotion', 'Oath of the Ancients', 'Oath of Vengeance'],
+    subclassLabel: 'Sacred Oath',
+    isCaster: true,
+    spellcastingAbility: 'cha',
+    defaultTheme: 'paladinSilver',
+    unarmoredDefense: null,
+    unarmoredNoShield: false,
+    shortRestResets: ['channelDivinity'],
+    longRestResets: ['channelDivinity', 'spellSlots', 'layOnHands', 'divineSense', 'cleansingTouch'],
+    recommendedStats: { str: 15, dex: 10, con: 13, int: 8, wis: 12, cha: 14 },
+    recommendedSkills: ['athletics', 'persuasion'],
+    recommendedExpertise: []
   }
 };
 
@@ -176,5 +195,12 @@ const COLOR_THEMES = {
     bg: '#16121a', surface: '#1e1a24', surfaceRaised: '#28222e',
     border: '#362e3d', text: '#dcd0e8', textDim: '#9888a8',
     error: '#c45a5a', success: '#6aaa5a', inputBg: '#1a141e'
+  },
+  paladinSilver: {
+    name: 'Paladin Silver',
+    accent: '#c0c8d8', accentHover: '#d0d8e8', accentDim: '#8090a8',
+    bg: '#121418', surface: '#1a1e24', surfaceRaised: '#242830',
+    border: '#2d3340', text: '#e0e4ec', textDim: '#8890a0',
+    error: '#c45a5a', success: '#6aaa5a', inputBg: '#161a20'
   }
 };

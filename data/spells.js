@@ -1284,6 +1284,345 @@ const SPELL_DB = [
     duration: "Instantaneous",
     description: "Restore to life a creature that has been dead for no more than 200 years, even if no body remains. The creature is fully restored with all HP, no penalties. Can cure all diseases, poisons, and restore lost limbs.",
     tags: ["healing"]
+  },
+
+  // ===================== PALADIN SPELLS =====================
+  // 1st Level — Paladin-only
+  {
+    name: "Compelled Duel",
+    level: 1,
+    school: "Enchantment",
+    castingTime: "1 bonus action",
+    range: "30 feet",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "You attempt to compel a creature into a duel. The target must make a WIS save. On failure, it is drawn to you, compelled by your divine demand. It has disadvantage on attack rolls against creatures other than you, and must make a WIS save to move more than 30 feet from you.",
+    save: "wis",
+    tags: ["debuff", "concentration", "bonus action"]
+  },
+  {
+    name: "Divine Favor",
+    level: 1,
+    school: "Evocation",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V, S",
+    duration: "Concentration, up to 1 minute",
+    description: "Your prayer empowers you with divine radiance. Until the spell ends, your weapon attacks deal an extra 1d4 radiant damage on a hit.",
+    tags: ["buff", "concentration", "bonus action"]
+  },
+  {
+    name: "Heroism",
+    level: 1,
+    school: "Enchantment",
+    castingTime: "1 action",
+    range: "Touch",
+    components: "V, S",
+    duration: "Concentration, up to 1 minute",
+    description: "A willing creature you touch is imbued with bravery. Until the spell ends, the creature is immune to being frightened and gains temporary hit points equal to your spellcasting ability modifier at the start of each of its turns.",
+    upcast: { perLevel: "+1 target", note: "One additional target per slot level above 1st" },
+    tags: ["buff", "concentration"]
+  },
+  {
+    name: "Searing Smite",
+    level: 1,
+    school: "Evocation",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "The next time you hit a creature with a melee weapon attack during this spell's duration, your weapon flares with white-hot intensity, and the attack deals an extra 1d6 fire damage. The target must make a CON save or ignite in flames, taking 1d6 fire damage at the start of each of its turns. A creature can use an action to extinguish the flames.",
+    damage: { dice: "1d6", type: "fire" },
+    save: "con",
+    upcast: { perLevel: "+1d6 initial damage", note: "Add 1d6 fire damage to the initial hit per slot level above 1st" },
+    tags: ["damage", "concentration", "bonus action"]
+  },
+  {
+    name: "Thunderous Smite",
+    level: 1,
+    school: "Evocation",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "The first time you hit with a melee weapon attack during this spell's duration, your weapon rings with thunder audible within 300 feet, and the attack deals an extra 2d6 thunder damage. The target must make a STR save or be pushed 10 feet away from you and knocked prone.",
+    damage: { dice: "2d6", type: "thunder" },
+    save: "str",
+    tags: ["damage", "concentration", "bonus action"]
+  },
+  {
+    name: "Wrathful Smite",
+    level: 1,
+    school: "Evocation",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "The next time you hit with a melee weapon attack during this spell's duration, your attack deals an extra 1d6 psychic damage. If the target is a creature, it must make a WIS save or be frightened of you until the spell ends. The creature can use its action to make a WIS check against your spell save DC to end the effect.",
+    damage: { dice: "1d6", type: "psychic" },
+    save: "wis",
+    tags: ["damage", "concentration", "bonus action"]
+  },
+  // 2nd Level — Paladin-only
+  {
+    name: "Branding Smite",
+    level: 2,
+    school: "Evocation",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "The next time you hit a creature with a melee weapon attack before this spell ends, the weapon gleams with astral radiance. The attack deals an extra 2d6 radiant damage. The target becomes visible if it's invisible, and it sheds dim light in a 5-foot radius and can't become invisible until the spell ends.",
+    damage: { dice: "2d6", type: "radiant" },
+    upcast: { perLevel: "+1d6 damage", note: "Add 1d6 radiant damage per slot level above 2nd" },
+    tags: ["damage", "concentration", "bonus action"]
+  },
+  {
+    name: "Find Steed",
+    level: 2,
+    school: "Conjuration",
+    castingTime: "10 minutes",
+    range: "30 feet",
+    components: "V, S",
+    duration: "Instantaneous",
+    description: "You summon a spirit that assumes the form of an unusually intelligent, strong, and loyal steed (warhorse, pony, camel, elk, or mastiff). The steed serves as a mount and has an Intelligence of at least 6. It has the statistics of the chosen form, though it is a celestial, fey, or fiend (your choice). While mounted, you can make any spell you cast that targets only you also target the steed.",
+    tags: ["utility"]
+  },
+  // 3rd Level — Paladin-only
+  {
+    name: "Aura of Vitality",
+    level: 3,
+    school: "Evocation",
+    castingTime: "1 action",
+    range: "Self (30-foot radius)",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "Healing energy radiates from you in a 30-foot radius. Until the spell ends, as a bonus action on each of your turns, you can restore 2d6 hit points to one creature in the aura.",
+    healing: { dice: "2d6", mod: null },
+    tags: ["healing", "concentration"]
+  },
+  {
+    name: "Blinding Smite",
+    level: 3,
+    school: "Evocation",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "The next time you hit a creature with a melee weapon attack during this spell's duration, your weapon flares with a bright light, and the attack deals an extra 3d8 radiant damage. The target must make a CON save or be blinded until the spell ends. A blinded creature can repeat the save at the end of each of its turns.",
+    damage: { dice: "3d8", type: "radiant" },
+    save: "con",
+    tags: ["damage", "concentration", "bonus action"]
+  },
+  {
+    name: "Crusader's Mantle",
+    level: 3,
+    school: "Evocation",
+    castingTime: "1 action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "Holy power radiates from you in a 30-foot radius, awakening boldness in friendly creatures. Until the spell ends, each nonhostile creature in the aura (including you) deals an extra 1d4 radiant damage when it hits with a weapon attack.",
+    tags: ["buff", "concentration"]
+  },
+  {
+    name: "Elemental Weapon",
+    level: 3,
+    school: "Transmutation",
+    castingTime: "1 action",
+    range: "Touch",
+    components: "V, S",
+    duration: "Concentration, up to 1 hour",
+    description: "A nonmagical weapon you touch becomes a magic weapon. Choose one of the following damage types: acid, cold, fire, lightning, or thunder. For the duration, the weapon has a +1 bonus to attack rolls and deals an extra 1d4 damage of the chosen type when it hits.",
+    upcast: { perLevel: "Increased bonus", note: "At 5th-6th level: +2 bonus and 2d4 damage. At 7th level or higher: +3 bonus and 3d4 damage" },
+    tags: ["buff", "concentration"]
+  },
+  // 4th Level — Paladin-only
+  {
+    name: "Aura of Life",
+    level: 4,
+    school: "Abjuration",
+    castingTime: "1 action",
+    range: "Self (30-foot radius)",
+    components: "V",
+    duration: "Concentration, up to 10 minutes",
+    description: "Life-preserving energy radiates from you in a 30-foot radius. Until the spell ends, nonhostile creatures in the aura (including you) have resistance to necrotic damage, and their hit point maximum can't be reduced. If a nonhostile creature starts its turn in the aura with 0 hit points, it regains 1 hit point.",
+    tags: ["buff", "concentration"]
+  },
+  {
+    name: "Aura of Purity",
+    level: 4,
+    school: "Abjuration",
+    castingTime: "1 action",
+    range: "Self (30-foot radius)",
+    components: "V",
+    duration: "Concentration, up to 10 minutes",
+    description: "Purifying energy radiates from you in a 30-foot radius. Until the spell ends, each nonhostile creature in the aura (including you) can't become diseased, has resistance to poison damage, and has advantage on saves against effects that cause blinded, charmed, deafened, frightened, paralyzed, poisoned, or stunned conditions.",
+    tags: ["buff", "concentration"]
+  },
+  {
+    name: "Staggering Smite",
+    level: 4,
+    school: "Evocation",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "The next time you hit a creature with a melee weapon attack during this spell's duration, your weapon pierces both body and mind, and the attack deals an extra 4d6 psychic damage. The target must make a WIS save. On a failed save, it has disadvantage on attack rolls and ability checks, and can't take reactions, until the end of its next turn.",
+    damage: { dice: "4d6", type: "psychic" },
+    save: "wis",
+    tags: ["damage", "concentration", "bonus action"]
+  },
+  // 5th Level — Paladin-only
+  {
+    name: "Banishing Smite",
+    level: 5,
+    school: "Abjuration",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "The next time you hit a creature with a melee weapon attack before this spell ends, your weapon crackles with force, and the attack deals an extra 5d10 force damage. If this attack reduces the target to 50 hit points or fewer, you banish it. If the target is native to a different plane, it is banished there. If native to this plane, it is banished to a harmless demiplane and is incapacitated there. It remains there until the spell ends, at which point it returns.",
+    damage: { dice: "5d10", type: "force" },
+    tags: ["damage", "concentration", "bonus action"]
+  },
+  {
+    name: "Circle of Power",
+    level: 5,
+    school: "Abjuration",
+    castingTime: "1 action",
+    range: "Self (30-foot radius)",
+    components: "V",
+    duration: "Concentration, up to 10 minutes",
+    description: "Divine energy radiates from you, distorting and diffusing magical energy within a 30-foot radius. Until the spell ends, each friendly creature in the area (including you) has advantage on saving throws against spells and other magical effects. Additionally, when an affected creature succeeds on a saving throw made against a spell or magical effect that allows a save for half damage, it instead takes no damage.",
+    tags: ["buff", "concentration"]
+  },
+  {
+    name: "Destructive Wave",
+    level: 5,
+    school: "Evocation",
+    castingTime: "1 action",
+    range: "Self (30-foot radius)",
+    components: "V",
+    duration: "Instantaneous",
+    description: "You strike the ground, creating a burst of divine energy that ripples outward. Each creature you choose within 30 feet must make a CON save. On a failure, a target takes 5d6 thunder damage plus 5d6 radiant or necrotic damage (your choice), and is knocked prone. On a success, a target takes half as much damage and isn't knocked prone.",
+    damage: { dice: "5d6+5d6", type: "thunder/radiant" },
+    save: "con",
+    tags: ["damage"]
+  },
+
+  // ===================== OATH-GRANTED SPELLS (new entries) =====================
+  // Oath of the Ancients spells not in existing DB
+  {
+    name: "Ensnaring Strike",
+    level: 1,
+    school: "Conjuration",
+    castingTime: "1 bonus action",
+    range: "Self",
+    components: "V",
+    duration: "Concentration, up to 1 minute",
+    description: "The next time you hit a creature with a weapon attack before this spell ends, a writhing mass of thorny vines appears at the point of impact, and the target must make a STR save or be restrained by the vines until the spell ends. A Large or larger creature has advantage on this save. While restrained, the target takes 1d6 piercing damage at the start of each of its turns. A creature can use its action to make a STR check against your spell save DC to free the target.",
+    damage: { dice: "1d6", type: "piercing" },
+    save: "str",
+    upcast: { perLevel: "+1d6 damage", note: "Add 1d6 piercing damage per slot level above 1st" },
+    tags: ["damage", "control", "concentration", "bonus action"]
+  },
+  {
+    name: "Speak with Animals",
+    level: 1,
+    school: "Divination",
+    castingTime: "1 action",
+    range: "Self",
+    components: "V, S",
+    duration: "10 minutes",
+    description: "You gain the ability to comprehend and verbally communicate with beasts for the duration. The knowledge and awareness of many beasts is limited by their intelligence, but at minimum, beasts can give you information about nearby locations and monsters, including whatever they can perceive or have perceived within the past day.",
+    tags: ["utility", "ritual"]
+  },
+  {
+    name: "Moonbeam",
+    level: 2,
+    school: "Evocation",
+    castingTime: "1 action",
+    range: "120 feet",
+    components: "V, S, M (several seeds of any moonseed plant and a piece of opalescent feldspar)",
+    duration: "Concentration, up to 1 minute",
+    description: "A silvery beam of pale light shines down in a 5-foot-radius, 40-foot-high cylinder centered on a point within range. Until the spell ends, dim light fills the cylinder. When a creature enters the spell's area for the first time on a turn or starts its turn there, it is engulfed in ghostly flames that cause searing pain, and it must make a CON save. It takes 2d10 radiant damage on a failed save, or half as much damage on a successful one. A shapechanger makes its save with disadvantage.",
+    damage: { dice: "2d10", type: "radiant" },
+    save: "con",
+    upcast: { perLevel: "+1d10 damage", note: "Add 1d10 radiant damage per slot level above 2nd" },
+    tags: ["damage", "concentration"]
+  },
+  {
+    name: "Plant Growth",
+    level: 3,
+    school: "Transmutation",
+    castingTime: "1 action or 8 hours",
+    range: "150 feet",
+    components: "V, S",
+    duration: "Instantaneous",
+    description: "If you cast this spell using 1 action, choose a point within range. All normal plants in a 100-foot radius centered on that point become thick and overgrown, making the area difficult terrain (costs 4 feet of movement for every 1 foot). If you cast this spell over 8 hours, all plants in a half-mile radius centered on a point within range become enriched, yielding twice the normal amount of food when harvested for 1 year.",
+    tags: ["utility", "control"]
+  },
+  {
+    name: "Tree Stride",
+    level: 5,
+    school: "Conjuration",
+    castingTime: "1 action",
+    range: "Self",
+    components: "V, S",
+    duration: "Concentration, up to 1 minute",
+    description: "You gain the ability to enter a tree and move from inside it to inside another tree of the same kind within 500 feet. Both trees must be living and at least the same size as you. You must use 5 feet of movement to step into a tree. You instantly know the location of all other trees of the same kind within 500 feet and can either step into one of those trees or step out of the tree you're in.",
+    tags: ["utility", "concentration"]
+  },
+  {
+    name: "Commune with Nature",
+    level: 5,
+    school: "Divination",
+    castingTime: "1 minute",
+    range: "Self",
+    components: "V, S",
+    duration: "Instantaneous",
+    description: "You briefly become one with nature and gain knowledge of the surrounding territory. In the outdoors, the spell gives you knowledge of the land within 3 miles of you. In caves and other natural underground settings, the radius is limited to 300 feet. You learn up to 3 facts about the terrain, bodies of water, prevalent plants/minerals/animals/peoples, and powerful celestials/fey/fiends/elementals/undead in the area.",
+    tags: ["utility", "ritual"]
+  },
+  // Oath of Vengeance spells not in existing DB
+  {
+    name: "Hunter's Mark",
+    level: 1,
+    school: "Divination",
+    castingTime: "1 bonus action",
+    range: "90 feet",
+    components: "V",
+    duration: "Concentration, up to 1 hour",
+    description: "You choose a creature you can see within range and mystically mark it as your quarry. Until the spell ends, you deal an extra 1d6 damage to the target whenever you hit it with a weapon attack, and you have advantage on any Perception or Survival check you make to find it. If the target drops to 0 hit points before this spell ends, you can use a bonus action on a subsequent turn to mark a new creature.",
+    damage: { dice: "1d6", type: "varies" },
+    upcast: { perLevel: "Longer duration", note: "3rd-4th level: 8 hours. 5th level or higher: 24 hours" },
+    tags: ["buff", "concentration", "bonus action"]
+  },
+  {
+    name: "Hold Monster",
+    level: 5,
+    school: "Enchantment",
+    castingTime: "1 action",
+    range: "90 feet",
+    components: "V, S, M (a small, straight piece of iron)",
+    duration: "Concentration, up to 1 minute",
+    description: "Choose a creature that you can see within range. The target must make a WIS save or be paralyzed for the duration. This spell has no effect on undead. At the end of each of its turns, the target can make another WIS save. On a success, the spell ends on the target.",
+    save: "wis",
+    upcast: { perLevel: "+1 target", note: "One additional target per slot level above 5th" },
+    tags: ["control", "concentration"]
+  },
+  {
+    name: "Scrying",
+    level: 5,
+    school: "Divination",
+    castingTime: "10 minutes",
+    range: "Self",
+    components: "V, S, M (a focus worth at least 1,000 gp, such as a crystal ball, a silver mirror, or a font filled with holy water)",
+    duration: "Concentration, up to 10 minutes",
+    description: "You can see and hear a particular creature you choose that is on the same plane of existence as you. The target must make a WIS save, which is modified by how well you know the target and the sort of physical connection you have to it. On a failed save, you can see and hear the target through an invisible sensor that appears within 10 feet of the target.",
+    save: "wis",
+    tags: ["utility", "concentration"]
   }
 ];
 
@@ -1301,7 +1640,23 @@ var SPELL_BUFF_EFFECTS = {
   "Beacon of Hope": [{ type: "reminder", text: "Advantage on WIS saves & death saves. Maximize healing received." }],
   "Spirit Guardians": [{ type: "reminder", text: "Enemies within 15ft: half speed, 3d8 radiant/necrotic on entering or starting turn (WIS save for half)" }],
   "Spiritual Weapon": [{ type: "reminder", text: "Bonus action: melee spell attack, 1d8+WIS force damage" }],
-  "Warding Bond": [{ type: "acBonus", value: 1 }, { type: "reminder", text: "Target also gets +1 saves, resistance to all damage. You take same damage they take." }]
+  "Warding Bond": [{ type: "acBonus", value: 1 }, { type: "reminder", text: "Target also gets +1 saves, resistance to all damage. You take same damage they take." }],
+  // Paladin buff/smite spells
+  "Divine Favor": [{ type: "reminder", text: "+1d4 radiant damage on weapon attacks" }],
+  "Crusader's Mantle": [{ type: "reminder", text: "Allies within 30ft deal +1d4 radiant damage on weapon hits" }],
+  "Aura of Vitality": [{ type: "reminder", text: "Bonus action: restore 2d6 HP to one creature within 30ft" }],
+  "Magic Weapon": [{ type: "reminder", text: "Weapon becomes magical with +1 bonus to attack and damage (+2 at 4th-level slot, +3 at 6th)" }],
+  "Elemental Weapon": [{ type: "reminder", text: "+1 attack bonus and +1d4 chosen element damage (+2/2d4 at 5th-6th, +3/3d4 at 7th+)" }],
+  "Aura of Life": [{ type: "reminder", text: "Allies within 30ft: resistance to necrotic, HP max can't be reduced, 0 HP allies regain 1 HP at start of turn" }],
+  "Aura of Purity": [{ type: "reminder", text: "Allies within 30ft: can't be diseased, resistance to poison, advantage on saves vs. blinded/charmed/deafened/frightened/paralyzed/poisoned/stunned" }],
+  "Circle of Power": [{ type: "reminder", text: "Friendly creatures within 30ft: advantage on saves vs. spells/magic. Successful save = no damage instead of half" }],
+  "Searing Smite": [{ type: "reminder", text: "Triggers on next melee hit: +1d6 fire damage. Target CON save or 1d6 fire at start of each turn" }],
+  "Thunderous Smite": [{ type: "reminder", text: "Triggers on next melee hit: +2d6 thunder damage. Target STR save or pushed 10ft and knocked prone" }],
+  "Wrathful Smite": [{ type: "reminder", text: "Triggers on next melee hit: +1d6 psychic damage. Target WIS save or frightened" }],
+  "Branding Smite": [{ type: "reminder", text: "Triggers on next melee hit: +2d6 radiant damage. Target becomes visible and can't turn invisible" }],
+  "Blinding Smite": [{ type: "reminder", text: "Triggers on next melee hit: +3d8 radiant damage. Target CON save or blinded" }],
+  "Staggering Smite": [{ type: "reminder", text: "Triggers on next melee hit: +4d6 psychic damage. Target WIS save or disadvantage on attacks/checks, can't take reactions" }],
+  "Banishing Smite": [{ type: "reminder", text: "Triggers on next melee hit: +5d10 force damage. If target at 50 HP or fewer, it is banished" }]
 };
 
 // Derived name arrays for backward compatibility with onboarding/level-up spell pickers
@@ -1331,3 +1686,24 @@ const CLERIC_SPELL_SLOTS = {
   17:{1:4,2:3,3:3,4:3,5:2,6:1,7:1,8:1,9:1}, 18:{1:4,2:3,3:3,4:3,5:3,6:1,7:1,8:1,9:1},
   19:{1:4,2:3,3:3,4:3,5:3,6:2,7:1,8:1,9:1}, 20:{1:4,2:3,3:3,4:3,5:3,6:2,7:2,8:1,9:1}
 };
+
+// ============================================================
+// Paladin Spell List
+// ============================================================
+const PALADIN_SPELL_LIST = {
+  1: ['Bless', 'Command', 'Compelled Duel', 'Cure Wounds', 'Detect Evil and Good', 'Detect Magic', 'Detect Poison and Disease', 'Divine Favor', 'Heroism', 'Protection from Evil and Good', 'Purify Food and Drink', 'Searing Smite', 'Shield of Faith', 'Thunderous Smite', 'Wrathful Smite'],
+  2: ['Aid', 'Branding Smite', 'Find Steed', 'Lesser Restoration', 'Locate Object', 'Magic Weapon', 'Protection from Poison', 'Zone of Truth'],
+  3: ['Aura of Vitality', 'Blinding Smite', 'Create Food and Water', 'Crusader\'s Mantle', 'Daylight', 'Dispel Magic', 'Elemental Weapon', 'Magic Circle', 'Remove Curse', 'Revivify'],
+  4: ['Aura of Life', 'Aura of Purity', 'Banishment', 'Death Ward', 'Locate Creature', 'Staggering Smite'],
+  5: ['Banishing Smite', 'Circle of Power', 'Destructive Wave', 'Dispel Evil and Good', 'Geas', 'Raise Dead']
+};
+
+const PALADIN_SPELLS = {};
+SPELL_DB.forEach(function(s) {
+  Object.keys(PALADIN_SPELL_LIST).forEach(function(lvl) {
+    if (PALADIN_SPELL_LIST[lvl].indexOf(s.name) !== -1) {
+      if (!PALADIN_SPELLS[s.level]) PALADIN_SPELLS[s.level] = [];
+      PALADIN_SPELLS[s.level].push(s.name);
+    }
+  });
+});

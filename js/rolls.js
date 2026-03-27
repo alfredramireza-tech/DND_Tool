@@ -107,7 +107,7 @@ function doSpellRoll(spellName, rollType) {
   var cd = CLASS_DATA[char.class] || CLASS_DATA.Cleric;
   const castMod = mod(char.abilityScores[cd.spellcastingAbility] || char.abilityScores.wis);
   const profBonus = char.proficiencyBonus;
-  const isSupremeHealing = char.level >= 17;
+  const isSupremeHealing = char.class === 'Cleric' && char.subclass === 'Life Domain' && char.level >= 17;
 
   if (rollType === 'attack') {
     const atkBonus = profBonus + castMod;
@@ -154,7 +154,7 @@ function doSpellRoll(spellName, rollType) {
     const slotLevel = spell.level;
     const isClericLife = char.class === 'Cleric' && char.subclass === 'Life Domain';
     const dolBonus = isClericLife && slotLevel >= 1 ? 2 + slotLevel : 0;
-    let healMod = (spell.healing.mod === 'wis' ? castMod : 0) + dolBonus;
+    let healMod = (spell.healing.mod ? castMod : 0) + dolBonus;
     let extraNote = dolBonus > 0 ? `Includes +${dolBonus} Disciple of Life` : '';
 
     if (spell.healing.flat) {
@@ -178,7 +178,7 @@ function doSpellRoll(spellName, rollType) {
     const diceTotal = results.reduce((a,b) => a+b, 0);
     const total = diceTotal + healMod;
     const modParts = [];
-    if (spell.healing.mod === 'wis') modParts.push(ABILITY_NAMES[cd.spellcastingAbility]);
+    if (spell.healing.mod) modParts.push(ABILITY_NAMES[cd.spellcastingAbility]);
     if (dolBonus > 0) modParts.push('DoL');
     showRollResult(spellName + ' — Healing', results, healMod, modParts.join('+'), total, extraNote, { healing: true });
   }

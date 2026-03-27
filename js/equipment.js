@@ -114,11 +114,14 @@ function enforceSelectionLimit(name, max, countElId) {
    ═══════════════════════════════════════════ */
 
 function getSpellSummaryLine(spell, char) {
-  const wisMod = mod(char.abilityScores.wis);
+  var cd = CLASS_DATA[char.class] || CLASS_DATA.Cleric;
+  var castAbility = cd.spellcastingAbility || 'wis';
+  var castMod = mod(char.abilityScores[castAbility] || 10);
   const profBonus = char.proficiencyBonus;
-  const dc = 8 + profBonus + wisMod;
-  const atkBonus = profBonus + wisMod;
-  const isSupreme = char.level >= 17;
+  const dc = 8 + profBonus + castMod;
+  const atkBonus = profBonus + castMod;
+  var isClericLife = char.class === 'Cleric' && char.subclass === 'Life Domain';
+  const isSupreme = isClericLife && char.level >= 17;
   const parts = [];
 
   // Damage
@@ -137,9 +140,9 @@ function getSpellSummaryLine(spell, char) {
       }
       altStr = ' or ' + altDice + ' (damaged)';
     }
-    // Special: Spiritual Weapon adds WIS mod
+    // Special: Spiritual Weapon adds spellcasting mod
     if (spell.name === 'Spiritual Weapon') {
-      parts.push(dice + '+' + wisMod + ' force');
+      parts.push(dice + '+' + castMod + ' force');
     } else {
       parts.push(dice + altStr + ' ' + spell.damage.type);
     }
@@ -147,17 +150,17 @@ function getSpellSummaryLine(spell, char) {
 
   // Healing
   if (spell.healing) {
-    const dolBonus = spell.level >= 1 ? 2 + spell.level : 0;
+    var dolBonus = isClericLife && spell.level >= 1 ? 2 + spell.level : 0;
     if (spell.healing.flat) {
       parts.push((spell.healing.flat + dolBonus) + ' HP');
     } else if (isSupreme) {
       const parsed = parseDice(spell.healing.dice);
       if (parsed) {
-        const maxVal = parsed.count * parsed.sides + wisMod + dolBonus;
+        const maxVal = parsed.count * parsed.sides + castMod + dolBonus;
         parts.push(maxVal + ' HP (max)');
       }
     } else {
-      const modPart = spell.healing.mod === 'wis' ? '+' + wisMod : '';
+      const modPart = spell.healing.mod ? '+' + castMod : '';
       const dolPart = dolBonus > 0 ? '+' + dolBonus : '';
       parts.push(spell.healing.dice + modPart + dolPart + ' HP');
     }
@@ -178,12 +181,15 @@ function getSpellSummaryLine(spell, char) {
 
 function renderSpellCard(spell, char, options) {
   const opts = options || {};
-  const wisMod = mod(char.abilityScores.wis);
+  var cd = CLASS_DATA[char.class] || CLASS_DATA.Cleric;
+  var castAbility = cd.spellcastingAbility || 'wis';
+  var castMod = mod(char.abilityScores[castAbility] || 10);
   const profBonus = char.proficiencyBonus;
-  const dc = 8 + profBonus + wisMod;
-  const atkBonus = profBonus + wisMod;
-  const isBlessed = char.level >= 6;
-  const isSupreme = char.level >= 17;
+  const dc = 8 + profBonus + castMod;
+  const atkBonus = profBonus + castMod;
+  var isLifeDomain = char.class === 'Cleric' && char.subclass === 'Life Domain';
+  const isBlessed = isLifeDomain && char.level >= 6;
+  const isSupreme = isLifeDomain && char.level >= 17;
   const summary = getSpellSummaryLine(spell, char);
   var badgeText = opts.domain ? 'Always Prepared' : (opts.innateLabel || '');
   const domainLabel = badgeText ? ' <span class="badge">' + badgeText + '</span>' : '';
