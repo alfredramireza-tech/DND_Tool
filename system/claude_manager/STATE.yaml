@@ -6,89 +6,67 @@
 # =============================================================================
 
 current:
-  task: "Paladin class + audits + DM Screen spec"
+  task: "Rogue class + Data architecture refactor"
   status: "COMPLETE"
 
 resume_point: |
-  Paladin fully implemented and audited (4 handoffs + audit + fixes).
-  Cleric audited and fixed (levels 2-3 added, spell list leak sealed, domains restricted to Life).
-  Fighter audited and fixed (Fire Shield school corrected).
-  Wizard spell deduplication complete — WIZARD_SPELL_LIST (199 names, levels 1-9) ready for Wizard class.
-  DM Screen spec written (SPEC_DM_SCREEN.md) — awaiting implementation.
+  Rogue fully implemented and audited (4 handoffs + PHB audit — zero mechanical errors).
+  Three subclasses complete: Thief, Assassin, Arcane Trickster (with spellcasting).
 
-  New/modified file inventory:
-    data/paladin.js      — NEW: PALADIN_PROGRESSION, PALADIN_SPELL_SLOTS, OATH_SPELLS, PALADIN_FIGHTING_STYLES, feature descriptions, helpers
-    data/classes.js      — CLASS_DATA.Paladin added, paladinSilver theme, Cleric domains restricted to Life only
-    data/spells.js       — 28 new spell entries, PALADIN_SPELL_LIST, CLERIC_SPELL_LIST (99 names), PALADIN_SPELLS/CLERIC_SPELLS filtered builds
-    data/progression.js  — CLERIC_PROGRESSION levels 2-3 added
-    data/fighter.js      — WIZARD_SPELL_LIST (199 names, levels 1-9), 6 duplicates removed, getAllEkSpells(), Fire Shield school fix
-    js/utils.js          — getSpellSlots/getDomainSpells/getChannelDivUses/getCantripsCount all class-aware, Paladin migration
-    js/onboarding.js     — Paladin onboarding flow (step 4 spells, fighting style, CHA prep, oath spells, level 1 skip)
-    js/dashboard.js      — renderPaladinDashboard(), oath CD cards, Paladin gates in shared sections, getWizardSpell bounded fallback
-    js/levelup.js        — Paladin level-up (all screens), getAllEkSpells() in EK picker, Cleric prep min
-    js/resources.js      — Lay on Hands modal + pool tracker, Paladin rest descriptions
-    js/equipment.js      — Spell rendering: WIS→class-aware castMod, DoL/Supreme guards, healing.mod boolean
-    js/combat.js         — DoL/Supreme guards, healing.mod boolean, party view Paladin support
-    js/rolls.js          — DoL/Supreme guards, healing.mod boolean
-    index.html           — Paladin script tag, Paladin in class dropdown
+  Data architecture fully refactored and audit-verified (T4, 8 phases):
+    - Unified spell database: SPELL_DB (204 spells), CANTRIP_DATA (22 cantrips), single getSpell() lookup
+    - Domain-organized files: shared.js, spells.js, spell-lists.js, plus one file per class
+    - Unified slot storage: all classes use spellSlots / spellSlotsUsed / spellsKnown
+    - Slot tables renamed: FULL_CASTER_SLOTS, HALF_CASTER_SLOTS, THIRD_CASTER_SLOTS
+    - data/progression.js deleted, data/cleric.js created
+    - Wizard data in fighter.js relocated to proper domain files
+    - All orphaned code deleted, all backward-compat aliases removed
+    - Post-refactor audit: zero breaking issues across 8 categories
 
-  NEXT PRIORITY: Rogue class implementation (active party member). Then Wizard. Then DM Screen.
+  Conductor updated: Discipline #6 added (catch misplacement at the second consumer).
+
+  Wizard data layer ready (data/wizard.js: progression, 8 subclasses, feature descriptions, helpers).
+  Wizard blocked on: spell data for levels 5-9 (~70 spells) + 16 missing at levels 1-4.
+
+  Current file structure:
+    data/shared.js       — SKILLS, ABILITIES, ABILITY_NAMES, FIGHTING_STYLES, SAMPLE_CHARACTER, BLANK_DEFAULTS
+    data/classes.js      — CLASS_DATA (7 classes), COLOR_THEMES (7 themes)
+    data/spells.js       — SPELL_DB (204), CANTRIP_DATA (22), getSpell(), SPELL_BUFF_EFFECTS
+    data/spell-lists.js  — All class spell rosters, filtered builds, slot tables, domain/oath spells
+    data/cleric.js       — CLERIC_PROGRESSION, CLERIC_FEATURE_DESCRIPTIONS, CLERIC_LEVEL_TO_SPELL_LEVEL
+    data/fighter.js      — Fighter progression, features, BM maneuvers, getAllEkSpells()
+    data/paladin.js      — Paladin progression, features, helpers (OATH_SPELLS moved to spell-lists.js)
+    data/rogue.js        — Rogue progression, features, getSneakAttackDice()
+    data/wizard.js       — Wizard progression, 8 subclass features, 43 feature descriptions, helpers
+
+  NEXT PRIORITY: Wizard spell data (Handoff 2: ~86 missing spells), then Wizard onboarding/dashboard/level-up.
 
 open_loops:
-  - "Rogue at 25-30% — CLASS_DATA exists, no dashboard/level-up/subclass features. Next class to build."
-  - "Wizard at 0% — WIZARD_SPELL_LIST (199 names) ready, SPEC_WIZARD.md exists. After Rogue."
-  - "DM Screen — SPEC_DM_SCREEN.md complete. Build after Rogue and Wizard."
-  - "Barbarian/Monk at 25-30% — stubs only, not needed by current party. Barbarian still blocked on roll system (flat bonus + damage roll type)."
-  - "Avatar images — designed but not spec'd"
-  - "PDF filler gaps — checkbox mapping, expertise handling, page 2 biographical fields"
-  - "Roll system needs flat bonus support and damage roll type before Barbarian can ship"
-  - "WIZARD_SPELL_DB still has ~97 level 1-4 spell entries that could eventually migrate to SPELL_DB when Wizard ships (low priority dedup)"
-
-recent:
-  - "2026-03-26 S4: Paladin fully implemented (4 handoffs: data, onboarding, dashboard, level-up)"
-  - "2026-03-26 S4: Paladin audit — 5 errors fixed (missing spells, Divine Sense min, Branding Smite, Scrying dupe)"
-  - "2026-03-26 S4: Cross-class spell rendering fix — WIS hardcode → class-aware, healing.mod boolean, DoL/Supreme guards"
-  - "2026-03-26 S4: Cleric audit — 4 errors fixed (levels 2-3, spell leak, domains, DoL display, prep min)"
-  - "2026-03-26 S4: Fighter audit — 1 error fixed (Fire Shield school). Wizard spell dedup (6 spells consolidated, WIZARD_SPELL_LIST 199 names)"
+  - "Wizard spell data: 86 spells missing from SPELL_DB (16 at levels 1-4, 70 at levels 5-9). Handoff 2 ready to frame."
+  - "Wizard onboarding/dashboard/level-up: Handoffs 3-5 after spell data."
+  - "DM Screen — SPEC_DM_SCREEN.md complete. Build after Wizard."
+  - "Barbarian/Monk at 25-30% — stubs only, not needed by current party."
 
 gap_log:
-  - date: "2026-03-26"
-    gap: "renderConcentrationBanner() orphaned during HUD redesign — never called from dashboard"
-    cause: "Combat HUD handoff replaced the HP tracker block that contained the banner call, and the new HUD only added a small concentration badge without Drop/Change controls"
-    resolution: "Re-added renderConcentrationBanner(c) call below the sticky HUD"
-    severity: "high — core feature (dropping concentration) was completely inaccessible"
-  - date: "2026-03-26"
-    gap: "Concentration auto-applied buff effects to caster regardless of spell target"
-    cause: "Buff system and concentration were built in the same handoff and merged — no separation between 'I hold this spell' and 'this effect is on me'"
-    resolution: "Full architectural separation — concentration tracks spell maintenance, externalBuffs tracks all stat effects, 'Are you a target?' prompt bridges them"
-    severity: "high — caused incorrect AC calculations when casting buffs on teammates"
-  - date: "2026-03-26"
-    gap: "Max-height cap in sticky HUD spec caused visible slot clipping"
-    cause: "Spec'd max-height: 160px looked reasonable on paper but clipped real content when resource strip wrapped to 2 lines"
-    resolution: "Removed max-height and overflow: hidden. Compact HUD design keeps it short naturally."
-    severity: "medium — resource strip was visually broken until caught"
-  - date: "2026-03-26"
-    gap: "PM could not load full index.html — context window exceeded by 10,990-line monolith"
-    cause: "All code in single file from project start. Each feature session added ~500-1500 lines with no split point"
-    resolution: "T4 file split into 17 modules. PM can now load any individual file. Session ran in CC with CC acting as both PM and CC."
-    severity: "high — PM was unable to fulfill navigator/translator role without loading the codebase"
-  - date: "2026-03-26"
-    gap: "SPELL_DB growth leaked non-Cleric spells into CLERIC_SPELLS derived array"
-    cause: "CLERIC_SPELLS was built with an unfiltered SPELL_DB.forEach() loop. When Paladin spells were added to SPELL_DB, they automatically appeared in the Cleric picker."
-    resolution: "Added CLERIC_SPELL_LIST constant (99 PHB Cleric spells) and filtered the build loop against it. Same pattern as PALADIN_SPELL_LIST."
-    severity: "high — Clerics could prepare non-Cleric spells (Searing Smite, Hunter's Mark, etc.)"
-  - date: "2026-03-26"
-    gap: "Spell card rendering (getSpellSummaryLine + renderSpellCard) hardcoded WIS for DC, attack, and healing calculations"
-    cause: "Original implementation was Cleric-only. When Paladin (CHA caster) was added, the hardcode wasn't caught until Handoff 4 audit"
-    resolution: "Replaced wisMod with class-aware castMod from CLASS_DATA[char.class].spellcastingAbility in all spell rendering functions"
-    severity: "high — all Paladin spell cards showed wrong DC, attack bonus, and healing values"
-  - date: "2026-03-26"
-    gap: "CLERIC_PROGRESSION missing levels 2 and 3 — level 1 Clerics could not level up"
-    cause: "App originally designed around level 3 starting character (Thorin). Levels 2-3 were never added to the progression table."
-    resolution: "Added CLERIC_PROGRESSION entries for levels 2 (Channel Divinity) and 3 (2nd-level slots, domain spells)"
-    severity: "critical — level 1-2 Clerics were completely stuck"
-  - date: "2026-03-26"
-    gap: "6 spells duplicated across WIZARD_SPELL_DB and SPELL_DB with divergent descriptions"
-    cause: "Paladin audit fix added spells to SPELL_DB that already existed in WIZARD_SPELL_DB (fighter.js) for Eldritch Knight"
-    resolution: "Removed duplicates from WIZARD_SPELL_DB, created WIZARD_SPELL_LIST (199 names), added bounded getWizardSpell() fallback and getAllEkSpells() helper"
-    severity: "low — functionally working but data divergence risk"
+  - date: "2026-03-27"
+    gap: "Bulk search-and-replace corrupted prefixed names (FIGHTER_FEATURE_DESCRIPTIONS → FIGHTER_CLERIC_FEATURE_DESCRIPTIONS)"
+    cause: "Renaming FEATURE_DESCRIPTIONS to CLERIC_FEATURE_DESCRIPTIONS hit all strings containing the substring, including FIGHTER_FEATURE_DESCRIPTIONS"
+    resolution: "CC caught and fixed the cascading rename. Future renames should use word-boundary-aware search (whole-word match) not substring replacement."
+    severity: "medium — would have broken Fighter feature display if not caught"
+  - date: "2026-03-27"
+    gap: "Double-comma bug (},,) after merging WIZARD_SPELL_DB into SPELL_DB — 85 undefined array entries"
+    cause: "Mechanical merge of two large arrays introduced trailing commas that JavaScript parsed as undefined slots"
+    resolution: "Fixed with sed. Future large array merges should include a post-merge validation step (check for undefined entries)."
+    severity: "high — would have caused silent spell lookup failures"
+  - date: "2026-03-27"
+    gap: "First-consumer placement: Wizard spell data lived in data/fighter.js because EK was the first consumer"
+    cause: "No governance principle existed to catch shared data being placed in a consumer-specific file"
+    resolution: "Added Conductor Discipline #6: Catch misplacement at the second consumer. Three rules: import smell detection, PM routing decision, debt protocol."
+    severity: "high — caused confusing cross-file dependencies and motivated the full data architecture refactor"
+
+recent_activity:
+  - "Rogue fully implemented (4 handoffs: data layer, dashboard+expertise+sneak attack, level-up, Arcane Trickster spellcasting)"
+  - "Rogue PHB Audit: zero mechanical errors, found pre-existing toggleSlot bug + EK long rest bug"
+  - "Conductor Discipline #6 added: catch misplacement at the second consumer (PM/CC collaborative design)"
+  - "Data Architecture Refactor (T4, 8 phases): unified spell DB, domain-organized files, unified slot storage, deleted progression.js"
+  - "Post-Refactor Audit + cleanup: zero breaking issues, 5 cosmetic items resolved"

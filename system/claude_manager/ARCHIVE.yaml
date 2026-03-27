@@ -49,3 +49,19 @@ sessions:
       - "Wizard spell name list (199 names, levels 1-9) can be built ahead of data — pays off as a routing table for spell lookups and future class implementation"
       - "DM's primary combat bottleneck is Deal Damage (number input, not +/- buttons) and attack rolls (structured attackBonus/damageDice fields, not just text)"
     next: "Rogue class implementation. Then Wizard. Then DM Screen build from SPEC_DM_SCREEN.md."
+
+  - date: "2026-03-27"
+    session: 5
+    summary: "Rogue full implementation (4 handoffs + PHB audit), Conductor Discipline #6, full data architecture refactor (T4, 8 phases + 2 audits)"
+    learned:
+      - "AI-generated code can look mechanically correct while implementing wrong behavior — PHB audits remain essential (Rogue passed clean, validating the process)"
+      - "toggleSlot() had been broken for EK since session 1 — pre-existing bugs surface when new classes exercise shared infrastructure"
+      - "EK long rest never reset ekSlotsUsed — found during Rogue AT implementation. Absorbed by the unified storage refactor."
+      - "First-consumer placement is a universal anti-pattern: Wizard data in fighter.js, Cleric slots named CLERIC_SPELL_SLOTS but shared with Wizard. Discipline #6 addresses this going forward."
+      - "The right moment to catch misplacement is the second consumer (import smell), not creation time — you can't predict reuse when building the first consumer"
+      - "Bulk search-and-replace on names that are substrings of other names causes cascading corruption — use word-boundary matching"
+      - "Merging large arrays mechanically produces double-comma bugs (},,) creating undefined slots — always validate after merge"
+      - "Splitting spell architecture into encyclopedia (what spells do) vs access lists (which class gets which) is a clean separation of concerns"
+      - "Three parallel storage patterns (ekSlotsUsed/atSlotsUsed/spellSlotsUsed) caused the toggleSlot bug — unified storage eliminated the entire category of error"
+      - "Independent CC review of PM's governance proposals produces better results than either alone — the PM/CC debate on Discipline #6 yielded a stronger final version"
+    next: "Wizard spell data (~86 missing entries), then Wizard onboarding/dashboard/level-up. Then DM Screen."
