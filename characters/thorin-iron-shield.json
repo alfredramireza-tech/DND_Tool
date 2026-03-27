@@ -154,8 +154,8 @@
   "currentHp": 34,
   "tempHp": 0,
   "spellSlotsUsed": {
-    "1": 1,
-    "2": 2
+    "1": 0,
+    "2": 0
   },
   "channelDivinityUsed": 0,
   "equippedItems": [
@@ -199,6 +199,14 @@
     "Blinded"
   ],
   "sessionLog": [
+    {
+      "time": "4:26 PM",
+      "text": "CHA Save: 18"
+    },
+    {
+      "time": "4:26 PM",
+      "text": "WIS Save: 16"
+    },
     {
       "time": "4:26 PM",
       "text": "Initiative: 9"
