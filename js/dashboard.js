@@ -31,23 +31,16 @@ function renderDashboard(c, preserveScroll) {
   // Combat mode bar
   html += '<div class="combat-mode-bar"></div>';
 
-  // Sticky Combat HUD (includes button bar + HP)
-  html += '<div class="hp-sticky">';
-
-  // Button bar — fixed row, never reflows
-  var initLabel = lastInitiative !== null ? '&#127922; Initiative: ' + lastInitiative : '&#127922; Initiative';
-  html += '<div class="dash-btn-bar">';
-  html += '<button class="init-btn" id="init-btn" onclick="rollInitiative()">' + initLabel + '</button>';
-  html += '<button class="combat-mode-btn' + (combatModeOn ? ' active' : '') + '" id="combat-mode-btn" onclick="toggleCombatMode()">&#9876; Combat</button>';
-  html += '</div>';
-
-  // Header
+  // Header (scrolls away)
   html += '<div class="dash-header">';
   var raceDisplay = c.subrace ? c.subrace + ' ' + c.race : c.race;
   html += '<h1 style="margin:0;text-align:center">' + escapeHtml(c.name) + '</h1>';
   html += '<div class="dash-subtitle" style="text-align:center">' + raceDisplay + ' ' + c.class + (c.subclass ? ' (' + c.subclass + ')' : '') + ' — Level ' + c.level + '</div>';
   html += '<div class="text-dim" style="font-size:0.85rem;margin-top:4px;text-align:center">' + escapeHtml(c.background) + ' · ' + c.alignment + '</div>';
   html += '</div>';
+
+  // Sticky Combat HUD
+  html += '<div class="hp-sticky">';
   html += '<div class="hud-columns">';
 
   // Left column: HP + Inspiration + buttons
@@ -75,6 +68,13 @@ function renderDashboard(c, preserveScroll) {
 
   // Resource strip
   html += renderResourceStrip(c);
+
+  // Button bar — bottom of sticky HUD, never reflows
+  var initLabel = lastInitiative !== null ? '&#127922; Init: ' + lastInitiative : '&#127922; Initiative';
+  html += '<div class="dash-btn-bar">';
+  html += '<button class="init-btn" id="init-btn" onclick="rollInitiative()">' + initLabel + '</button>';
+  html += '<button class="combat-mode-btn' + (combatModeOn ? ' active' : '') + '" id="combat-mode-btn" onclick="toggleCombatMode()">&#9876; Combat</button>';
+  html += '</div>';
 
   html += '</div>'; // end hp-sticky
 

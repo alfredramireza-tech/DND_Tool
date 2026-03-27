@@ -345,7 +345,9 @@ function getOnboardingCharProxy() {
 function buildCantripList() {
   const container = document.getElementById('cantrip-list');
   var proxy = getOnboardingCharProxy();
-  container.innerHTML = CLERIC_CANTRIPS.map(function(name) {
+  var cls = document.getElementById('f-class').value || 'Cleric';
+  var cantripSource = (cls === 'Wizard') ? WIZARD_CANTRIPS : CLERIC_CANTRIPS;
+  container.innerHTML = cantripSource.map(function(name) {
     var spell = getSpell(name);
     if (!spell) return '<label class="check-item"><input type="checkbox" name="cantrip" value="' + name + '" onchange="onCantripChange()"><span>' + name + '</span></label>';
     var summary = getSpellSelectionSummary(spell, proxy);
@@ -394,6 +396,101 @@ function buildPreparedSpellList(level) {
     });
   }
   container.innerHTML = html;
+}
+
+function getWizardSpellbookSize(level) {
+  return 6 + 2 * (level - 1);
+}
+
+function buildSpellbookList(level) {
+  var container = document.getElementById('spellbook-spell-list');
+  var slots = getSpellSlots(level, 'Wizard');
+  var slotKeys = Object.keys(slots).map(Number);
+  if (slotKeys.length === 0) { container.innerHTML = ''; return; }
+  var maxSpellLevel = Math.max.apply(null, slotKeys);
+  var proxy = getOnboardingCharProxy();
+  var html = '';
+  for (var sl = 1; sl <= maxSpellLevel; sl++) {
+    var spellNames = WIZARD_SPELL_LIST[sl] || [];
+    if (spellNames.length === 0) continue;
+    html += '<h4 class="text-dim mt-8 mb-8" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em">' + ordinal(sl) + '-Level Spells</h4>';
+    spellNames.forEach(function(name) {
+      var spell = getSpell(name);
+      if (!spell) {
+        html += '<label class="check-item"><input type="checkbox" name="spellbook" value="' + name + '" onchange="onSpellbookChange()"><span>' + name + '</span></label>';
+        return;
+      }
+      var summary = getSpellSelectionSummary(spell, proxy);
+      var body = buildSpellSelectionBody(spell, proxy);
+      html += renderSelectionCard(name, {
+        inputName: 'spellbook',
+        value: name,
+        onchange: 'onSpellbookChange()',
+        summary: summary,
+        bodyHtml: body
+      });
+    });
+  }
+  container.innerHTML = html;
+}
+
+function onSpellbookChange() {
+  var level = parseInt(document.getElementById('f-level').value) || 1;
+  var maxSpells = getWizardSpellbookSize(level);
+  enforceSelectionLimit('spellbook', maxSpells, 'spellbook-count');
+  // Rebuild prepared spell list to reflect current spellbook selections
+  buildWizardPreparedList();
+}
+
+function buildWizardPreparedList() {
+  var container = document.getElementById('prepared-spell-list');
+  var spellbookSpells = [];
+  document.querySelectorAll('input[name="spellbook"]:checked').forEach(function(cb) {
+    spellbookSpells.push(cb.value);
+  });
+  if (spellbookSpells.length === 0) {
+    container.innerHTML = '<p class="text-dim">Select spells for your spellbook first.</p>';
+    return;
+  }
+  // Preserve existing prepared selections
+  var prevPrepared = [];
+  document.querySelectorAll('input[name="prepared"]:checked').forEach(function(cb) {
+    prevPrepared.push(cb.value);
+  });
+  var proxy = getOnboardingCharProxy();
+  var byLevel = {};
+  spellbookSpells.forEach(function(name) {
+    var spell = getSpell(name);
+    var sl = spell ? spell.level : 1;
+    if (!byLevel[sl]) byLevel[sl] = [];
+    byLevel[sl].push(name);
+  });
+  var html = '';
+  Object.keys(byLevel).sort(function(a,b){return a-b;}).forEach(function(sl) {
+    html += '<h4 class="text-dim mt-8 mb-8" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em">' + ordinal(parseInt(sl)) + '-Level Spells</h4>';
+    byLevel[sl].forEach(function(name) {
+      var spell = getSpell(name);
+      if (!spell) {
+        html += '<label class="check-item"><input type="checkbox" name="prepared" value="' + name + '" onchange="onPreparedChange()"><span>' + name + '</span></label>';
+        return;
+      }
+      var summary = getSpellSelectionSummary(spell, proxy);
+      var body = buildSpellSelectionBody(spell, proxy);
+      html += renderSelectionCard(name, {
+        inputName: 'prepared',
+        value: name,
+        onchange: 'onPreparedChange()',
+        summary: summary,
+        bodyHtml: body
+      });
+    });
+  });
+  container.innerHTML = html;
+  // Restore valid prepared selections
+  document.querySelectorAll('input[name="prepared"]').forEach(function(cb) {
+    cb.checked = prevPrepared.indexOf(cb.value) >= 0;
+  });
+  onPreparedChange();
 }
 
 function buildDomainSpellsDisplay(level) {
@@ -533,6 +630,9 @@ function showStep(n) {
     if (cls4 === 'Paladin') {
       prepCount = Math.max(1, abilMod4 + Math.floor(level / 2));
       prepLabel = `CHA modifier ${abilMod4 >= 0 ? '+' : ''}${abilMod4} + half paladin level ${Math.floor(level / 2)}`;
+    } else if (cls4 === 'Wizard') {
+      prepCount = Math.max(1, level + abilMod4);
+      prepLabel = `level ${level} + INT modifier ${abilMod4 >= 0 ? '+' : ''}${abilMod4}`;
     } else {
       prepCount = Math.max(1, level + abilMod4);
       prepLabel = `level ${level} + WIS modifier ${abilMod4 >= 0 ? '+' : ''}${abilMod4}`;
@@ -544,42 +644,78 @@ function showStep(n) {
     var cantripCountEl = document.getElementById('cantrip-count');
     var cantripListEl = document.getElementById('cantrip-list');
     var cantripErr = document.getElementById('err-cantrips');
+    var isWizard = cls4 === 'Wizard';
+
+    // Cantrip section visibility
     if (cls4 === 'Paladin') {
       if (cantripHeader) cantripHeader.style.display = 'none';
       cantripCountEl.style.display = 'none';
       cantripListEl.style.display = 'none';
       cantripErr.style.display = 'none';
-      // Update step title
       document.querySelector('#step-4 > h2').textContent = 'Spells';
     } else {
       if (cantripHeader) cantripHeader.style.display = '';
       cantripCountEl.style.display = '';
       cantripListEl.style.display = '';
       cantripErr.style.display = '';
-      document.querySelector('#step-4 > h2').textContent = 'Spells & Cantrips';
+      document.querySelector('#step-4 > h2').textContent = isWizard ? 'Spellbook & Cantrips' : 'Spells & Cantrips';
     }
+
+    // Spellbook section visibility (Wizard only)
+    var spellbookSection = document.getElementById('spellbook-section');
+    if (spellbookSection) {
+      if (isWizard) {
+        spellbookSection.classList.remove('hidden');
+        var sbSize = getWizardSpellbookSize(level);
+        document.getElementById('spellbook-max').textContent = sbSize;
+      } else {
+        spellbookSection.classList.add('hidden');
+      }
+    }
+
+    // Domain spells section (hide for Wizard)
+    var domainDisplay = document.getElementById('domain-spells-display');
+    if (domainDisplay) domainDisplay.style.display = isWizard ? 'none' : '';
 
     document.getElementById('cantrip-max').textContent = cantripCount;
     document.getElementById('prepared-max').textContent = prepCount;
     document.getElementById('prepared-info').innerHTML =
       `You can prepare <span class="current">${prepCount}</span> spells (${prepLabel})`;
 
-    // Update subtitle text for oath vs domain spells
+    // Update subtitle text
     var subtitleEl = document.querySelector('#step-4 .subtitle');
     if (subtitleEl) {
-      subtitleEl.textContent = cls4 === 'Paladin'
-        ? 'These are in addition to your oath spells above. Selection is optional.'
-        : 'These are in addition to your domain spells above. Selection is optional.';
+      if (isWizard) {
+        subtitleEl.textContent = 'Choose from your spellbook above. Selection is optional.';
+      } else if (cls4 === 'Paladin') {
+        subtitleEl.textContent = 'These are in addition to your oath spells above. Selection is optional.';
+      } else {
+        subtitleEl.textContent = 'These are in addition to your domain spells above. Selection is optional.';
+      }
     }
 
-    // Preserve user's prepared spell selections before rebuilding the list
+    // Rebuild cantrip list (class-aware)
+    buildCantripList();
+
+    // Preserve user's prepared spell selections before rebuilding
     const prevPrepared = [];
     document.querySelectorAll('input[name="prepared"]:checked').forEach(cb => prevPrepared.push(cb.value));
 
-    buildDomainSpellsDisplay(level);
-    buildPreparedSpellList(level);
+    if (isWizard) {
+      // Wizard: build spellbook picker, then prepared list from spellbook
+      buildSpellbookList(level);
+      // Restore spellbook selections
+      var sbToCheck = (isEditing ? loadCharacter() : null)?.spellbook || [];
+      document.querySelectorAll('input[name="spellbook"]').forEach(function(cb) {
+        cb.checked = sbToCheck.indexOf(cb.value) >= 0;
+      });
+      onSpellbookChange(); // This rebuilds the prepared list
+    } else {
+      buildDomainSpellsDisplay(level);
+      buildPreparedSpellList(level);
+    }
 
-    // Restore: use previous user selections if any, otherwise fall back to source data
+    // Restore prepared spell selections
     const spellsToCheck = prevPrepared.length > 0 ? prevPrepared :
       ((isEditing ? loadCharacter() : null)?.currentPreparedSpells || []);
     document.querySelectorAll('input[name="prepared"]').forEach(cb => {
@@ -744,12 +880,19 @@ function validateStep(n) {
       const cd = CLASS_DATA[cls];
       if (cd && !cd.isCaster) return true;
       if (cls === 'Paladin' && (parseInt(document.getElementById('f-level').value) || 1) < 2) return true;
-      // Paladin has no cantrips — skip cantrip validation
+      // Cantrip validation (skip for Paladin — no cantrips)
       if (cls !== 'Paladin') {
         const level = parseInt(document.getElementById('f-level').value) || 3;
         const needed = getCantripsCount(level, cls);
         const selected = document.querySelectorAll('input[name="cantrip"]:checked').length;
         if (selected !== needed) { showError('err-cantrips'); return false; }
+      }
+      // Wizard spellbook validation
+      if (cls === 'Wizard') {
+        const level = parseInt(document.getElementById('f-level').value) || 1;
+        const sbNeeded = getWizardSpellbookSize(level);
+        const sbSelected = document.querySelectorAll('input[name="spellbook"]:checked').length;
+        if (sbSelected !== sbNeeded) { showError('err-spellbook'); return false; }
       }
       return true;
     }
@@ -1012,7 +1155,7 @@ function collectFormData() {
     preparedSpellCount: isCaster ? (cls === 'Paladin' ? Math.max(1, mod(abilityScores[cd.spellcastingAbility]) + Math.floor(level / 2)) : Math.max(1, level + mod(abilityScores[cd.spellcastingAbility]))) : 0,
     currentPreparedSpells: isCaster ? prepared : [],
     domainSpells: (cls === 'Cleric' || cls === 'Paladin') ? getDomainSpells(level, cls, document.getElementById('f-subclass').value) : [],
-    features: (cls === 'Cleric') ? getFeatures(level) : (cls === 'Fighter') ? getFighterFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Paladin') ? getPaladinFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Rogue') ? getRogueFeatures(level, document.getElementById('f-subclass').value) : [],
+    features: (cls === 'Cleric') ? getFeatures(level) : (cls === 'Fighter') ? getFighterFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Paladin') ? getPaladinFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Rogue') ? getRogueFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Wizard') ? getWizardFeatures(level, document.getElementById('f-subclass').value) : [],
     channelDivinityUses: (cls === 'Cleric' || cls === 'Paladin') ? getChannelDivUses(level, cls) : 0,
     equipment: document.getElementById('f-equipment').value,
     notes: document.getElementById('f-notes').value,
@@ -1050,6 +1193,15 @@ function collectFormData() {
       result.preparedSpellCount = 0;
       result.currentPreparedSpells = [];
     }
+  }
+
+  // Wizard-specific fields
+  if (cls === 'Wizard') {
+    var spellbook = [];
+    document.querySelectorAll('input[name="spellbook"]:checked').forEach(function(cb) { spellbook.push(cb.value); });
+    result.spellbook = spellbook;
+    result.spellSlots = getSpellSlots(level, 'Wizard');
+    result.features = getWizardFeatures(level, document.getElementById('f-subclass').value);
   }
 
   // Rogue Arcane Trickster fields
@@ -1220,6 +1372,9 @@ function renderReview() {
     }
     if (d.class === 'Paladin' && domainList.length > 0) {
       html += `<div class="review-row"><span class="rlabel">Oath Spells</span><span class="rvalue">${domainList.join(', ')}</span></div>`;
+    }
+    if (d.class === 'Wizard' && d.spellbook && d.spellbook.length > 0) {
+      html += `<div class="review-row"><span class="rlabel">Spellbook (${d.spellbook.length})</span><span class="rvalue">${d.spellbook.join(', ')}</span></div>`;
     }
     html += `<div class="review-row"><span class="rlabel">Prepared (${d.currentPreparedSpells.length}/${d.preparedSpellCount})</span><span class="rvalue">${d.currentPreparedSpells.join(', ') || '—'}</span></div>
     </div>`;

@@ -840,6 +840,8 @@ function renderSubclassSelectScreen() {
     ? 'At level 3, you swear your Sacred Oath. This determines your oath spells and Channel Divinity options.'
     : s.cls === 'Rogue'
     ? 'At level 3, you choose your Roguish Archetype. This determines your specialized abilities.'
+    : s.cls === 'Wizard'
+    ? 'At level 2, you choose your Arcane Tradition. This determines your school-specific abilities.'
     : 'At level 3, you choose your martial archetype. This determines your specialized abilities.';
   html += '<div class="lu-callout">' + subCallout + '</div>';
   html += '<div class="lu-option-group">';
@@ -855,6 +857,14 @@ function renderSubclassSelectScreen() {
     else if (sub === 'Thief') desc = 'Quick hands, climbing prowess, and the ultimate ability to use any magic item. Versatile and fast.';
     else if (sub === 'Assassin') desc = 'Master of surprise and disguise. Devastating first strikes with auto-crits on surprised targets.';
     else if (sub === 'Arcane Trickster') desc = 'Blend roguish skills with Enchantment and Illusion magic (Wizard spells). Tricky and magical.';
+    else if (sub === 'School of Abjuration') desc = 'Protective magic specialist. Arcane Ward absorbs damage for you.';
+    else if (sub === 'School of Conjuration') desc = 'Summon creatures and objects. Teleportation and focused concentration.';
+    else if (sub === 'School of Divination') desc = 'See the future with Portent dice. Replace any roll with your foretelling.';
+    else if (sub === 'School of Enchantment') desc = 'Control minds with Hypnotic Gaze and split targeting on charm spells.';
+    else if (sub === 'School of Evocation') desc = 'Master of damage spells. Sculpt Spells protects allies from your Fireballs.';
+    else if (sub === 'School of Illusion') desc = 'Create convincing illusions. Make illusions real at higher levels.';
+    else if (sub === 'School of Necromancy') desc = 'Harvest life from kills. Command undead with enhanced servants.';
+    else if (sub === 'School of Transmutation') desc = 'Transform matter and self. Transmuter\'s Stone grants versatile benefits.';
     html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luSelectSubclass(\'' + sub.replace(/'/g, "\\'") + '\')">';
     html += '<div class="opt-title">' + escapeHtml(sub) + '</div>';
     html += '<div class="opt-desc">' + desc + '</div></div>';

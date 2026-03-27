@@ -371,7 +371,7 @@ function rollInitiative() {
   showRollResult('Initiative', usedAdvantage ? [d20, d20b] : [d20], bonus, extraLabel, total, extra, ctx);
   // Update the initiative button text in-place
   var initBtn = document.getElementById('init-btn');
-  if (initBtn) initBtn.innerHTML = '&#127922; Initiative: ' + total;
+  if (initBtn) initBtn.innerHTML = '&#127922; Init: ' + total;
 }
 
 /* ═══════════════════════════════════════════

@@ -940,7 +940,8 @@ details[open] summary::before { content: '▾ '; }
 }
 
 /* ── Combat Mode ── */
-.combat-mode-btn { display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--text);font-size:0.85rem;cursor:pointer;transition:all 0.2s; }
+.combat-mode-btn { display:inline-flex;align-items:center;gap:4px;background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text-dim);font-size:0.75rem;cursor:pointer;transition:all 0.15s; }
+.combat-mode-btn:hover { color:var(--text); }
 .combat-mode-btn.active { border-color:var(--accent);background:rgba(196,163,90,0.15);color:var(--accent);font-weight:bold; }
 .combat-mode-bar { height:3px;background:var(--accent);margin:-16px -16px 16px;border-radius:2px 2px 0 0;display:none; }
 .combat-mode-on .combat-mode-bar { display:block; }
@@ -959,9 +960,10 @@ details[open] summary::before { content: '▾ '; }
 .ds-result.dead { background:rgba(204,51,51,0.15);color:#cc3333; }
 .ds-rules { font-size:0.75rem;color:var(--text-dim);margin-top:10px;line-height:1.5; }
 
-/* ── Dashboard Button Bar ── */
-.dash-btn-bar { display:flex;justify-content:space-between;align-items:center;padding:6px 0;gap:8px; }
-.init-btn { background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--text);font-size:0.8rem;cursor:pointer;white-space:nowrap;min-width:140px;text-align:center; }
+/* ── Dashboard Button Bar (bottom of sticky HUD) ── */
+.dash-btn-bar { display:flex;justify-content:space-between;align-items:center;padding:4px 10px;gap:8px; }
+.init-btn { background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text-dim);font-size:0.75rem;cursor:pointer;white-space:nowrap;min-width:120px;text-align:center;transition:color 0.15s; }
+.init-btn:hover { color:var(--text); }
 .init-btn:active { background:var(--accent);color:var(--bg); }
 
 /* ── Concentration Banner ── */

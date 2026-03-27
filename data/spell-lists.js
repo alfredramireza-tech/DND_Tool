@@ -49,8 +49,11 @@ function getThirdCasterCantripsKnown(level) { return THIRD_CASTER_CANTRIPS_KNOWN
    CLASS SPELL NAME ROSTERS
    ═══════════════════════════════════════════ */
 
-/* Cleric cantrip names (derived from unified CANTRIP_DATA — filter to Cleric cantrips only) */
+/* Cleric cantrip names */
 const CLERIC_CANTRIPS = ['Guidance', 'Light', 'Mending', 'Resistance', 'Sacred Flame', 'Spare the Dying', 'Thaumaturgy', 'Toll the Dead'];
+
+/* Wizard cantrip names (16 PHB Wizard cantrips — shared with EK/AT) */
+const WIZARD_CANTRIPS = ['Acid Splash', 'Blade Ward', 'Chill Touch', 'Dancing Lights', 'Fire Bolt', 'Friends', 'Light', 'Mage Hand', 'Mending', 'Message', 'Minor Illusion', 'Poison Spray', 'Prestidigitation', 'Ray of Frost', 'Shocking Grasp', 'True Strike'];
 
 /* PHB Cleric Spell List */
 const CLERIC_SPELL_LIST = [

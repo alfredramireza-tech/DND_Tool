@@ -49,6 +49,7 @@ function migrateCharacter(c) {
   if (!c.journal) c.journal = [];
   if (!c.externalBuffs) c.externalBuffs = [];
   if (!c.maxHpBoost) c.maxHpBoost = { value: 0, source: '' };
+  if (!c.spellbook) c.spellbook = [];
   // Migrate old EK/AT field names to unified fields
   if (c.ekSpellSlots) { c.spellSlots = c.ekSpellSlots; delete c.ekSpellSlots; }
   if (c.ekSlotsUsed) { c.spellSlotsUsed = c.ekSlotsUsed; delete c.ekSlotsUsed; }
@@ -82,6 +83,11 @@ function migrateCharacter(c) {
     if (c.features && c.features.length === 0) c.features = getPaladinFeatures(c.level, c.subclass);
     if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = getHalfCasterSlots(c.level);
     if (!c.domainSpells) c.domainSpells = getDomainSpells(c.level, 'Paladin', c.subclass);
+  }
+  // Wizard-specific fields
+  if (c.class === 'Wizard') {
+    if (c.features && c.features.length === 0) c.features = getWizardFeatures(c.level, c.subclass);
+    if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = getFullCasterSlots(c.level);
   }
   return c;
 }
