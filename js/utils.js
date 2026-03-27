@@ -426,7 +426,8 @@ function getChannelDivUses(level, cls) {
   // Cleric default
   if (level >= 18) return 3;
   if (level >= 6) return 2;
-  return 1;
+  if (level >= 2) return 1;
+  return 0;
 }
 
 function getDomainSpells(level, cls, subclass) {

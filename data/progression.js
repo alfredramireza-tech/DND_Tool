@@ -157,8 +157,26 @@ const FEATURE_DESCRIPTIONS = {
   'Divine Strike Improvement': 'Your Divine Strike damage increases to 2d8 radiant damage.'
 };
 
-/* Cleric progression: what happens at each level 4-20 */
+/* Cleric progression: what happens at each level 2-20 */
 const CLERIC_PROGRESSION = {
+  2: {
+    features: ['Channel Divinity: Turn Undead', 'Channel Divinity: Preserve Life'],
+    asi: false,
+    newCantrip: false,
+    spellSlots: {1: 3},
+    channelDivinityUses: 1,
+    proficiencyBonus: 2
+  },
+  3: {
+    features: [],
+    asi: false,
+    newCantrip: false,
+    spellSlots: {1: 4, 2: 2},
+    channelDivinityUses: 1,
+    proficiencyBonus: 2,
+    domainSpells: {3: ['Lesser Restoration', 'Spiritual Weapon']},
+    newSpellLevel: 2
+  },
   4: {
     features: [],
     asi: true,

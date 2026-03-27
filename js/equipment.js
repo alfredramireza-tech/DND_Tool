@@ -150,18 +150,19 @@ function getSpellSummaryLine(spell, char) {
 
   // Healing
   if (spell.healing) {
-    var dolBonus = isClericLife && spell.level >= 1 ? 2 + spell.level : 0;
+    var hasDol = isClericLife && spell.level >= 1;
     if (spell.healing.flat) {
-      parts.push((spell.healing.flat + dolBonus) + ' HP');
+      var flatVal = spell.healing.flat + (hasDol ? 2 + spell.level : 0);
+      parts.push(flatVal + ' HP');
     } else if (isSupreme) {
       const parsed = parseDice(spell.healing.dice);
       if (parsed) {
-        const maxVal = parsed.count * parsed.sides + castMod + dolBonus;
-        parts.push(maxVal + ' HP (max)');
+        const maxVal = parsed.count * parsed.sides + castMod + (hasDol ? 2 + spell.level : 0);
+        parts.push(maxVal + '+ HP (max)');
       }
     } else {
       const modPart = spell.healing.mod ? '+' + castMod : '';
-      const dolPart = dolBonus > 0 ? '+' + dolBonus : '';
+      const dolPart = hasDol ? '+DoL' : '';
       parts.push(spell.healing.dice + modPart + dolPart + ' HP');
     }
   }

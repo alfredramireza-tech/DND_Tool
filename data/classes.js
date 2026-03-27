@@ -50,7 +50,7 @@ const CLASS_DATA = {
     skillChoices: ['history', 'insight', 'medicine', 'persuasion', 'religion'],
     skillCount: 2,
     expertiseCount: 0,
-    subclasses: ['Life Domain', 'Light Domain', 'Knowledge Domain', 'Nature Domain', 'Tempest Domain', 'Trickery Domain', 'War Domain'],
+    subclasses: ['Life Domain'],
     subclassLabel: 'Domain',
     isCaster: true,
     spellcastingAbility: 'wis',

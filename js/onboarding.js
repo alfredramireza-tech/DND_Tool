@@ -511,7 +511,7 @@ function showStep(n) {
       prepCount = Math.max(1, abilMod4 + Math.floor(level / 2));
       prepLabel = `CHA modifier ${abilMod4 >= 0 ? '+' : ''}${abilMod4} + half paladin level ${Math.floor(level / 2)}`;
     } else {
-      prepCount = level + abilMod4;
+      prepCount = Math.max(1, level + abilMod4);
       prepLabel = `level ${level} + WIS modifier ${abilMod4 >= 0 ? '+' : ''}${abilMod4}`;
     }
     const cantripCount = getCantripsCount(level, cls4);
@@ -919,7 +919,7 @@ function onPreparedChange() {
   if (cls === 'Paladin') {
     maxPrep = Math.max(1, mod(abilScore) + Math.floor(level / 2));
   } else {
-    maxPrep = level + mod(abilScore);
+    maxPrep = Math.max(1, level + mod(abilScore));
   }
 
   // Use reusable enforcer — strict disable at limit
@@ -986,7 +986,7 @@ function collectFormData() {
     skillProficiencies: skillProfs,
     cantripsKnown: (isCaster && cls !== 'Paladin') ? cantrips : [],
     spellSlots: isCaster ? getSpellSlots(level, cls) : {},
-    preparedSpellCount: isCaster ? (cls === 'Paladin' ? Math.max(1, mod(abilityScores[cd.spellcastingAbility]) + Math.floor(level / 2)) : level + mod(abilityScores[cd.spellcastingAbility])) : 0,
+    preparedSpellCount: isCaster ? (cls === 'Paladin' ? Math.max(1, mod(abilityScores[cd.spellcastingAbility]) + Math.floor(level / 2)) : Math.max(1, level + mod(abilityScores[cd.spellcastingAbility]))) : 0,
     currentPreparedSpells: isCaster ? prepared : [],
     domainSpells: (cls === 'Cleric' || cls === 'Paladin') ? getDomainSpells(level, cls, document.getElementById('f-subclass').value) : [],
     features: (cls === 'Cleric') ? getFeatures(level) : (cls === 'Fighter') ? getFighterFeatures(level, document.getElementById('f-subclass').value) : (cls === 'Paladin') ? getPaladinFeatures(level, document.getElementById('f-subclass').value) : [],

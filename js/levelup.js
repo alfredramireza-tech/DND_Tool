@@ -625,8 +625,8 @@ function renderSpellSlotsScreen() {
     var oldWisMod = mod(s.char.abilityScores.wis);
     var wisChange = s.abilityChanges.wis || 0;
     var newWisMod = mod(s.char.abilityScores.wis + wisChange);
-    oldPrepCount = s.char.level + oldWisMod;
-    newPrepCount = s.newLevel + newWisMod;
+    oldPrepCount = Math.max(1, s.char.level + oldWisMod);
+    newPrepCount = Math.max(1, s.newLevel + newWisMod);
     prepLabel = 'level + WIS modifier';
   }
 
@@ -1240,8 +1240,8 @@ function renderLuSummary() {
     } else {
       var wisChange = s.abilityChanges.wis || 0;
       var newWisMod = mod(char.abilityScores.wis + wisChange);
-      sumOldPrep = char.level + mod(char.abilityScores.wis);
-      sumNewPrep = s.newLevel + newWisMod;
+      sumOldPrep = Math.max(1, char.level + mod(char.abilityScores.wis));
+      sumNewPrep = Math.max(1, s.newLevel + newWisMod);
     }
     if (sumOldPrep !== sumNewPrep) {
       html += '<div class="lu-summary-section"><div class="lu-change"><span class="change-label">Prepared Spells</span>';
@@ -1493,7 +1493,7 @@ function confirmLevelUp() {
       historyEntry.newCantrip = s.newCantrip;
     }
     char.spellSlots = s.prog.spellSlots;
-    char.preparedSpellCount = newLevel + mod(char.abilityScores.wis);
+    char.preparedSpellCount = Math.max(1, newLevel + mod(char.abilityScores.wis));
     char.channelDivinityUses = s.prog.channelDivinityUses;
     char.features = getFeatures(newLevel);
     char.domainSpells = getDomainSpells(newLevel);
