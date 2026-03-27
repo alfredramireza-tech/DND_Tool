@@ -192,13 +192,161 @@
     "failures": 0
   },
   "concentration": {
-    "active": true,
-    "spellName": "Bless"
+    "active": false,
+    "spellName": ""
   },
   "activeConditions": [
     "Blinded"
   ],
   "sessionLog": [
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 7"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 2"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 6"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 5"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 3"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 7"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 7"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 2"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 5"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 5"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 2"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 7"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 3"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 7"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 3"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 0"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 1"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 6"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 5"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 2"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 3"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 0"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — piercing: 6"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — Attack: 19"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — Attack: 12"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — Attack: 10"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — Attack: 3"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — Attack: 17"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — Attack: 8"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Light Crossbow — Attack: 8"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Sacred Flame — radiant: 8"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Sacred Flame — radiant: 6"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Sacred Flame — radiant: 3"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Sacred Flame — radiant: 3"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Sacred Flame — radiant: 5"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Sacred Flame — radiant: 1"
+    },
+    {
+      "time": "4:22 PM",
+      "text": "Sacred Flame — radiant: 3"
+    },
     {
       "time": "4:14 PM",
       "text": "Initiative: 17"
@@ -358,25 +506,7 @@
   ],
   "inspiration": false,
   "journal": [],
-  "externalBuffs": [
-    {
-      "spellName": "Bless",
-      "effects": [
-        {
-          "type": "rollReminder",
-          "text": "+1d4",
-          "rollBonus": {
-            "dice": "1d4",
-            "appliesTo": [
-              "attacks",
-              "saves"
-            ]
-          }
-        }
-      ],
-      "linkedToConcentration": true
-    }
-  ],
+  "externalBuffs": [],
   "maxHpBoost": {
     "value": 0,
     "source": ""
