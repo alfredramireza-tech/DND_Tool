@@ -192,8 +192,8 @@
     "failures": 0
   },
   "concentration": {
-    "active": false,
-    "spellName": ""
+    "active": true,
+    "spellName": "Bless"
   },
   "activeConditions": [
     "Blinded"
@@ -356,9 +356,27 @@
       "text": "Brain Smoothie — Attack: 17"
     }
   ],
-  "inspiration": true,
+  "inspiration": false,
   "journal": [],
-  "externalBuffs": [],
+  "externalBuffs": [
+    {
+      "spellName": "Bless",
+      "effects": [
+        {
+          "type": "rollReminder",
+          "text": "+1d4",
+          "rollBonus": {
+            "dice": "1d4",
+            "appliesTo": [
+              "attacks",
+              "saves"
+            ]
+          }
+        }
+      ],
+      "linkedToConcentration": true
+    }
+  ],
   "maxHpBoost": {
     "value": 0,
     "source": ""
