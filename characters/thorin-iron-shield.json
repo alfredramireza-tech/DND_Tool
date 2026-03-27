@@ -154,7 +154,7 @@
   "currentHp": 34,
   "tempHp": 0,
   "spellSlotsUsed": {
-    "1": 0,
+    "1": 2,
     "2": 0
   },
   "channelDivinityUsed": 0,
@@ -197,6 +197,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "3:56 PM",
+      "text": "Guiding Bolt — radiant: 14"
+    },
+    {
+      "time": "3:56 PM",
+      "text": "Guiding Bolt — Attack: 15"
+    },
     {
       "time": "8:37 PM",
       "text": "1d20: 13"
