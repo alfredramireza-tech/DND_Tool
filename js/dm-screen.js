@@ -577,10 +577,12 @@ function showAddMonsterForm(template) {
 
   html += '<div style="display:flex;flex-direction:column;gap:8px;max-height:350px;overflow-y:auto">';
   html += '<input type="text" id="dm-mon-name" placeholder="Name (required)" value="' + escapeHtml(t.name || '') + '" style="min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">';
-  html += '<div style="display:flex;gap:8px">';
+  html += '<div style="display:flex;gap:8px;align-items:center">';
   html += '<input type="number" id="dm-mon-ac" placeholder="AC" value="' + (t.ac || '') + '" style="flex:1;min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">';
-  html += '<input type="text" id="dm-mon-hp" placeholder="HP or dice (2d8+4)" value="' + escapeHtml(t.hpFormula || (t.maxHp ? '' + t.maxHp : t.hp ? '' + t.hp : '')) + '" style="flex:1;min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">';
+  html += '<input type="text" id="dm-mon-hp" placeholder="HP or dice (2d8+4)" value="' + escapeHtml(t.hpFormula || (t.maxHp ? '' + t.maxHp : '')) + '" style="flex:1;min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)" oninput="clearDmHpRollResult()">';
+  html += '<button class="btn btn-secondary" style="min-height:44px;padding:8px 10px;white-space:nowrap" onclick="previewHpRoll()" title="Roll HP">🎲</button>';
   html += '</div>';
+  html += '<div id="dm-hp-roll-result" style="font-size:0.85rem;color:var(--accent);min-height:18px;margin-top:-4px;padding-left:4px"></div>';
   html += '<div style="display:flex;gap:8px">';
   html += '<input type="number" id="dm-mon-atk" placeholder="Atk Bonus" value="' + (t.attackBonus || '') + '" style="flex:1;min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">';
   html += '<input type="number" id="dm-mon-dex" placeholder="DEX Mod" value="' + (t.dexMod || '') + '" style="flex:1;min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius)">';
@@ -593,8 +595,14 @@ function showAddMonsterForm(template) {
   html += '</div>';
   html += '<div class="confirm-actions" style="margin-top:12px">';
   html += '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>';
-  html += '<button class="btn btn-secondary" onclick="confirmAddMonster(true)">Save & Add</button>';
-  html += '<button class="btn btn-primary" onclick="confirmAddMonster(false)">Add</button></div>';
+  var enc = getActiveEncounter();
+  if (enc) {
+    html += '<button class="btn btn-secondary" onclick="confirmAddMonster(true)">Save & Add</button>';
+    html += '<button class="btn btn-primary" onclick="confirmAddMonster(false)">Add</button>';
+  } else {
+    html += '<button class="btn btn-primary" onclick="confirmSaveTemplateOnly()">Save to Library</button>';
+  }
+  html += '</div>';
   showModal(html);
   setTimeout(function() { var el = document.getElementById('dm-mon-name'); if (el) el.focus(); }, 100);
 }
@@ -637,7 +645,7 @@ function confirmAddMonster(alsoSaveToLibrary) {
   var notes = (document.getElementById('dm-mon-notes').value || '').trim();
 
   var enc = getActiveEncounter();
-  if (!enc) return;
+  if (!enc) { alert('No active encounter. Use "Save to Library" instead.'); return; }
   var entry = {
     id: 'init_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
     name: name, type: 'npc', initiative: null,
@@ -660,6 +668,42 @@ function confirmAddMonster(alsoSaveToLibrary) {
 
   closeModal();
   showDmEncounter();
+}
+
+function confirmSaveTemplateOnly() {
+  var name = (document.getElementById('dm-mon-name').value || '').trim();
+  if (!name) { alert('Name is required.'); return; }
+  var ac = parseInt(document.getElementById('dm-mon-ac').value) || 10;
+  var hpRaw = (document.getElementById('dm-mon-hp').value || '').trim();
+  var hpFormula = parseDmDice(hpRaw) ? hpRaw : null;
+  var hp = hpFormula ? rollHpFormula(hpFormula) : (parseInt(hpRaw) || 1);
+  var atkBonus = parseInt(document.getElementById('dm-mon-atk').value) || null;
+  var dmgDice = (document.getElementById('dm-mon-dmg').value || '').trim();
+  var dmgType = (document.getElementById('dm-mon-dtype').value || '').trim();
+  var dexMod = parseInt(document.getElementById('dm-mon-dex').value) || null;
+  var notes = (document.getElementById('dm-mon-notes').value || '').trim();
+  saveMonsterTemplate({ name: name, ac: ac, maxHp: hp, hpFormula: hpFormula, attackBonus: atkBonus, damageDice: dmgDice, damageType: dmgType, dexMod: dexMod, notes: notes });
+  closeModal();
+  showDmScreen();
+}
+
+function previewHpRoll() {
+  var hpRaw = (document.getElementById('dm-mon-hp').value || '').trim();
+  if (!hpRaw) { showDmHpRollResult('Enter a dice formula first'); return; }
+  var formula = parseDmDice(hpRaw) ? hpRaw : null;
+  if (!formula) { showDmHpRollResult('Not a dice formula — using ' + (parseInt(hpRaw) || 1) + ' HP'); return; }
+  var result = rollHpFormula(formula);
+  showDmHpRollResult('→ ' + result + ' HP');
+}
+
+function showDmHpRollResult(msg) {
+  var el = document.getElementById('dm-hp-roll-result');
+  if (el) el.textContent = msg;
+}
+
+function clearDmHpRollResult() {
+  var el = document.getElementById('dm-hp-roll-result');
+  if (el) el.textContent = '';
 }
 
 function showAddPcForm() {
