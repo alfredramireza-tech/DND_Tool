@@ -6,7 +6,7 @@
   "subclass": "School of Abjuration",
   "background": "",
   "alignment": "Neutral Evil",
-  "level": 1,
+  "level": 2,
   "abilityScores": {
     "str": 8,
     "dex": 14,
@@ -16,10 +16,17 @@
     "cha": 10
   },
   "hp": {
-    "max": 7,
+    "max": 12,
     "hitDiceType": 6,
-    "hitDiceCount": 1,
-    "hpHistory": []
+    "hitDiceCount": 2,
+    "hpHistory": [
+      {
+        "level": 2,
+        "gained": 5,
+        "method": "average",
+        "notes": "4 (avg) + 1 CON"
+      }
+    ]
   },
   "proficiencyBonus": 2,
   "ac": 12,
@@ -41,9 +48,9 @@
     "Friends"
   ],
   "spellSlots": {
-    "1": 2
+    "1": 3
   },
-  "preparedSpellCount": 3,
+  "preparedSpellCount": 4,
   "currentPreparedSpells": [
     "Charm Person",
     "Comprehend Languages",
@@ -51,13 +58,29 @@
   ],
   "domainSpells": [],
   "features": [
-    "Arcane Recovery"
+    "Arcane Recovery",
+    "Abjuration Savant",
+    "Arcane Ward"
   ],
   "channelDivinityUses": 0,
   "equipment": "",
   "notes": "",
   "weapons": [],
-  "levelHistory": [],
+  "levelHistory": [
+    {
+      "level": 2,
+      "from": 1,
+      "hpMethod": "average",
+      "hpRoll": null,
+      "hpGained": 5,
+      "retroHp": false,
+      "retroHpAmount": 0,
+      "spellbookAdds": [
+        "Burning Hands",
+        "Magic Missile"
+      ]
+    }
+  ],
   "expertiseSkills": [],
   "resources": {
     "arcaneRecovery": {
@@ -66,7 +89,7 @@
     },
     "arcaneWard": {
       "current": 0,
-      "max": 4
+      "max": 6
     }
   },
   "currency": {
@@ -82,7 +105,9 @@
     "Expeditious Retreat",
     "Feather Fall",
     "Fog Cloud",
-    "Identify"
+    "Identify",
+    "Burning Hands",
+    "Magic Missile"
   ],
   "id": "mn9t765m2hfuo",
   "currentHp": 7,
