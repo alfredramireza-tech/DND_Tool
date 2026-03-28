@@ -198,92 +198,28 @@
   "activeConditions": [],
   "sessionLog": [
     {
-      "time": "5:26 PM",
-      "text": "DEX Check: 3"
+      "time": "5:36 PM",
+      "text": "Initiative: 10"
     },
     {
-      "time": "5:26 PM",
-      "text": "DEX Check: 8"
+      "time": "5:36 PM",
+      "text": "Initiative: 10"
     },
     {
-      "time": "5:26 PM",
-      "text": "DEX Check: 6"
+      "time": "5:36 PM",
+      "text": "Initiative: 8"
     },
     {
-      "time": "5:26 PM",
-      "text": "1d20: 3"
+      "time": "5:36 PM",
+      "text": "Initiative: 8"
     },
     {
-      "time": "5:26 PM",
-      "text": "1d20: 1"
+      "time": "5:36 PM",
+      "text": "Brain Smoothie — Attack: 19"
     },
     {
-      "time": "5:26 PM",
-      "text": "1d20: 7"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "1d20: 8"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 6"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 5"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 9"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 22"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 14"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 15"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 24"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 23"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 21"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 16"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 24"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "Brain Smoothie — Attack: 10"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "1d20: 18"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "1d20: 5"
-    },
-    {
-      "time": "5:26 PM",
-      "text": "1d20: 11"
+      "time": "5:36 PM",
+      "text": "Brain Smoothie — Attack: 19"
     }
   ],
   "inspiration": true,
@@ -293,5 +229,7 @@
     "value": 0,
     "source": ""
   },
-  "spellbook": []
+  "spellbook": [],
+  "spellMastery": null,
+  "signatureSpells": null
 }
