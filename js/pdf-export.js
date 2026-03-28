@@ -298,6 +298,21 @@ async function fillPdfTemplate(c) {
       resourceNotes.push('Crit Range: ' + critRange);
     }
   }
+  if (c.class === 'Paladin') {
+    resourceNotes.push('Lay on Hands: ' + (c.level * 5) + ' HP pool/LR');
+    var divineSenseUses = 1 + mod(scores.cha || 10);
+    resourceNotes.push('Divine Sense: ' + Math.max(1, divineSenseUses) + '/LR');
+    if (c.level >= 3) resourceNotes.push('Channel Divinity: 1/SR');
+    resourceNotes.push('Divine Smite: 2d8+1d8/slot above 1st (max 5d8)');
+  }
+  if (c.class === 'Rogue') {
+    var sneakDice = Math.ceil(c.level / 2);
+    resourceNotes.push('Sneak Attack: ' + sneakDice + 'd6');
+  }
+  if (c.class === 'Wizard') {
+    var arcaneRecoveryLevels = Math.ceil(c.level / 2);
+    resourceNotes.push('Arcane Recovery: ' + arcaneRecoveryLevels + ' slot levels/LR');
+  }
   var allFeatures = features.concat(resourceNotes);
   // Maneuvers for Battle Master
   if (c.class === 'Fighter' && c.subclass === 'Battle Master' && c.maneuversKnown && c.maneuversKnown.length > 0) {
@@ -319,8 +334,8 @@ async function fillPdfTemplate(c) {
   // ── Proficiencies ──
   var profLines = [];
   // Armor proficiencies by class
-  var armorProfs = { Cleric: 'Light, Medium armor, Shields', Fighter: 'All armor, Shields', Barbarian: 'Light, Medium armor, Shields', Monk: 'None', Rogue: 'Light armor' };
-  var weaponProfs = { Cleric: 'Simple weapons', Fighter: 'Simple, Martial weapons', Barbarian: 'Simple, Martial weapons', Monk: 'Simple weapons, Shortswords', Rogue: 'Simple weapons, Hand crossbow, Longsword, Rapier, Shortsword' };
+  var armorProfs = { Cleric: 'Light, Medium armor, Shields', Fighter: 'All armor, Shields', Paladin: 'All armor, Shields', Barbarian: 'Light, Medium armor, Shields', Monk: 'None', Rogue: 'Light armor', Wizard: 'None' };
+  var weaponProfs = { Cleric: 'Simple weapons', Fighter: 'Simple, Martial weapons', Paladin: 'Simple, Martial weapons', Barbarian: 'Simple, Martial weapons', Monk: 'Simple weapons, Shortswords', Rogue: 'Simple weapons, Hand crossbow, Longsword, Rapier, Shortsword', Wizard: 'Daggers, Darts, Slings, Quarterstaffs, Light crossbows' };
   profLines.push('Armor: ' + (armorProfs[c.class] || 'Light armor'));
   profLines.push('Weapons: ' + (weaponProfs[c.class] || 'Simple weapons'));
   if (c.class === 'Rogue') profLines.push('Tools: Thieves\' tools');
@@ -344,10 +359,11 @@ async function fillPdfTemplate(c) {
   pdfSetText(form, 'CharacterName 2', c.name, 10);
 
   // ── Page 3: Spellcasting (only for casters) ──
-  var isCaster = (cd && cd.isCaster) || (c.class === 'Fighter' && c.subclass === 'Eldritch Knight');
+  var isCaster = (cd && cd.isCaster) || (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') || (c.class === 'Rogue' && c.subclass === 'Arcane Trickster');
   if (isCaster) {
     var castAbility = cd.spellcastingAbility || 'wis';
     if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') castAbility = 'int';
+    if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') castAbility = 'int';
     var castMod = mod(scores[castAbility] || 10);
     var spellDC = 8 + profBonus + castMod;
     var spellAtk = profBonus + castMod;
@@ -367,9 +383,24 @@ async function fillPdfTemplate(c) {
         });
       }
       pdfSetText(form, 'Total Prepared Spells', String(prepCount) + ' + ' + domainCount + ' domain', 7);
+    } else if (c.class === 'Paladin') {
+      prepCount = Math.max(1, castMod + Math.floor(c.level / 2));
+      var oathCount = 0;
+      if (typeof OATH_SPELLS !== 'undefined' && c.subclass && OATH_SPELLS[c.subclass]) {
+        Object.keys(OATH_SPELLS[c.subclass]).forEach(function(lvlKey) {
+          if (parseInt(lvlKey) <= c.level) oathCount += OATH_SPELLS[c.subclass][lvlKey].length;
+        });
+      }
+      pdfSetText(form, 'Total Prepared Spells', String(prepCount) + (oathCount ? ' + ' + oathCount + ' oath' : ''), 7);
+    } else if (c.class === 'Wizard') {
+      prepCount = Math.max(1, castMod + c.level);
+      pdfSetText(form, 'Total Prepared Spells', String(prepCount) + ' prepared', 7);
     } else if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
       var ekKnown = (c.spellsKnown || []).length;
       pdfSetText(form, 'Total Prepared Spells', ekKnown + ' known', 7);
+    } else if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') {
+      var atKnown = (c.spellsKnown || []).length;
+      pdfSetText(form, 'Total Prepared Spells', atKnown + ' known', 7);
     }
 
     // Spell slots (unified — all classes use c.spellSlots)
@@ -383,7 +414,7 @@ async function fillPdfTemplate(c) {
 
     // Cantrips
     var cantrips = c.cantripsKnown || [];
-    if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
+    if ((c.class === 'Fighter' && c.subclass === 'Eldritch Knight') || (c.class === 'Rogue' && c.subclass === 'Arcane Trickster')) {
       cantrips = (c.spellsKnown || []).filter(function(name) {
         var s = getSpell(name);
         return s && s.level === 0;
@@ -437,14 +468,87 @@ async function fillPdfTemplate(c) {
           if (entry.prepared) pdfCheckBox(form, checkboxes[i]);
         });
       }
+    } else if (c.class === 'Paladin') {
+      // Paladin: oath spells (always prepared) + prepared spells
+      var oathSpellSet = {};
+      if (typeof OATH_SPELLS !== 'undefined' && c.subclass && OATH_SPELLS[c.subclass]) {
+        Object.keys(OATH_SPELLS[c.subclass]).forEach(function(lvlKey) {
+          if (parseInt(lvlKey) <= c.level) {
+            OATH_SPELLS[c.subclass][lvlKey].forEach(function(name) { oathSpellSet[name] = true; });
+          }
+        });
+      }
+      var palPrepared = c.currentPreparedSpells || [];
+      for (var lvl = 1; lvl <= 5; lvl++) {
+        if (!spellSlots[lvl]) continue;
+        var fields = PDF_SPELL_FIELDS[lvl] || [];
+        var checkboxes = PDF_SPELL_CHECKBOXES[lvl] || [];
+        var spellsForLevel = [];
+        // Oath spells for this level first
+        if (typeof OATH_SPELLS !== 'undefined' && c.subclass && OATH_SPELLS[c.subclass]) {
+          var oathLvlKey = lvl * 2 + 1; // Oath spells granted at paladin levels 3,5,9,13,17
+          if (lvl === 1) oathLvlKey = 3;
+          else if (lvl === 2) oathLvlKey = 5;
+          else if (lvl === 3) oathLvlKey = 9;
+          else if (lvl === 4) oathLvlKey = 13;
+          else if (lvl === 5) oathLvlKey = 17;
+          if (OATH_SPELLS[c.subclass][oathLvlKey] && oathLvlKey <= c.level) {
+            OATH_SPELLS[c.subclass][oathLvlKey].forEach(function(name) {
+              spellsForLevel.push({ name: name, prepared: true, oath: true });
+            });
+          }
+        }
+        palPrepared.forEach(function(name) {
+          var s = getSpell(name);
+          if (s && s.level === lvl && !oathSpellSet[name]) {
+            spellsForLevel.push({ name: name, prepared: true, oath: false });
+          }
+        });
+        spellsForLevel.slice(0, fields.length).forEach(function(entry, i) {
+          var line = pdfSpellLine(entry.name, c);
+          if (entry.oath) line += ' [O]';
+          pdfSetText(form, fields[i], line, 5);
+          if (entry.prepared) pdfCheckBox(form, checkboxes[i]);
+        });
+      }
+    } else if (c.class === 'Wizard') {
+      // Wizard: list prepared spells from spellbook, check prepared ones
+      var wizPrepared = c.currentPreparedSpells || [];
+      var wizPreparedSet = {};
+      wizPrepared.forEach(function(name) { wizPreparedSet[name] = true; });
+      var spellbook = c.spellbook || [];
+      // Group spellbook entries by level
+      var wizByLevel = {};
+      spellbook.forEach(function(name) {
+        var s = getSpell(name);
+        if (s && s.level > 0) {
+          if (!wizByLevel[s.level]) wizByLevel[s.level] = [];
+          wizByLevel[s.level].push(name);
+        }
+      });
+      for (var lvl = 1; lvl <= 9; lvl++) {
+        if (!spellSlots[lvl]) continue;
+        var fields = PDF_SPELL_FIELDS[lvl] || [];
+        var checkboxes = PDF_SPELL_CHECKBOXES[lvl] || [];
+        var wizSpells = wizByLevel[lvl] || [];
+        // Sort: prepared first, then alphabetical
+        wizSpells.sort(function(a, b) {
+          var ap = wizPreparedSet[a] ? 0 : 1;
+          var bp = wizPreparedSet[b] ? 0 : 1;
+          if (ap !== bp) return ap - bp;
+          return a.localeCompare(b);
+        });
+        wizSpells.slice(0, fields.length).forEach(function(name, i) {
+          pdfSetText(form, fields[i], pdfSpellLine(name, c), 5);
+          if (wizPreparedSet[name]) pdfCheckBox(form, checkboxes[i]);
+        });
+      }
     } else if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') {
       // EK: list known spells by level, all checked (they're always "known")
       var ekSpells = (c.spellsKnown || []).filter(function(name) {
         var s = getSpell(name);
         return s && s.level > 0;
       });
-
-      // Group by level
       var byLevel = {};
       ekSpells.forEach(function(name) {
         var s = getSpell(name);
@@ -453,9 +557,31 @@ async function fillPdfTemplate(c) {
           byLevel[s.level].push(name);
         }
       });
-
       for (var lvl = 1; lvl <= 4; lvl++) {
         var spells = byLevel[lvl] || [];
+        var fields = PDF_SPELL_FIELDS[lvl] || [];
+        var checkboxes = PDF_SPELL_CHECKBOXES[lvl] || [];
+        spells.slice(0, fields.length).forEach(function(name, i) {
+          pdfSetText(form, fields[i], pdfSpellLine(name, c), 5);
+          pdfCheckBox(form, checkboxes[i]);
+        });
+      }
+    } else if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') {
+      // AT: like EK — list known spells by level, all checked
+      var atSpells = (c.spellsKnown || []).filter(function(name) {
+        var s = getSpell(name);
+        return s && s.level > 0;
+      });
+      var atByLevel = {};
+      atSpells.forEach(function(name) {
+        var s = getSpell(name);
+        if (s) {
+          if (!atByLevel[s.level]) atByLevel[s.level] = [];
+          atByLevel[s.level].push(name);
+        }
+      });
+      for (var lvl = 1; lvl <= 4; lvl++) {
+        var spells = atByLevel[lvl] || [];
         var fields = PDF_SPELL_FIELDS[lvl] || [];
         var checkboxes = PDF_SPELL_CHECKBOXES[lvl] || [];
         spells.slice(0, fields.length).forEach(function(name, i) {
