@@ -6,7 +6,7 @@
   "subclass": "School of Conjuration",
   "background": "",
   "alignment": "Lawful Evil",
-  "level": 1,
+  "level": 3,
   "abilityScores": {
     "str": 8,
     "dex": 14,
@@ -16,10 +16,23 @@
     "cha": 10
   },
   "hp": {
-    "max": 7,
+    "max": 17,
     "hitDiceType": 6,
-    "hitDiceCount": 1,
-    "hpHistory": []
+    "hitDiceCount": 3,
+    "hpHistory": [
+      {
+        "level": 2,
+        "gained": 5,
+        "method": "average",
+        "notes": "4 (avg) + 1 CON"
+      },
+      {
+        "level": 3,
+        "gained": 5,
+        "method": "average",
+        "notes": "4 (avg) + 1 CON"
+      }
+    ]
   },
   "proficiencyBonus": 2,
   "ac": 12,
@@ -39,9 +52,10 @@
     "Ray of Frost"
   ],
   "spellSlots": {
-    "1": 2
+    "1": 4,
+    "2": 2
   },
-  "preparedSpellCount": 3,
+  "preparedSpellCount": 5,
   "currentPreparedSpells": [
     "Mage Armor",
     "Sleep",
@@ -49,13 +63,42 @@
   ],
   "domainSpells": [],
   "features": [
-    "Arcane Recovery"
+    "Arcane Recovery",
+    "Conjuration Savant",
+    "Minor Conjuration"
   ],
   "channelDivinityUses": 0,
   "equipment": "",
   "notes": "",
   "weapons": [],
-  "levelHistory": [],
+  "levelHistory": [
+    {
+      "level": 2,
+      "from": 1,
+      "hpMethod": "average",
+      "hpRoll": null,
+      "hpGained": 5,
+      "retroHp": false,
+      "retroHpAmount": 0,
+      "spellbookAdds": [
+        "Burning Hands",
+        "False Life"
+      ]
+    },
+    {
+      "level": 3,
+      "from": 2,
+      "hpMethod": "average",
+      "hpRoll": null,
+      "hpGained": 5,
+      "retroHp": false,
+      "retroHpAmount": 0,
+      "spellbookAdds": [
+        "Charm Person",
+        "Alarm"
+      ]
+    }
+  ],
   "expertiseSkills": [],
   "resources": {
     "arcaneRecovery": {
@@ -76,7 +119,11 @@
     "Sleep",
     "Tenser's Floating Disk",
     "Thunderwave",
-    "Witch Bolt"
+    "Witch Bolt",
+    "Burning Hands",
+    "False Life",
+    "Charm Person",
+    "Alarm"
   ],
   "id": "mnajixxnd6h00",
   "currentHp": 7,
