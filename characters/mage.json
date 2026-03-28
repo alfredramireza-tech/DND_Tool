@@ -1,0 +1,124 @@
+{
+  "name": "Mage",
+  "race": "Wood Elf",
+  "subrace": "",
+  "class": "Wizard",
+  "subclass": "School of Conjuration",
+  "background": "",
+  "alignment": "Lawful Evil",
+  "level": 1,
+  "abilityScores": {
+    "str": 8,
+    "dex": 14,
+    "con": 13,
+    "int": 15,
+    "wis": 12,
+    "cha": 10
+  },
+  "hp": {
+    "max": 7,
+    "hitDiceType": 6,
+    "hitDiceCount": 1,
+    "hpHistory": []
+  },
+  "proficiencyBonus": 2,
+  "ac": 12,
+  "speed": 25,
+  "initiative": 2,
+  "savingThrows": [
+    "int",
+    "wis"
+  ],
+  "skillProficiencies": [
+    "arcana",
+    "investigation"
+  ],
+  "cantripsKnown": [
+    "Fire Bolt",
+    "Mage Hand",
+    "Ray of Frost"
+  ],
+  "spellSlots": {
+    "1": 2
+  },
+  "preparedSpellCount": 3,
+  "currentPreparedSpells": [
+    "Mage Armor",
+    "Sleep",
+    "Witch Bolt"
+  ],
+  "domainSpells": [],
+  "features": [
+    "Arcane Recovery"
+  ],
+  "channelDivinityUses": 0,
+  "equipment": "",
+  "notes": "",
+  "weapons": [],
+  "levelHistory": [],
+  "expertiseSkills": [],
+  "resources": {
+    "arcaneRecovery": {
+      "used": 0,
+      "max": 1
+    }
+  },
+  "currency": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0
+  },
+  "spellbook": [
+    "Mage Armor",
+    "Magic Missile",
+    "Sleep",
+    "Tenser's Floating Disk",
+    "Thunderwave",
+    "Witch Bolt"
+  ],
+  "id": "mnajixxnd6h00",
+  "currentHp": 7,
+  "tempHp": 0,
+  "spellSlotsUsed": {},
+  "channelDivinityUsed": 0,
+  "equippedItems": [],
+  "quickItems": [],
+  "bulkGear": "",
+  "colorTheme": {
+    "name": "Wizard Blue",
+    "accent": "#6a8cc8",
+    "accentHover": "#7a9cd8",
+    "accentDim": "#4a6ca0",
+    "bg": "#10141c",
+    "surface": "#181e2a",
+    "surfaceRaised": "#202838",
+    "border": "#283048",
+    "text": "#d8e0f0",
+    "textDim": "#8898b8",
+    "error": "#c45a5a",
+    "success": "#6aaa5a",
+    "inputBg": "#141a26"
+  },
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  },
+  "concentration": {
+    "active": false,
+    "spellName": ""
+  },
+  "activeConditions": [],
+  "sessionLog": [],
+  "inspiration": false,
+  "journal": [],
+  "externalBuffs": [],
+  "maxHpBoost": {
+    "value": 0,
+    "source": ""
+  },
+  "spellMastery": null,
+  "signatureSpells": null,
+  "passwordHash": null
+}
