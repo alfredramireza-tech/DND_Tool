@@ -1,103 +1,66 @@
 {
   "name": "Goat",
-  "race": "Half-Elf",
-  "subrace": "",
-  "class": "Rogue",
-  "subclass": "Thief",
+  "race": "Aasimar",
+  "subrace": "Protector",
+  "class": "Paladin",
+  "subclass": "Oath of the Ancients",
   "background": "",
-  "alignment": "Chaotic Neutral",
-  "level": 2,
+  "alignment": "Lawful Neutral",
+  "level": 1,
   "abilityScores": {
-    "str": 8,
-    "dex": 15,
-    "con": 14,
-    "int": 12,
-    "wis": 13,
-    "cha": 10
+    "str": 15,
+    "dex": 10,
+    "con": 13,
+    "int": 8,
+    "wis": 12,
+    "cha": 14
   },
   "hp": {
-    "max": 17,
-    "hitDiceType": 8,
-    "hitDiceCount": 2,
-    "hpHistory": [
-      {
-        "level": 2,
-        "gained": 7,
-        "method": "average",
-        "notes": "5 (avg) + 2 CON"
-      }
-    ]
+    "max": 11,
+    "hitDiceType": 10,
+    "hitDiceCount": 1,
+    "hpHistory": []
   },
   "proficiencyBonus": 2,
-  "ac": 12,
+  "ac": 16,
   "speed": 25,
-  "initiative": 2,
+  "initiative": 0,
   "savingThrows": [
-    "dex",
-    "int"
+    "wis",
+    "cha"
   ],
   "skillProficiencies": [
-    "acrobatics",
-    "stealth",
-    "perception",
-    "deception"
+    "athletics",
+    "persuasion",
+    "nature",
+    "perception"
   ],
   "cantripsKnown": [],
   "spellSlots": {},
   "preparedSpellCount": 0,
   "currentPreparedSpells": [],
-  "domainSpells": [],
+  "domainSpells": {},
   "features": [
-    "Sneak Attack",
-    "Thieves' Cant",
-    "Cunning Action"
+    "Divine Sense",
+    "Lay on Hands"
   ],
   "channelDivinityUses": 0,
   "equipment": "",
   "notes": "",
-  "weapons": [
-    {
-      "name": "Dagger",
-      "ability": "dex",
-      "proficient": true,
-      "damage": "1d6",
-      "damageType": "Slashing",
-      "notes": ""
-    },
-    {
-      "name": "Bow",
-      "ability": "dex",
-      "proficient": true,
-      "damage": "",
-      "damageType": "Piercing",
-      "notes": ""
-    }
-  ],
-  "levelHistory": [
-    {
-      "level": 2,
-      "from": 1,
-      "hpMethod": "average",
-      "hpRoll": null,
-      "hpGained": 7,
-      "retroHp": false,
-      "retroHpAmount": 0
-    }
-  ],
-  "expertiseSkills": [
-    "stealth",
-    "perception"
-  ],
+  "weapons": [],
+  "levelHistory": [],
+  "expertiseSkills": [],
   "resources": {},
   "currency": {
     "cp": 0,
     "sp": 0,
     "ep": 0,
-    "gp": 10,
+    "gp": 0,
     "pp": 0
   },
-  "id": "mn9tp5uro64ro",
-  "currentHp": 10,
+  "fightingStyle": null,
+  "id": "mn9u6gzjghwhn",
+  "currentHp": 11,
   "tempHp": 0,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
@@ -105,19 +68,19 @@
   "quickItems": [],
   "bulkGear": "",
   "colorTheme": {
-    "name": "Rogue Purple",
-    "accent": "#9a6ac5",
-    "accentHover": "#aa7ad5",
-    "accentDim": "#6a4890",
-    "bg": "#16121a",
-    "surface": "#1e1a24",
-    "surfaceRaised": "#28222e",
-    "border": "#362e3d",
-    "text": "#dcd0e8",
-    "textDim": "#9888a8",
+    "name": "Paladin Silver",
+    "accent": "#c0c8d8",
+    "accentHover": "#d0d8e8",
+    "accentDim": "#8090a8",
+    "bg": "#121418",
+    "surface": "#1a1e24",
+    "surfaceRaised": "#242830",
+    "border": "#2d3340",
+    "text": "#e0e4ec",
+    "textDim": "#8890a0",
     "error": "#c45a5a",
     "success": "#6aaa5a",
-    "inputBg": "#1a141e"
+    "inputBg": "#161a20"
   },
   "deathSaves": {
     "successes": 0,
@@ -128,136 +91,7 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [
-    {
-      "time": "9:23 PM",
-      "text": "Sleight of Hand: 8"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Acrobatics: 23"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Acrobatics: 10"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Stealth: 26"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Stealth: 23"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Stealth: 21"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Stealth: 14"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Stealth: 7"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Stealth: 10"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Initiative: 20"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Initiative: 20"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Initiative: 3"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Initiative: 3"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Initiative: 3"
-    },
-    {
-      "time": "9:23 PM",
-      "text": "Initiative: 3"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Sneak Attack: +4 (1d6). Total: 9"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Dagger — Slashing: 5"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Dagger — Attack: 5"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Sneak Attack: +3 (1d6). Total: 11"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Dagger — Slashing: 8"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Sneak Attack: +6 (1d6). Total: 14"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Dagger — Slashing: 8"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Dagger — Attack: 17"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Sneak Attack: 5"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Sneak Attack: 1"
-    },
-    {
-      "time": "9:22 PM",
-      "text": "Sneak Attack: 1"
-    },
-    {
-      "time": "9:21 PM",
-      "text": "Sneak Attack: 5"
-    },
-    {
-      "time": "9:21 PM",
-      "text": "Dagger — Attack: 5"
-    },
-    {
-      "time": "9:21 PM",
-      "text": "Dagger — Attack: 10"
-    },
-    {
-      "time": "9:21 PM",
-      "text": "Dagger — Attack: 9"
-    },
-    {
-      "time": "9:21 PM",
-      "text": "Dagger — Attack: 11"
-    },
-    {
-      "time": "9:21 PM",
-      "text": "Dagger — Attack: 8"
-    }
-  ],
+  "sessionLog": [],
   "inspiration": false,
   "journal": [],
   "externalBuffs": [],
