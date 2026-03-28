@@ -681,6 +681,8 @@ function showStep(n) {
         spellbookSection.classList.remove('hidden');
         var sbSize = getWizardSpellbookSize(level);
         document.getElementById('spellbook-max').textContent = sbSize;
+        var sbSubtitle = document.getElementById('spellbook-subtitle');
+        if (sbSubtitle) sbSubtitle.textContent = 'Choose ' + sbSize + ' wizard spells for your spellbook.';
       } else {
         spellbookSection.classList.add('hidden');
       }
@@ -699,7 +701,7 @@ function showStep(n) {
     var subtitleEl = document.querySelector('#step-4 .subtitle');
     if (subtitleEl) {
       if (isWizard) {
-        subtitleEl.textContent = 'Choose from your spellbook above. Selection is optional.';
+        subtitleEl.textContent = 'Choose from your spellbook. Selection is optional.';
       } else if (cls4 === 'Paladin') {
         subtitleEl.textContent = 'These are in addition to your oath spells above. Selection is optional.';
       } else {
