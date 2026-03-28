@@ -6,19 +6,19 @@
   "subclass": "School of Conjuration",
   "background": "",
   "alignment": "Lawful Evil",
-  "level": 3,
+  "level": 4,
   "abilityScores": {
     "str": 8,
     "dex": 14,
     "con": 13,
-    "int": 15,
+    "int": 17,
     "wis": 12,
     "cha": 10
   },
   "hp": {
-    "max": 17,
+    "max": 22,
     "hitDiceType": 6,
-    "hitDiceCount": 3,
+    "hitDiceCount": 4,
     "hpHistory": [
       {
         "level": 2,
@@ -28,6 +28,12 @@
       },
       {
         "level": 3,
+        "gained": 5,
+        "method": "average",
+        "notes": "4 (avg) + 1 CON"
+      },
+      {
+        "level": 4,
         "gained": 5,
         "method": "average",
         "notes": "4 (avg) + 1 CON"
@@ -49,13 +55,14 @@
   "cantripsKnown": [
     "Fire Bolt",
     "Mage Hand",
-    "Ray of Frost"
+    "Ray of Frost",
+    "Chill Touch"
   ],
   "spellSlots": {
     "1": 4,
-    "2": 2
+    "2": 3
   },
-  "preparedSpellCount": 5,
+  "preparedSpellCount": 7,
   "currentPreparedSpells": [
     "Mage Armor",
     "Sleep",
@@ -97,6 +104,24 @@
         "Charm Person",
         "Alarm"
       ]
+    },
+    {
+      "level": 4,
+      "from": 3,
+      "hpMethod": "average",
+      "hpRoll": null,
+      "hpGained": 5,
+      "retroHp": false,
+      "retroHpAmount": 0,
+      "asi": {
+        "type": "plus2",
+        "ability": "int"
+      },
+      "newCantrip": "Chill Touch",
+      "spellbookAdds": [
+        "Comprehend Languages",
+        "Color Spray"
+      ]
     }
   ],
   "expertiseSkills": [],
@@ -123,7 +148,9 @@
     "Burning Hands",
     "False Life",
     "Charm Person",
-    "Alarm"
+    "Alarm",
+    "Comprehend Languages",
+    "Color Spray"
   ],
   "id": "mnajixxnd6h00",
   "currentHp": 7,
