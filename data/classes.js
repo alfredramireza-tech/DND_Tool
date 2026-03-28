@@ -173,7 +173,7 @@ const CLASS_DATA = {
     defaultTheme: 'wizardBlue',
     unarmoredDefense: null,
     unarmoredNoShield: false,
-    shortRestResets: [],
+    shortRestResets: ['signatureSpellUses'],
     longRestResets: ['arcaneRecovery', 'spellSlots'],
     recommendedStats: { str: 8, dex: 14, con: 13, int: 15, wis: 12, cha: 10 },
     recommendedSkills: ['arcana', 'investigation'],

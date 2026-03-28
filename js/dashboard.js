@@ -246,8 +246,13 @@ function renderDashboard(c, preserveScroll) {
     html += renderRogueDashboard(c);
   }
 
+  // Wizard class features
+  if (c.class === 'Wizard') {
+    html += renderWizardDashboard(c);
+  }
+
   // "Coming Soon" placeholder for classes without full implementation
-  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin' && c.class !== 'Rogue') {
+  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin' && c.class !== 'Rogue' && c.class !== 'Wizard') {
     html += '<div style="border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;margin:16px 0">';
     html += '<p class="text-dim" style="font-size:0.95rem">Class features coming soon — <strong>' + escapeHtml(c.class) + '</strong>.</p>';
     html += '<p class="text-dim" style="font-size:0.85rem;margin-top:4px">Class-specific resources and abilities will appear here in a future update.</p>';
@@ -328,8 +333,13 @@ function renderDashboard(c, preserveScroll) {
   }
 
   // Prepared Spells
-  if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 2)) {
-    html += '<details><summary><h3 style="display:inline;font-size:1rem">Prepared Spells</h3> <span class="text-dim" style="font-size:0.85rem">(' + (c.currentPreparedSpells || []).length + '/' + c.preparedSpellCount + ')</span></summary>';
+  if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 2) || c.class === 'Wizard') {
+    var wizPrepCount = c.class === 'Wizard' ? getWizardPreparedCount(c.level, mod(c.abilityScores.int)) : c.preparedSpellCount;
+    var prepDisplay = c.class === 'Wizard' ? (c.currentPreparedSpells || []).length + '/' + wizPrepCount : (c.currentPreparedSpells || []).length + '/' + c.preparedSpellCount;
+    html += '<details><summary><h3 style="display:inline;font-size:1rem">Prepared Spells</h3> <span class="text-dim" style="font-size:0.85rem">(' + prepDisplay + ')</span></summary>';
+    if (c.class === 'Wizard') {
+      html += '<button class="btn btn-secondary" onclick="showChangePreparedWizard()" style="margin:8px 0;font-size:0.85rem;padding:6px 14px">Change Prepared Spells</button>';
+    }
     if (c.currentPreparedSpells && c.currentPreparedSpells.length > 0) {
       c.currentPreparedSpells.forEach(function(name) {
         var sp = getSpell(name);
@@ -339,6 +349,27 @@ function renderDashboard(c, preserveScroll) {
     } else {
       html += '<p class="text-dim">No prepared spells selected</p>';
     }
+    html += '</details>';
+  }
+
+  // Spellbook (Wizard only)
+  if (c.class === 'Wizard' && c.spellbook && c.spellbook.length > 0) {
+    html += '<details><summary><h3 style="display:inline;font-size:1rem">Spellbook</h3> <span class="text-dim" style="font-size:0.85rem">(' + c.spellbook.length + ' spells)</span></summary>';
+    html += '<button class="btn btn-secondary" onclick="showCopySpellToSpellbook()" style="margin:8px 0;font-size:0.85rem;padding:6px 14px">+ Copy Spell to Spellbook</button>';
+    var sbByLevel = {};
+    c.spellbook.forEach(function(name) { var sp = getSpell(name); var sl = sp ? sp.level : 1; if (!sbByLevel[sl]) sbByLevel[sl] = []; sbByLevel[sl].push(name); });
+    Object.keys(sbByLevel).sort(function(a,b){return a-b;}).forEach(function(sl) {
+      html += '<h4 class="text-dim" style="font-size:0.8rem;text-transform:uppercase;margin:8px 0 4px">' + ordinal(parseInt(sl)) + '-Level</h4>';
+      sbByLevel[sl].forEach(function(name) {
+        var sp = getSpell(name);
+        var isPrepared = (c.currentPreparedSpells || []).indexOf(name) >= 0;
+        if (sp) {
+          html += renderSpellCard(sp, c, { innateLabel: isPrepared ? '' : 'Not Prepared' });
+        } else {
+          html += '<span class="tag' + (isPrepared ? '' : ' text-dim') + '">' + escapeHtml(name) + (isPrepared ? '' : ' (Not Prepared)') + '</span>';
+        }
+      });
+    });
     html += '</details>';
   }
 
@@ -454,7 +485,7 @@ function renderDashboard(c, preserveScroll) {
 
   // Actions — 2-column grid
   html += '<div class="dash-actions-grid combat-hide">';
-  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin' && c.class !== 'Rogue') {
+  if (c.class !== 'Cleric' && c.class !== 'Fighter' && c.class !== 'Paladin' && c.class !== 'Rogue' && c.class !== 'Wizard') {
     html += '<button class="btn btn-primary btn-large btn-full" disabled style="opacity:0.4">Level Up — ' + escapeHtml(c.class) + ' coming in a future update</button>';
   } else {
     var lvlUpDisabled = c.level >= 20;
@@ -472,6 +503,11 @@ function renderDashboard(c, preserveScroll) {
   html += '</div>';
 
   container.innerHTML = html;
+  // Set sticky offset for section summaries based on HUD height
+  var hud = container.querySelector('.hp-sticky');
+  if (hud) {
+    document.documentElement.style.setProperty('--hud-height', hud.offsetHeight + 'px');
+  }
   if (!preserveScroll) window.scrollTo(0, 0);
   // Apply combat mode state
   combatModeOn = localStorage.getItem('dnd_combatMode') === '1';
@@ -1024,6 +1060,125 @@ function renderRogueDashboard(c) {
       description: 'Turn a missed attack into a hit, or treat an ability check as a 20. 1 use per short rest.',
       restType: 'short rest'
     });
+  }
+
+  return html;
+}
+
+/* ═══════════════════════════════════════════
+   WIZARD DASHBOARD
+   ═══════════════════════════════════════════ */
+
+function renderWizardDashboard(c) {
+  var html = '';
+  var sub = c.subclass || '';
+  var intMod = mod(c.abilityScores.int);
+
+  // Arcane Recovery (level 1+)
+  var arBudget = getArcaneRecoveryBudget(c.level);
+  html += renderResourceTracker('Arcane Recovery', 'arcaneRecovery', 1, c, {
+    icon: '&#9889;',
+    description: 'During a short rest, recover up to ' + arBudget + ' levels of spell slots (no slot 6th+). 1 use per long rest.',
+    restType: 'long rest'
+  });
+  html += '<div style="margin:-8px 0 16px 0"><button class="btn btn-secondary" onclick="showArcaneRecoveryModal()" style="font-size:0.85rem;padding:8px 16px">Use Arcane Recovery</button></div>';
+
+  // Subclass features
+  var subFeats = WIZARD_SUBCLASS_FEATURES[sub];
+  if (subFeats) {
+    // Divination: Portent (level 2+)
+    if (sub === 'School of Divination' && c.level >= 2) {
+      var portentDice = (c.resources && c.resources.portentDice) || [];
+      var numDice = c.level >= 14 ? 3 : 2;
+      html += '<div class="dash-section"><h2>Portent Dice</h2>';
+      html += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px">';
+      for (var pi = 0; pi < numDice; pi++) {
+        var die = portentDice[pi];
+        if (die && !die.used) {
+          html += '<div style="display:flex;flex-direction:column;align-items:center">';
+          html += '<div style="font-size:2rem;font-weight:bold;color:var(--accent);width:50px;height:50px;display:flex;align-items:center;justify-content:center;border:2px solid var(--accent);border-radius:var(--radius)">' + die.value + '</div>';
+          html += '<button class="btn btn-secondary" onclick="usePortentDie(' + pi + ')" style="font-size:0.75rem;padding:4px 8px;margin-top:4px">Use</button>';
+          html += '</div>';
+        } else if (die && die.used) {
+          html += '<div style="display:flex;flex-direction:column;align-items:center;opacity:0.3">';
+          html += '<div style="font-size:2rem;font-weight:bold;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border:2px solid var(--border);border-radius:var(--radius)">' + die.value + '</div>';
+          html += '<span style="font-size:0.75rem;color:var(--text-dim)">Used</span></div>';
+        } else {
+          html += '<div style="font-size:2rem;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border:2px dashed var(--border);border-radius:var(--radius);color:var(--text-dim)">?</div>';
+        }
+      }
+      html += '</div>';
+      html += '<button class="btn btn-secondary" onclick="rollPortentDice()" style="font-size:0.85rem;padding:6px 14px">Roll Portent Dice</button>';
+      html += '<p class="text-dim" style="font-size:0.85rem;margin-top:8px">' + WIZARD_FEATURE_DESCRIPTIONS['Portent'] + '</p>';
+      html += '</div>';
+    }
+
+    // Abjuration: Arcane Ward (level 2+)
+    if (sub === 'School of Abjuration' && c.level >= 2) {
+      var wardMax = c.level * 2 + intMod;
+      var ward = (c.resources && c.resources.arcaneWard) || { current: 0, max: wardMax };
+      html += '<div class="dash-section"><h2>Arcane Ward</h2>';
+      html += '<div style="display:flex;align-items:center;gap:16px;margin-bottom:8px">';
+      html += '<div style="font-size:2rem;font-weight:bold;color:var(--accent)">' + ward.current + '</div>';
+      html += '<div><div style="font-size:0.85rem;color:var(--text-dim)">of ' + wardMax + ' HP</div>';
+      html += '<div style="background:var(--surface-raised);border-radius:4px;height:8px;margin-top:4px;overflow:hidden;width:120px"><div style="background:var(--accent);height:100%;width:' + (wardMax > 0 ? (ward.current / wardMax * 100) : 0) + '%;transition:width 0.3s"></div></div></div>';
+      html += '<div style="display:flex;gap:4px">';
+      html += '<button class="btn btn-secondary" onclick="adjustArcaneWard(-1)" style="padding:4px 10px">−</button>';
+      html += '<button class="btn btn-secondary" onclick="adjustArcaneWard(1)" style="padding:4px 10px">+</button>';
+      html += '</div></div>';
+      html += '<p class="text-dim" style="font-size:0.85rem">' + WIZARD_FEATURE_DESCRIPTIONS['Arcane Ward'] + '</p>';
+      html += '</div>';
+    }
+
+    // General subclass feature cards
+    var shownFeats = [];
+    Object.keys(subFeats).forEach(function(lvl) {
+      if (c.level >= parseInt(lvl)) {
+        subFeats[lvl].forEach(function(featName) {
+          // Skip features with custom displays above
+          if (featName === 'Portent' || featName === 'Greater Portent' || featName === 'Arcane Ward') return;
+          shownFeats.push(featName);
+        });
+      }
+    });
+    if (shownFeats.length > 0) {
+      html += '<div class="dash-section"><h2>' + escapeHtml(sub) + ' Features</h2>';
+      shownFeats.forEach(function(featName) {
+        var desc = WIZARD_FEATURE_DESCRIPTIONS[featName] || '';
+        html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
+        html += '<div class="cd-card-header"><span class="cd-name">' + escapeHtml(featName) + '</span>';
+        html += '<span class="cd-expand">&#9654;</span></div>';
+        html += '<div class="cd-card-body"><p>' + desc + '</p></div></div>';
+      });
+      html += '</div>';
+    }
+  }
+
+  // Spell Mastery (level 18+)
+  if (c.level >= 18 && c.spellMastery) {
+    html += '<div class="dash-section"><h2>Spell Mastery <span class="badge">At Will</span></h2>';
+    html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:8px">Cast at base level without expending a slot.</p>';
+    if (c.spellMastery.firstLevel) {
+      var sp1 = getSpell(c.spellMastery.firstLevel);
+      if (sp1) html += renderSpellCard(sp1, c, { innateLabel: 'At Will (1st)' });
+    }
+    if (c.spellMastery.secondLevel) {
+      var sp2 = getSpell(c.spellMastery.secondLevel);
+      if (sp2) html += renderSpellCard(sp2, c, { innateLabel: 'At Will (2nd)' });
+    }
+    html += '</div>';
+  }
+
+  // Signature Spells (level 20)
+  if (c.level >= 20 && c.signatureSpells && c.signatureSpells.length > 0) {
+    html += '<div class="dash-section"><h2>Signature Spells <span class="badge">Always Prepared</span></h2>';
+    html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:8px">Always prepared. One free cast each per short rest.</p>';
+    c.signatureSpells.forEach(function(name) {
+      var sigUsed = (c.resources && c.resources.signatureSpellUses && c.resources.signatureSpellUses[name]) || false;
+      var sp = getSpell(name);
+      if (sp) html += renderSpellCard(sp, c, { innateLabel: sigUsed ? 'Free cast used' : '1 Free Cast' });
+    });
+    html += '</div>';
   }
 
   return html;

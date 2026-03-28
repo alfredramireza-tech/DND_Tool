@@ -173,6 +173,10 @@ details[open] summary::before { content: '▾ '; }
 .stat-card .stat-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
 .dash-section { margin-bottom: 24px; }
 .dash-section h2 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 12px; }
+.dash-section > details[open] > summary {
+  position: sticky; top: var(--hud-height, 0px); z-index: 40;
+  background: var(--bg); padding: 8px 0; margin: -8px 0 4px;
+}
 .ability-row-dash {
   display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 16px;
 }

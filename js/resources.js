@@ -274,6 +274,205 @@ function useLayOnHandsCure() {
   showDashboard(c, true);
 }
 
+/* ═══════════════════════════════════════════
+   WIZARD FEATURES
+   ═══════════════════════════════════════════ */
+
+function showArcaneRecoveryModal() {
+  var c = loadCharacter();
+  if (!c) return;
+  if (c.resources && c.resources.arcaneRecovery && c.resources.arcaneRecovery.used >= 1) {
+    showModal('<h3>Arcane Recovery</h3><p>Already used today. Take a long rest to restore.</p><div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">OK</button></div>');
+    return;
+  }
+  var budget = getArcaneRecoveryBudget(c.level);
+  var html = '<h3>Arcane Recovery</h3>';
+  html += '<p class="text-dim" style="font-size:0.85rem">Budget: recover up to <strong>' + budget + '</strong> levels of spell slots. No 6th level or higher.</p>';
+  html += '<div id="ar-selections" style="margin:12px 0"></div>';
+  html += '<div id="ar-total" style="font-size:1.1rem;color:var(--accent);margin:8px 0;text-align:center">0 / ' + budget + ' levels selected</div>';
+  html += '<div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button>';
+  html += '<button class="btn btn-primary" id="ar-confirm-btn" onclick="confirmArcaneRecovery()">Recover</button></div>';
+  showModal(html);
+  // Build slot buttons
+  var selDiv = document.getElementById('ar-selections');
+  var selHtml = '';
+  for (var lvl = 1; lvl <= 5; lvl++) {
+    var total = (c.spellSlots && c.spellSlots[lvl]) || 0;
+    var used = (c.spellSlotsUsed && c.spellSlotsUsed[lvl]) || 0;
+    if (used > 0) {
+      selHtml += '<button class="btn btn-secondary ar-slot-btn" data-level="' + lvl + '" data-cost="' + lvl + '" onclick="toggleArSlot(this,' + budget + ')" style="margin:4px;padding:8px 16px">+' + ordinal(lvl) + ' (' + used + ' spent)</button>';
+    }
+  }
+  if (!selHtml) selHtml = '<p class="text-dim">No spell slots are currently spent (levels 1-5).</p>';
+  selDiv.innerHTML = selHtml;
+}
+
+function toggleArSlot(btn, budget) {
+  btn.classList.toggle('selected');
+  btn.style.background = btn.classList.contains('selected') ? 'var(--accent)' : '';
+  btn.style.color = btn.classList.contains('selected') ? 'var(--bg)' : '';
+  // Recalculate total
+  var total = 0;
+  document.querySelectorAll('.ar-slot-btn.selected').forEach(function(b) { total += parseInt(b.dataset.cost); });
+  document.getElementById('ar-total').textContent = total + ' / ' + budget + ' levels selected';
+  // Disable if over budget
+  if (total > budget) {
+    btn.classList.remove('selected');
+    btn.style.background = '';
+    btn.style.color = '';
+    total -= parseInt(btn.dataset.cost);
+    document.getElementById('ar-total').textContent = total + ' / ' + budget + ' levels selected';
+  }
+}
+
+function confirmArcaneRecovery() {
+  var c = loadCharacter();
+  if (!c) return;
+  var recovered = [];
+  document.querySelectorAll('.ar-slot-btn.selected').forEach(function(btn) {
+    var lvl = parseInt(btn.dataset.level);
+    recovered.push(lvl);
+    if (!c.spellSlotsUsed) c.spellSlotsUsed = {};
+    c.spellSlotsUsed[lvl] = Math.max(0, (c.spellSlotsUsed[lvl] || 0) - 1);
+  });
+  if (recovered.length === 0) { closeModal(); return; }
+  if (!c.resources) c.resources = {};
+  if (!c.resources.arcaneRecovery) c.resources.arcaneRecovery = { used: 0, max: 1 };
+  c.resources.arcaneRecovery.used = 1;
+  logEvent('Arcane Recovery: restored ' + recovered.map(function(l) { return ordinal(l) + '-level'; }).join(', '));
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
+}
+
+function rollPortentDice() {
+  var c = loadCharacter();
+  if (!c) return;
+  var numDice = c.level >= 14 ? 3 : 2;
+  var dice = [];
+  for (var i = 0; i < numDice; i++) {
+    dice.push({ value: Math.floor(Math.random() * 20) + 1, used: false });
+  }
+  if (!c.resources) c.resources = {};
+  c.resources.portentDice = dice;
+  var values = dice.map(function(d) { return d.value; }).join(', ');
+  logEvent('Portent Dice rolled: ' + values);
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function usePortentDie(idx) {
+  var c = loadCharacter();
+  if (!c || !c.resources || !c.resources.portentDice || !c.resources.portentDice[idx]) return;
+  c.resources.portentDice[idx].used = true;
+  logEvent('Used Portent Die: ' + c.resources.portentDice[idx].value);
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function adjustArcaneWard(delta) {
+  var c = loadCharacter();
+  if (!c) return;
+  if (!c.resources) c.resources = {};
+  var intMod = mod(c.abilityScores.int);
+  var wardMax = c.level * 2 + intMod;
+  if (!c.resources.arcaneWard) c.resources.arcaneWard = { current: 0, max: wardMax };
+  c.resources.arcaneWard.max = wardMax;
+  c.resources.arcaneWard.current = Math.max(0, Math.min(wardMax, c.resources.arcaneWard.current + delta));
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function showChangePreparedWizard() {
+  var c = loadCharacter();
+  if (!c) return;
+  var intMod = mod(c.abilityScores.int);
+  var maxPrep = getWizardPreparedCount(c.level, intMod);
+  var current = c.currentPreparedSpells || [];
+  var spellbook = c.spellbook || [];
+  var html = '<h3>Change Prepared Spells</h3>';
+  html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:8px">Prepare up to <strong>' + maxPrep + '</strong> spells from your spellbook (level ' + c.level + ' + INT modifier ' + (intMod >= 0 ? '+' : '') + intMod + ').</p>';
+  html += '<div id="wiz-prep-list" style="max-height:400px;overflow-y:auto">';
+  var byLevel = {};
+  spellbook.forEach(function(name) { var sp = getSpell(name); var sl = sp ? sp.level : 1; if (!byLevel[sl]) byLevel[sl] = []; byLevel[sl].push(name); });
+  Object.keys(byLevel).sort(function(a,b){return a-b;}).forEach(function(sl) {
+    html += '<h4 class="text-dim" style="font-size:0.8rem;text-transform:uppercase;margin:8px 0 4px">' + ordinal(parseInt(sl)) + '-Level</h4>';
+    byLevel[sl].forEach(function(name) {
+      var checked = current.indexOf(name) >= 0 ? ' checked' : '';
+      html += '<label style="display:block;padding:4px 0;cursor:pointer"><input type="checkbox" name="wiz-prep" value="' + escapeHtml(name) + '"' + checked + ' onclick="event.stopPropagation()"> ' + escapeHtml(name) + '</label>';
+    });
+  });
+  html += '</div>';
+  html += '<div id="wiz-prep-count" style="text-align:center;margin:8px 0;color:var(--accent)">' + current.length + ' / ' + maxPrep + '</div>';
+  html += '<div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button>';
+  html += '<button class="btn btn-primary" onclick="applyWizardPrepared(' + maxPrep + ')">Apply</button></div>';
+  showModal(html);
+  // Add live count
+  document.querySelectorAll('input[name="wiz-prep"]').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      var count = document.querySelectorAll('input[name="wiz-prep"]:checked').length;
+      document.getElementById('wiz-prep-count').textContent = count + ' / ' + maxPrep;
+      if (count > maxPrep) { cb.checked = false; document.getElementById('wiz-prep-count').textContent = (count-1) + ' / ' + maxPrep; }
+    });
+  });
+}
+
+function applyWizardPrepared(maxPrep) {
+  var c = loadCharacter();
+  if (!c) return;
+  var selected = [];
+  document.querySelectorAll('input[name="wiz-prep"]:checked').forEach(function(cb) { selected.push(cb.value); });
+  if (selected.length > maxPrep) { alert('Too many spells selected. Maximum: ' + maxPrep); return; }
+  c.currentPreparedSpells = selected;
+  c.preparedSpellCount = maxPrep;
+  logEvent('Changed prepared spells (' + selected.length + '/' + maxPrep + ')');
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
+}
+
+function showCopySpellToSpellbook() {
+  var c = loadCharacter();
+  if (!c) return;
+  var slots = c.spellSlots || {};
+  var maxLevel = 0;
+  Object.keys(slots).forEach(function(k) { maxLevel = Math.max(maxLevel, parseInt(k)); });
+  var spellbook = c.spellbook || [];
+  var html = '<h3>Copy Spell to Spellbook</h3>';
+  html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:8px">Copying a spell costs 2 hours and 50 gp per spell level. (Track this with your DM.)</p>';
+  html += '<div style="max-height:400px;overflow-y:auto">';
+  for (var sl = 1; sl <= maxLevel; sl++) {
+    var spells = (WIZARD_SPELL_LIST[sl] || []).filter(function(n) { return spellbook.indexOf(n) < 0; });
+    if (spells.length === 0) continue;
+    html += '<h4 class="text-dim" style="font-size:0.8rem;text-transform:uppercase;margin:8px 0 4px">' + ordinal(sl) + '-Level (' + (sl * 50) + ' gp, ' + (sl * 2) + ' hours)</h4>';
+    spells.forEach(function(name) {
+      var sp = getSpell(name);
+      var desc = sp ? sp.description.substring(0, 80) + (sp.description.length > 80 ? '...' : '') : '';
+      html += '<div class="lu-option" style="padding:8px;margin:4px 0;cursor:pointer" onclick="doCopySpellToSpellbook(\'' + name.replace(/'/g, "\\'") + '\')">';
+      html += '<div style="font-weight:bold">' + escapeHtml(name) + (sp ? ' <span class="text-dim" style="font-size:0.75rem">' + sp.school + '</span>' : '') + '</div>';
+      if (desc) html += '<div style="font-size:0.8rem;color:var(--text-dim)">' + desc + '</div>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+  html += '<div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button></div>';
+  showModal(html);
+}
+
+function doCopySpellToSpellbook(name) {
+  var c = loadCharacter();
+  if (!c) return;
+  if (!c.spellbook) c.spellbook = [];
+  if (c.spellbook.indexOf(name) >= 0) return;
+  c.spellbook.push(name);
+  var sp = getSpell(name);
+  var cost = sp ? sp.level * 50 : 50;
+  logEvent('Copied ' + name + ' to spellbook (' + cost + ' gp, ' + (sp ? sp.level * 2 : 2) + ' hours)');
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
+}
+
 function confirmShortRest() {
   var c = loadCharacter();
   var desc = 'This will ';
@@ -314,7 +513,12 @@ function doShortRest() {
   if (c.resources) {
     Object.keys(c.resources).forEach(function(key) {
       if (cdInfo.shortRestResets && cdInfo.shortRestResets.indexOf(key) >= 0) {
-        c.resources[key].used = 0;
+        // Signature Spell Uses: reset per-spell booleans
+        if (key === 'signatureSpellUses' && typeof c.resources[key] === 'object' && !c.resources[key].max) {
+          Object.keys(c.resources[key]).forEach(function(sp) { c.resources[key][sp] = false; });
+        } else {
+          c.resources[key].used = 0;
+        }
       }
     });
   }
@@ -346,7 +550,20 @@ function doLongRest() {
   clearDeathSaves(c);
   c.concentration = { active: false, spellName: '' };
   c.externalBuffs = [];
-  logEvent('Long Rest \u2014 all resources restored, HP full');
+  // Wizard Divination: auto-roll new Portent dice on long rest
+  if (c.class === 'Wizard' && c.subclass === 'School of Divination' && c.level >= 2) {
+    var numPortent = c.level >= 14 ? 3 : 2;
+    var newPortent = [];
+    for (var pi = 0; pi < numPortent; pi++) {
+      newPortent.push({ value: Math.floor(Math.random() * 20) + 1, used: false });
+    }
+    if (!c.resources) c.resources = {};
+    c.resources.portentDice = newPortent;
+    var pValues = newPortent.map(function(d) { return d.value; }).join(', ');
+    logEvent('Long Rest \u2014 all resources restored, HP full. Portent Dice: ' + pValues);
+  } else {
+    logEvent('Long Rest \u2014 all resources restored, HP full');
+  }
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);

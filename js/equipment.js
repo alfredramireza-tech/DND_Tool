@@ -141,10 +141,11 @@ function getSpellSummaryLine(spell, char) {
       altStr = ' or ' + altDice + ' (damaged)';
     }
     // Special: Spiritual Weapon adds spellcasting mod
+    var empEvoc = (char.class === 'Wizard' && char.subclass === 'School of Evocation' && char.level >= 10 && spell.school === 'Evocation') ? '+' + castMod : '';
     if (spell.name === 'Spiritual Weapon') {
       parts.push(dice + '+' + castMod + ' force');
     } else {
-      parts.push(dice + altStr + ' ' + spell.damage.type);
+      parts.push(dice + empEvoc + altStr + ' ' + spell.damage.type + (empEvoc ? ' (Empowered)' : ''));
     }
   }
 

@@ -50,6 +50,8 @@ function migrateCharacter(c) {
   if (!c.externalBuffs) c.externalBuffs = [];
   if (!c.maxHpBoost) c.maxHpBoost = { value: 0, source: '' };
   if (!c.spellbook) c.spellbook = [];
+  if (c.spellMastery === undefined) c.spellMastery = null;
+  if (c.signatureSpells === undefined) c.signatureSpells = null;
   // Migrate old EK/AT field names to unified fields
   if (c.ekSpellSlots) { c.spellSlots = c.ekSpellSlots; delete c.ekSpellSlots; }
   if (c.ekSlotsUsed) { c.spellSlotsUsed = c.ekSlotsUsed; delete c.ekSlotsUsed; }

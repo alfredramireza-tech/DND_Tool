@@ -943,6 +943,11 @@ function showCastSpellPrompt(spellName, rollType) {
   if (!spell) { doSpellRoll(spellName, rollType); return; }
   // Cantrips: no slot needed
   if (spell.level === 0) { doSpellRoll(spellName, rollType); return; }
+  // Spell Mastery: at-will casting at base level
+  if (c.spellMastery && ((c.spellMastery.firstLevel === spellName && spell.level === 1) || (c.spellMastery.secondLevel === spellName && spell.level === 2))) {
+    doSpellRoll(spellName, rollType);
+    return;
+  }
   // Get available slots
   var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
   var slots = c.spellSlots || {};
