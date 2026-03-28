@@ -1060,6 +1060,29 @@ details[open] summary::before { content: '▾ '; }
 .sticky-picker-header h2,
 .sticky-picker-header h3 { margin: 0 0 4px 0; }
 
+/* ── DM Screen ── */
+.dm-row { padding:12px; margin-bottom:8px; border-radius:8px; background:var(--surface); border-left:4px solid transparent; }
+.dm-row-pc { border-left-color:#4a6a9a; }
+.dm-row-npc { border-left-color:#9a4a4a; }
+.dm-row-active { background:var(--surface-raised); border-left-width:6px; box-shadow:0 0 8px rgba(160,168,184,0.15); }
+/* Dim non-active rows during combat (parent has .dm-combat class) */
+.dm-combat .dm-row:not(.dm-row-active):not(.dm-row-dead) { opacity:0.7; }
+.dm-row-dead { opacity:0.5; padding:8px 12px; }
+.dm-hp-bar { height:8px; background:var(--surface-raised); border-radius:4px; overflow:hidden; flex:1; }
+.dm-hp-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+.dm-turn-controls { position:sticky; bottom:0; background:var(--bg); border-top:1px solid var(--border); padding:12px; display:flex; gap:8px; z-index:10; }
+.dm-initiative-input { width:50px; text-align:center; min-height:44px; padding:8px; background:var(--input-bg); color:var(--text); border:1px solid var(--border); border-radius:var(--radius); font-size:1rem; }
+.dm-cond-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.75rem; background:var(--surface-raised); border:1px solid var(--border); cursor:pointer; margin:2px; }
+.dm-conc-badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.75rem; background:var(--surface-raised); border:1px solid var(--accent); color:var(--accent); cursor:pointer; margin:2px; }
+.dm-cond-reminder { background:var(--surface); border-left:3px solid var(--accent); padding:8px 12px; margin-top:4px; font-size:0.85rem; border-radius:0 var(--radius) var(--radius) 0; }
+.dm-roll-result { position:sticky; top:0; background:var(--surface-raised); padding:12px; text-align:center; font-size:1.2rem; font-weight:bold; z-index:8; border-bottom:1px solid var(--border); transition:opacity 0.5s; border-radius:0 0 var(--radius) var(--radius); }
+.dm-log-entry { padding:4px 0; font-size:0.85rem; border-bottom:1px solid var(--border); }
+.dm-log-time { color:var(--text-dim); margin-right:8px; font-size:0.75rem; }
+.dm-library-row { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--surface); border-radius:6px; margin-bottom:6px; }
+.dm-library-stats { font-size:0.85rem; color:var(--text-dim); }
+.dm-library-actions { display:flex; gap:6px; }
+.dm-notes-inline { width:100%; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--border); border-radius:4px; padding:6px; font-size:0.85rem; color:var(--text); resize:vertical; min-height:36px; font-family:inherit; margin-top:4px; }
+
 /* ── Roll Result Persistence (override auto-dismiss) ── */
 .roll-result { bottom:12px; }
 .roll-result .roll-history { max-height:80px;overflow-y:auto; }

@@ -154,7 +154,7 @@ function calculateAC(c) {
 }
 
 function showView(viewId) {
-  ['homescreen', 'onboarding', 'dashboard', 'levelup'].forEach(function(id) {
+  ['homescreen', 'onboarding', 'dashboard', 'levelup', 'dm-screen'].forEach(function(id) {
     document.getElementById(id).classList.toggle('hidden', id !== viewId);
   });
 }

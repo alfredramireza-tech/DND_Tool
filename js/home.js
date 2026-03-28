@@ -30,6 +30,7 @@ function renderHomeScreen() {
   html += '<button class="btn btn-secondary btn-large" onclick="loadSampleCharacter()">Load Sample (Thorin)</button>';
   html += '<button class="btn btn-secondary btn-large" onclick="loadFromCloud()">Load from Cloud</button>';
   html += '<button class="btn btn-secondary btn-large" onclick="showPartyView()">Party View</button>';
+  html += '<button class="btn btn-secondary btn-large" onclick="showDmScreen()">\u2694 DM Screen</button>';
   html += '</div>';
   html += '<div style="margin-top:40px;padding-top:20px;border-top:1px solid var(--border)">';
   html += '<button class="btn" onclick="confirmClearAllData()" style="width:100%;background:transparent;color:var(--error);border:1px solid var(--error);font-size:0.85rem;padding:10px">Clear All Data</button>';
