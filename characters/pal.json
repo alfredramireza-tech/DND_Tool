@@ -19,14 +19,7 @@
     "max": 18,
     "hitDiceType": 10,
     "hitDiceCount": 2,
-    "hpHistory": [
-      {
-        "level": 2,
-        "gained": 7,
-        "method": "average",
-        "notes": "6 (avg) + 1 CON"
-      }
-    ]
+    "hpHistory": []
   },
   "proficiencyBonus": 2,
   "ac": 16,
@@ -47,7 +40,11 @@
     "1": 2
   },
   "preparedSpellCount": 3,
-  "currentPreparedSpells": [],
+  "currentPreparedSpells": [
+    "Charm Person",
+    "Expeditious Retreat",
+    "Fog Cloud"
+  ],
   "domainSpells": {},
   "features": [
     "Divine Sense",
@@ -114,6 +111,7 @@
     "success": "#6aaa5a",
     "inputBg": "#161a20"
   },
+  "passwordHash": null,
   "deathSaves": {
     "successes": 0,
     "failures": 0
@@ -133,6 +131,5 @@
   },
   "spellbook": [],
   "spellMastery": null,
-  "signatureSpells": null,
-  "passwordHash": null
+  "signatureSpells": null
 }
