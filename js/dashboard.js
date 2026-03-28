@@ -503,11 +503,6 @@ function renderDashboard(c, preserveScroll) {
   html += '</div>';
 
   container.innerHTML = html;
-  // Set sticky offset for section summaries based on HUD height
-  var hud = container.querySelector('.hp-sticky');
-  if (hud) {
-    document.documentElement.style.setProperty('--hud-height', hud.offsetHeight + 'px');
-  }
   if (!preserveScroll) window.scrollTo(0, 0);
   // Apply combat mode state
   combatModeOn = localStorage.getItem('dnd_combatMode') === '1';
