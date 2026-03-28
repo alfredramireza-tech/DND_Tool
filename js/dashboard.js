@@ -105,6 +105,15 @@ function renderDashboard(c, preserveScroll) {
   html += '<button class="btn btn-secondary" onclick="showMaxHpBoostPrompt()" style="font-size:0.8rem;padding:6px 12px">+ Max HP</button>';
   html += '</div>';
 
+  // Rest Section (collapsible) — first body section for quick access
+  html += '<div class="rest-section" id="rest-section">';
+  html += '<div class="rest-header" onclick="toggleRestSection()">';
+  html += '<h2>Rest</h2><span class="rest-toggle">options</span></div>';
+  html += '<div class="rest-body"><div class="rest-buttons">';
+  html += '<button class="rest-btn" onclick="confirmShortRest()">Short Rest<span class="rest-label">' + getShortRestDescription(c.class, c.subclass, c.level) + '</span></button>';
+  html += '<button class="rest-btn" onclick="confirmLongRest()">Long Rest<span class="rest-label">Restores everything</span></button>';
+  html += '</div></div></div>';
+
   // Compute AC buff annotation (from externalBuffs only)
   var acBuff = 0;
   if (c.externalBuffs) {
@@ -165,11 +174,14 @@ function renderDashboard(c, preserveScroll) {
   // Ability Checks (saving throws & ability checks only)
   html += renderAbilityChecks(c);
 
+  // Class Abilities — collapsible, open by default, centered heading
+  html += '<div class="dash-section"><details open><summary style="text-align:center"><h2 style="display:inline">Class Abilities</h2></summary>';
+
   // Channel Divinity Tracker (Cleric or Paladin level 3+)
   if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 3)) {
     var cdMax = c.channelDivinityUses || 1;
     var cdUsed = c.channelDivinityUsed || 0;
-    html += '<div class="dash-section"><h2>Channel Divinity <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + cdMax + '/rest)</span></h2>';
+    html += '<h3 style="font-size:1rem;margin:8px 0">Channel Divinity <span class="text-dim" style="font-size:0.85rem;font-weight:normal">(' + cdMax + '/rest)</span></h3>';
     html += '<div class="cd-tracker"><div class="cd-uses">';
     for (var cdi = 0; cdi < cdMax; cdi++) {
       html += '<div class="cd-icon' + (cdi < cdUsed ? ' spent' : '') + '" onclick="toggleCD(' + cdi + ')">&#9889;</div>';
@@ -216,7 +228,7 @@ function renderDashboard(c, preserveScroll) {
         });
       }
     }
-    html += '</div></div>';
+    html += '</div>';
   }
 
   // Fighter class features
@@ -267,10 +279,15 @@ function renderDashboard(c, preserveScroll) {
     }
   }
 
+  html += '</details></div>';
+
+  // Spells — collapsible, centered heading
+  html += '<div class="dash-section"><details><summary style="text-align:center"><h2 style="display:inline">Spells</h2></summary>';
+
   // Spell Slots (casters only)
   if (isCaster && c.spellSlots && Object.keys(c.spellSlots).length > 0) {
     var slotEntries = Object.entries(c.spellSlots);
-    html += '<div class="dash-section"><h2>Spell Slots</h2>';
+    html += '<h3 style="font-size:1rem;margin:8px 0">Spell Slots</h3>';
     slotEntries.forEach(function(entry) {
       var level = entry[0], count = entry[1];
       var used = (c.spellSlotsUsed && c.spellSlotsUsed[level]) || 0;
@@ -280,20 +297,7 @@ function renderDashboard(c, preserveScroll) {
       }
       html += '</div>';
     });
-    html += '</div>';
   }
-
-  // Rest Section (collapsible)
-  html += '<div class="rest-section" id="rest-section">';
-  html += '<div class="rest-header" onclick="toggleRestSection()">';
-  html += '<h2>Rest</h2><span class="rest-toggle">options</span></div>';
-  html += '<div class="rest-body"><div class="rest-buttons">';
-  html += '<button class="rest-btn" onclick="confirmShortRest()">Short Rest<span class="rest-label">' + getShortRestDescription(c.class, c.subclass, c.level) + '</span></button>';
-  html += '<button class="rest-btn" onclick="confirmLongRest()">Long Rest<span class="rest-label">Restores everything</span></button>';
-  html += '</div></div></div>';
-
-  // Spells — collapsible, centered heading
-  html += '<div class="dash-section"><details><summary style="text-align:center"><h2 style="display:inline">Spells</h2></summary>';
 
   // Cantrips
   var displayCantrips = (c.cantripsKnown || []).slice();
