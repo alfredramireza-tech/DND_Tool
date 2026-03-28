@@ -36,7 +36,7 @@ function applyMaxHpBoost() {
   // Aid also raises current HP by the boost amount
   c.currentHp = (c.currentHp || 0) + amount;
   var newMax = getEffectiveMaxHp(c);
-  logEvent('Max HP boosted by ' + amount + (source ? ' (' + source + ')' : '') + ' \u2014 HP max ' + oldMax + ' \u2192 ' + newMax);
+  logEvent('Max HP boosted by ' + amount + (source ? ' (' + source + ')' : '') + ' \u2014 HP max ' + oldMax + ' \u2192 ' + newMax, c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -51,7 +51,7 @@ function removeMaxHpBoost() {
   // Cap current HP at base max
   if (c.currentHp > c.hp.max) c.currentHp = c.hp.max;
   var newMax = c.hp.max;
-  logEvent('Max HP boost removed' + (source ? ' (' + source + ')' : '') + ' \u2014 HP max ' + oldMax + ' \u2192 ' + newMax);
+  logEvent('Max HP boost removed' + (source ? ' (' + source + ')' : '') + ' \u2014 HP max ' + oldMax + ' \u2192 ' + newMax, c);
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -86,12 +86,12 @@ function applyHpChange(mode) {
       else { actualDmg = val - c.tempHp; val -= c.tempHp; c.tempHp = 0; }
     }
     c.currentHp = Math.max(0, c.currentHp - val);
-    logEvent('Took ' + actualDmg + ' damage \u2014 HP ' + oldHp + '\u2192' + c.currentHp);
+    logEvent('Took ' + actualDmg + ' damage \u2014 HP ' + oldHp + '\u2192' + c.currentHp, c);
     // Death save failure if at 0 HP and took damage while already at 0
     if (oldHp === 0 && c.currentHp === 0 && val > 0) {
       if (!c.deathSaves) c.deathSaves = { successes: 0, failures: 0 };
       c.deathSaves.failures = Math.min(3, c.deathSaves.failures + 1);
-      logEvent('Damage at 0 HP: +1 death save failure');
+      logEvent('Damage at 0 HP: +1 death save failure', c);
     }
     // Concentration save prompt
     if (c.concentration && c.concentration.active && actualDmg > 0) {
@@ -113,14 +113,14 @@ function applyHpChange(mode) {
     }
   } else if (mode === 'heal') {
     c.currentHp = Math.min(effMax, c.currentHp + val);
-    logEvent('Healed ' + val + ' HP \u2014 HP ' + oldHp + '\u2192' + c.currentHp);
+    logEvent('Healed ' + val + ' HP \u2014 HP ' + oldHp + '\u2192' + c.currentHp, c);
     // Clear death saves when healed above 0
     if (oldHp === 0 && c.currentHp > 0) {
       clearDeathSaves(c);
     }
   } else if (mode === 'temp') {
     c.tempHp = val;
-    logEvent('Set temp HP to ' + val);
+    logEvent('Set temp HP to ' + val, c);
   }
   saveCurrentCharacter(c);
   closeModal();
@@ -154,7 +154,7 @@ function toggleCD(idx) {
   else c.channelDivinityUsed = idx + 1;
   var cdMax = c.channelDivinityUses || 1;
   var remaining = cdMax - c.channelDivinityUsed;
-  logEvent('Channel Divinity: ' + remaining + '/' + cdMax + ' remaining');
+  logEvent('Channel Divinity: ' + remaining + '/' + cdMax + ' remaining', c);
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -191,7 +191,7 @@ function toggleResource(resourceKey, idx, max) {
   else c.resources[resourceKey].used = idx + 1;
   var remaining = max - c.resources[resourceKey].used;
   var displayName = resourceKey.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase(); });
-  logEvent('Used ' + displayName + ' (' + remaining + '/' + max + ' remaining)');
+  logEvent('Used ' + displayName + ' (' + remaining + '/' + max + ' remaining)', c);
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -248,7 +248,7 @@ function useLayOnHands() {
   var lohRemaining = Math.max(0, lohMax - lohUsed);
   if (amount > lohRemaining) amount = lohRemaining;
   c.resources.layOnHands.used = lohUsed + amount;
-  logEvent('Lay on Hands: healed ' + amount + ' HP (' + (lohRemaining - amount) + '/' + lohMax + ' remaining)');
+  logEvent('Lay on Hands: healed ' + amount + ' HP (' + (lohRemaining - amount) + '/' + lohMax + ' remaining)', c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -268,7 +268,7 @@ function useLayOnHandsCure() {
     return;
   }
   c.resources.layOnHands.used = lohUsed + 5;
-  logEvent('Lay on Hands: cured disease/poison (' + (lohRemaining - 5) + '/' + lohMax + ' remaining)');
+  logEvent('Lay on Hands: cured disease/poison (' + (lohRemaining - 5) + '/' + lohMax + ' remaining)', c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -339,7 +339,7 @@ function confirmArcaneRecovery() {
   if (!c.resources) c.resources = {};
   if (!c.resources.arcaneRecovery) c.resources.arcaneRecovery = { used: 0, max: 1 };
   c.resources.arcaneRecovery.used = 1;
-  logEvent('Arcane Recovery: restored ' + recovered.map(function(l) { return ordinal(l) + '-level'; }).join(', '));
+  logEvent('Arcane Recovery: restored ' + recovered.map(function(l) { return ordinal(l) + '-level'; }).join(', '), c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -356,7 +356,7 @@ function rollPortentDice() {
   if (!c.resources) c.resources = {};
   c.resources.portentDice = dice;
   var values = dice.map(function(d) { return d.value; }).join(', ');
-  logEvent('Portent Dice rolled: ' + values);
+  logEvent('Portent Dice rolled: ' + values, c);
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -365,7 +365,7 @@ function usePortentDie(idx) {
   var c = loadCharacter();
   if (!c || !c.resources || !c.resources.portentDice || !c.resources.portentDice[idx]) return;
   c.resources.portentDice[idx].used = true;
-  logEvent('Used Portent Die: ' + c.resources.portentDice[idx].value);
+  logEvent('Used Portent Die: ' + c.resources.portentDice[idx].value, c);
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -425,7 +425,7 @@ function applyWizardPrepared(maxPrep) {
   if (selected.length > maxPrep) { alert('Too many spells selected. Maximum: ' + maxPrep); return; }
   c.currentPreparedSpells = selected;
   c.preparedSpellCount = maxPrep;
-  logEvent('Changed prepared spells (' + selected.length + '/' + maxPrep + ')');
+  logEvent('Changed prepared spells (' + selected.length + '/' + maxPrep + ')', c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -467,7 +467,7 @@ function doCopySpellToSpellbook(name) {
   c.spellbook.push(name);
   var sp = getSpell(name);
   var cost = sp ? sp.level * 50 : 50;
-  logEvent('Copied ' + name + ' to spellbook (' + cost + ' gp, ' + (sp ? sp.level * 2 : 2) + ' hours)');
+  logEvent('Copied ' + name + ' to spellbook (' + cost + ' gp, ' + (sp ? sp.level * 2 : 2) + ' hours)', c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -522,7 +522,7 @@ function doShortRest() {
       }
     });
   }
-  logEvent('Short Rest \u2014 ' + getShortRestDescription(c.class, c.subclass, c.level));
+  logEvent('Short Rest \u2014 ' + getShortRestDescription(c.class, c.subclass, c.level), c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -534,7 +534,7 @@ function doLongRest() {
   var cdInfo = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
   // Clear max HP boost first (before healing)
   if (c.maxHpBoost && c.maxHpBoost.value > 0) {
-    logEvent('Max HP boost expired' + (c.maxHpBoost.source ? ' (' + c.maxHpBoost.source + ')' : ''));
+    logEvent('Max HP boost expired' + (c.maxHpBoost.source ? ' (' + c.maxHpBoost.source + ')' : ''), c);
     c.maxHpBoost = { value: 0, source: '' };
   }
   c.currentHp = c.hp.max; // Heal to base max (boost is gone)
@@ -560,9 +560,9 @@ function doLongRest() {
     if (!c.resources) c.resources = {};
     c.resources.portentDice = newPortent;
     var pValues = newPortent.map(function(d) { return d.value; }).join(', ');
-    logEvent('Long Rest \u2014 all resources restored, HP full. Portent Dice: ' + pValues);
+    logEvent('Long Rest \u2014 all resources restored, HP full. Portent Dice: ' + pValues, c);
   } else {
-    logEvent('Long Rest \u2014 all resources restored, HP full');
+    logEvent('Long Rest \u2014 all resources restored, HP full', c);
   }
   saveCurrentCharacter(c);
   closeModal();

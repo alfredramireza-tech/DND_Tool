@@ -90,6 +90,14 @@ function migrateCharacter(c) {
   if (c.class === 'Wizard') {
     if (c.features && c.features.length === 0) c.features = getWizardFeatures(c.level, c.subclass);
     if (!c.spellSlots || Object.keys(c.spellSlots).length === 0) c.spellSlots = getFullCasterSlots(c.level);
+    if (!c.resources) c.resources = {};
+    if (!c.resources.arcaneRecovery) c.resources.arcaneRecovery = { used: 0, max: 1 };
+    if (c.subclass === 'School of Divination' && !c.resources.portentDice) c.resources.portentDice = [];
+    if (c.subclass === 'School of Abjuration' && !c.resources.arcaneWard) c.resources.arcaneWard = { current: 0, max: c.level * 2 + mod(c.abilityScores.int) };
+    if (c.signatureSpells && !c.resources.signatureSpellUses) {
+      c.resources.signatureSpellUses = {};
+      c.signatureSpells.forEach(function(sp) { c.resources.signatureSpellUses[sp] = false; });
+    }
   }
   return c;
 }

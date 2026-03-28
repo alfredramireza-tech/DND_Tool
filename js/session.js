@@ -3,8 +3,8 @@
    SESSION LOG
    ═══════════════════════════════════════════ */
 
-function logEvent(text) {
-  var c = loadCharacter();
+function logEvent(text, charObj) {
+  var c = charObj || loadCharacter();
   if (!c) return;
   if (!c.sessionLog) c.sessionLog = [];
   var now = new Date();
@@ -14,7 +14,7 @@ function logEvent(text) {
   var timeStr = h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
   c.sessionLog.unshift({ time: timeStr, text: text });
   if (c.sessionLog.length > 100) c.sessionLog = c.sessionLog.slice(0, 100);
-  saveCurrentCharacter(c);
+  if (!charObj) saveCurrentCharacter(c);
 }
 
 function renderSessionLog(c) {

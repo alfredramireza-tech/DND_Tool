@@ -34,7 +34,7 @@ function toggleInspiration() {
   var c = loadCharacter();
   if (!c) return;
   c.inspiration = !c.inspiration;
-  logEvent(c.inspiration ? 'Gained Inspiration' : 'Used Inspiration');
+  logEvent(c.inspiration ? 'Gained Inspiration' : 'Used Inspiration', c);
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -302,8 +302,8 @@ function rollDeathSave() {
     c.currentHp = 1;
     c.deathSaves = { successes: 0, failures: 0 };
     msg = 'Death save: NAT 20! Regained 1 HP';
+    logEvent(msg, c);
     saveCurrentCharacter(c);
-    logEvent(msg);
     showRollResult('Death Save', [d20], 0, '', d20, 'NAT 20! You regain 1 HP!', { nat20: true });
     setTimeout(function() { showDashboard(loadCharacter(), true); }, 1500);
     return;
@@ -319,7 +319,7 @@ function rollDeathSave() {
     c.deathSaves.failures = Math.min(3, c.deathSaves.failures + 1);
     msg = 'Death save: ' + d20 + ' — failure (' + c.deathSaves.failures + '/3)';
   }
-  logEvent(msg);
+  logEvent(msg, c);
   saveCurrentCharacter(c);
   var ctx = {};
   if (d20 === 1) ctx.nat1 = true;
@@ -384,10 +384,10 @@ function setConcentration(spellName) {
   // If already concentrating, remove old linked buffs and log
   if (c.concentration && c.concentration.active && c.concentration.spellName !== spellName) {
     removeLinkedBuffs(c, c.concentration.spellName);
-    logEvent('Lost concentration on ' + c.concentration.spellName);
+    logEvent('Lost concentration on ' + c.concentration.spellName, c);
   }
   c.concentration = { active: true, spellName: spellName };
-  logEvent('Began concentrating on ' + spellName);
+  logEvent('Began concentrating on ' + spellName, c);
   saveCurrentCharacter(c);
   // If spell has buff effects, ask if player is a target
   var buffEffects = SPELL_BUFF_EFFECTS[spellName];
@@ -427,7 +427,7 @@ function addLinkedBuff(spellName) {
     if (e.type === 'rollReminder') return e.text;
     return '';
   }).filter(Boolean).join(', ');
-  logEvent('Added buff: ' + spellName + (desc ? ' (' + desc + ')' : ''));
+  logEvent('Added buff: ' + spellName + (desc ? ' (' + desc + ')' : ''), c);
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -448,7 +448,7 @@ function removeLinkedBuffs(c, spellName) {
       if (e.type === 'rollReminder') return e.text;
       return '';
     }).filter(Boolean).join(', ');
-    logEvent('Removed buff: ' + b.spellName + (desc ? ' (' + desc + ')' : ''));
+    logEvent('Removed buff: ' + b.spellName + (desc ? ' (' + desc + ')' : ''), c);
   });
 }
 
@@ -457,7 +457,7 @@ function dropConcentration() {
   if (!c) return;
   if (c.concentration && c.concentration.active) {
     removeLinkedBuffs(c, c.concentration.spellName);
-    logEvent('Dropped concentration on ' + c.concentration.spellName);
+    logEvent('Dropped concentration on ' + c.concentration.spellName, c);
   }
   c.concentration = { active: false, spellName: '' };
   saveCurrentCharacter(c);
@@ -583,10 +583,10 @@ function toggleConditionFromPanel(name, checked) {
   if (!c.activeConditions) c.activeConditions = [];
   if (checked && c.activeConditions.indexOf(name) < 0) {
     c.activeConditions.push(name);
-    logEvent('Condition added: ' + name);
+    logEvent('Condition added: ' + name, c);
   } else if (!checked) {
     c.activeConditions = c.activeConditions.filter(function(cn) { return cn !== name; });
-    logEvent('Condition removed: ' + name);
+    logEvent('Condition removed: ' + name, c);
   }
   saveCurrentCharacter(c);
   // Don't close modal - let them toggle multiple
@@ -598,7 +598,7 @@ function removeCondition(name) {
   var c = loadCharacter();
   if (!c) return;
   c.activeConditions = (c.activeConditions || []).filter(function(cn) { return cn !== name; });
-  logEvent('Condition removed: ' + name);
+  logEvent('Condition removed: ' + name, c);
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -676,7 +676,7 @@ function addCustomBuff() {
     if (e.type === 'reminder') return e.text;
     return '';
   }).filter(Boolean).join(', ');
-  logEvent('Added custom buff: ' + name + (desc ? ' (' + desc + ')' : ''));
+  logEvent('Added custom buff: ' + name + (desc ? ' (' + desc + ')' : ''), c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -699,7 +699,7 @@ function addExternalBuff(spellName) {
     if (e.type === 'reminder') return e.text;
     return '';
   }).filter(Boolean).join(', ');
-  logEvent('Added external buff: ' + spellName + (desc ? ' (' + desc + ')' : ''));
+  logEvent('Added external buff: ' + spellName + (desc ? ' (' + desc + ')' : ''), c);
   saveCurrentCharacter(c);
   closeModal();
   showDashboard(c, true);
@@ -709,7 +709,7 @@ function removeExternalBuff(idx) {
   var c = loadCharacter();
   if (!c || !c.externalBuffs) return;
   var removed = c.externalBuffs[idx];
-  if (removed) logEvent('Removed external buff: ' + removed.spellName);
+  if (removed) logEvent('Removed external buff: ' + removed.spellName, c);
   c.externalBuffs.splice(idx, 1);
   saveCurrentCharacter(c);
   showDashboard(c, true);
@@ -985,14 +985,14 @@ function castSpellAtLevel(spellName, rollType, castLevel) {
   if (spell && spell.duration && spell.duration.toLowerCase().indexOf('concentration') >= 0) {
     if (c.concentration && c.concentration.active) {
       removeLinkedBuffs(c, c.concentration.spellName);
-      logEvent('Lost concentration on ' + c.concentration.spellName);
+      logEvent('Lost concentration on ' + c.concentration.spellName, c);
     }
     c.concentration = { active: true, spellName: spellName };
-    logEvent('Began concentrating on ' + spellName);
+    logEvent('Began concentrating on ' + spellName, c);
     _castIsConc = true;
   }
   var remaining = (c.spellSlots[castLevel] || 0) - ((c.spellSlotsUsed && c.spellSlotsUsed[castLevel]) || 0);
-  logEvent('Cast ' + spellName + ' at ' + ordinal(castLevel) + ' level (' + remaining + ' slots remaining)');
+  logEvent('Cast ' + spellName + ' at ' + ordinal(castLevel) + ' level (' + remaining + ' slots remaining)', c);
   saveCurrentCharacter(c);
   closeModal();
   // Now roll — pass castLevel for upcast damage
