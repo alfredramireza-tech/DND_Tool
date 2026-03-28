@@ -3,16 +3,70 @@
    DM SCREEN — PERSISTENCE
    ═══════════════════════════════════════════ */
 
+var _dmUnlocked = false;
+
 function loadDmData() {
+  var data;
   try {
     var raw = localStorage.getItem('dnd_dm_screen');
-    if (raw) return JSON.parse(raw);
+    if (raw) data = JSON.parse(raw);
   } catch (e) {}
-  return { encounters: [], quickMonsters: [], sessionNotes: '' };
+  if (!data) data = { encounters: [], quickMonsters: [], sessionNotes: '' };
+  // Ensure password hash exists (default: 'dm')
+  if (data.passwordHash === undefined) {
+    data.passwordHash = simpleHash('dm');
+    localStorage.setItem('dnd_dm_screen', JSON.stringify(data));
+  }
+  return data;
 }
 
-function saveDmData(data) {
+function saveDmData(data, skipCloud) {
   localStorage.setItem('dnd_dm_screen', JSON.stringify(data));
+  if (!skipCloud) scheduleDmCloudSave();
+}
+
+var _dmCloudSaveTimer = null;
+function scheduleDmCloudSave() {
+  if (_dmCloudSaveTimer) clearTimeout(_dmCloudSaveTimer);
+  _dmCloudSaveTimer = setTimeout(function() { _dmCloudSaveTimer = null; dmCloudSave(); }, 30000);
+}
+
+function isDmCloudConfigured() {
+  var headers = getGitHubHeaders();
+  return headers && GITHUB_CONFIG.token !== '1AAP39VV4N4V5KNVKYFXO1G8FZn6PMh8PQQaulZ8qj7DB4Zv0XkbFHbxip4_Gw7qoMQWs5Mo0IT7QH2B11_tap_buhtig';
+}
+
+function dmCloudSave() {
+  if (!isDmCloudConfigured()) return;
+  var headers = getGitHubHeaders();
+  var data = loadDmData();
+  data.lastModified = new Date().toISOString();
+  var url = ghApiUrl('dm/dm-screen.json');
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  fetch(url, { headers: headers })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(existing) {
+      var body = { message: 'DM Screen update', content: content };
+      if (existing && existing.sha) body.sha = existing.sha;
+      return fetch(url, { method: 'PUT', headers: headers, body: JSON.stringify(body) });
+    })
+    .catch(function(e) { console.log('DM cloud save failed:', e); });
+}
+
+function dmCloudLoad() {
+  if (!isDmCloudConfigured()) return Promise.resolve(null);
+  var headers = getGitHubHeaders();
+  var url = ghApiUrl('dm/dm-screen.json');
+  return fetch(url, { headers: headers })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(d) {
+      if (!d || !d.content) return null;
+      try {
+        var json = decodeURIComponent(escape(atob(d.content.replace(/\n/g, ''))));
+        return JSON.parse(json);
+      } catch(e) { return null; }
+    })
+    .catch(function() { return null; });
 }
 
 /* ═══════════════════════════════════════════
@@ -20,9 +74,54 @@ function saveDmData(data) {
    ═══════════════════════════════════════════ */
 
 function showDmScreen() {
+  stopDmPcSync();
   applyTheme(DM_THEME);
   showView('dm-screen');
-  renderDmHome();
+
+  if (!_dmUnlocked) {
+    renderDmPasswordPrompt();
+    return;
+  }
+
+  var localData = loadDmData();
+  if (localData.encounters.length === 0 && localData.quickMonsters.length === 0 && !localData.sessionNotes) {
+    renderDmHome();
+    dmCloudLoad().then(function(cloudData) {
+      if (cloudData && (cloudData.encounters.length > 0 || cloudData.quickMonsters.length > 0 || cloudData.sessionNotes)) {
+        saveDmData(cloudData, true);
+        renderDmHome();
+      }
+    });
+  } else {
+    renderDmHome();
+  }
+}
+
+function renderDmPasswordPrompt() {
+  var container = document.getElementById('dm-screen-content');
+  var html = '<div class="home-screen" style="max-width:320px;margin:0 auto;padding-top:60px">';
+  html += '<h2 style="color:var(--accent);text-align:center">\u2694 DM Screen</h2>';
+  html += '<input type="password" id="dm-pw-input" placeholder="Enter DM password" style="width:100%;box-sizing:border-box;min-height:48px;padding:10px 14px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);font-size:1rem;margin:16px 0 8px" onkeydown="if(event.key===\'Enter\')checkDmPassword()">';
+  html += '<div id="dm-pw-error" style="color:var(--error);font-size:0.85rem;min-height:20px;text-align:center"></div>';
+  html += '<button class="btn btn-primary" style="width:100%;min-height:48px;margin-top:4px" onclick="checkDmPassword()">Unlock</button>';
+  html += '<button class="btn btn-secondary" style="width:100%;margin-top:12px" onclick="_dmUnlocked=false;showHomeScreen()">\u2190 Back to Home</button>';
+  html += '</div>';
+  container.innerHTML = html;
+  setTimeout(function() { var el = document.getElementById('dm-pw-input'); if (el) el.focus(); }, 100);
+}
+
+function checkDmPassword() {
+  var input = document.getElementById('dm-pw-input');
+  var val = input ? input.value : '';
+  var data = loadDmData();
+  if (simpleHash(val) === data.passwordHash) {
+    _dmUnlocked = true;
+    showDmScreen();
+  } else {
+    var err = document.getElementById('dm-pw-error');
+    if (err) err.textContent = 'Wrong password';
+    if (input) { input.value = ''; input.focus(); }
+  }
 }
 
 function showDmScreenHome() { showDmScreen(); }
@@ -81,7 +180,10 @@ function renderDmHome() {
   }
 
   // Back button
-  html += '<div style="margin-top:24px"><button class="btn btn-secondary" onclick="showHomeScreen()">\u2190 Back to Home</button></div>';
+  html += '<div style="margin-top:24px">';
+  html += '<button class="btn btn-secondary" onclick="showDmChangePassword()" style="width:100%;margin-bottom:8px">Change DM Password</button>';
+  html += '<button class="btn btn-secondary" onclick="_dmUnlocked=false;showHomeScreen()" style="width:100%">\u2190 Back to Home</button>';
+  html += '</div>';
 
   html += '</div>';
   container.innerHTML = html;
@@ -143,6 +245,35 @@ function createEncounter() {
   saveDmData(data);
   closeModal();
   showDmEncounter();
+  // Auto-import PCs from Party View
+  if (isDmCloudConfigured()) {
+    var headers = getGitHubHeaders();
+    fetchPartyChars(headers).then(function(chars) {
+      if (!chars || chars.length === 0) return;
+      var freshEnc = getActiveEncounter();
+      if (!freshEnc) return;
+      chars.forEach(function(ch) {
+        freshEnc.initiative.push({
+          id: 'init_pc_' + ch.id,
+          name: ch.name,
+          type: 'pc',
+          charId: ch.id,
+          initiative: null,
+          ac: (ch.equippedItems && ch.equippedItems.length > 0) ? calculateAC(ch) : ch.ac,
+          maxHp: getEffectiveMaxHp(ch),
+          currentHp: ch.currentHp !== undefined ? ch.currentHp : getEffectiveMaxHp(ch),
+          conditions: (ch.activeConditions || []).slice(),
+          concentration: ch.concentration && ch.concentration.active ? ch.concentration.spellName : null,
+          attack: '', notes: '', dexMod: null
+        });
+      });
+      saveActiveEncounter(freshEnc);
+      showDmRollResult('Imported', chars.length + ' PCs from Party View');
+      showDmEncounter();
+    }).catch(function() {
+      // Cloud not available — DM adds PCs manually
+    });
+  }
 }
 
 function resumeEncounter() {
@@ -229,7 +360,12 @@ function renderEncounterBattle(container, enc) {
 
   // Header bar
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">';
-  html += '<h2 style="margin:0;color:var(--accent)">Round ' + enc.round + '</h2>';
+  html += '<div><h2 style="margin:0;color:var(--accent)">Round ' + enc.round + '</h2>';
+  if (_dmPcSyncInterval) {
+    var syncAgo = _dmLastSyncTime ? getRelativeTime(_dmLastSyncTime) : '';
+    html += '<span id="dm-sync-time" class="text-dim" style="font-size:0.75rem">' + (syncAgo ? 'Synced ' + syncAgo : '') + '</span>';
+  }
+  html += '</div>';
   html += '<button class="btn btn-secondary" style="font-size:0.85rem;padding:6px 14px" onclick="endEncounter()">End Combat</button>';
   html += '</div>';
 
@@ -562,6 +698,7 @@ function startCombat() {
   enc.currentTurn = 0;
   logEncounterEvent('Combat started — ' + enc.initiative.length + ' combatants');
   saveActiveEncounter(enc);
+  startDmPcSync();
   showDmEncounter();
 }
 
@@ -625,6 +762,7 @@ function endEncounter() {
 }
 
 function confirmEndEncounter() {
+  stopDmPcSync();
   var enc = getActiveEncounter();
   if (!enc) { closeModal(); showDmScreen(); return; }
   logEncounterEvent('Combat ended — Round ' + enc.round);
@@ -1297,4 +1435,73 @@ function viewPastEncounter(encId) {
   html += '<div style="margin-top:24px"><button class="btn btn-secondary" onclick="showDmScreen()">\u2190 Back to DM Screen</button></div>';
   html += '</div>';
   container.innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════
+   DM SCREEN — PC LIVE SYNC
+   ═══════════════════════════════════════════ */
+
+var _dmPcSyncInterval = null;
+var _dmLastSyncTime = null;
+
+function startDmPcSync() {
+  stopDmPcSync();
+  if (!isDmCloudConfigured()) return;
+  _dmLastSyncTime = Date.now();
+  _dmPcSyncInterval = setInterval(dmPcSyncTick, 60000);
+}
+
+function stopDmPcSync() {
+  if (_dmPcSyncInterval) { clearInterval(_dmPcSyncInterval); _dmPcSyncInterval = null; }
+}
+
+function dmPcSyncTick() {
+  if (!isDmCloudConfigured()) return;
+  var headers = getGitHubHeaders();
+  fetchPartyChars(headers).then(function(chars) {
+    if (!chars || chars.length === 0) return;
+    var enc = getActiveEncounter();
+    if (!enc) return;
+    var changed = false;
+    enc.initiative.forEach(function(entry, idx) {
+      if (entry.type !== 'pc' || !entry.charId) return;
+      var fresh = chars.find(function(ch) { return ch.id === entry.charId; });
+      if (!fresh) return;
+      var newHp = fresh.currentHp !== undefined ? fresh.currentHp : getEffectiveMaxHp(fresh);
+      var newMaxHp = getEffectiveMaxHp(fresh);
+      var newAc = (fresh.equippedItems && fresh.equippedItems.length > 0) ? calculateAC(fresh) : fresh.ac;
+      var newConds = (fresh.activeConditions || []).slice();
+      var newConc = fresh.concentration && fresh.concentration.active ? fresh.concentration.spellName : null;
+      // Update data
+      if (entry.currentHp !== newHp || entry.maxHp !== newMaxHp || entry.ac !== newAc) changed = true;
+      entry.currentHp = newHp;
+      entry.maxHp = newMaxHp;
+      entry.ac = newAc;
+      entry.conditions = newConds;
+      entry.concentration = newConc;
+      // Targeted DOM update (no full re-render)
+      var row = document.getElementById('dm-init-' + idx);
+      if (row) {
+        // Update HP text
+        var hpSpan = row.querySelector('[data-hp]');
+        if (!hpSpan) {
+          // Fallback: look for HP text pattern
+          var textNodes = row.querySelectorAll('div');
+          textNodes.forEach(function(div) {
+            if (div.textContent.indexOf('HP ') >= 0 && div.textContent.indexOf('/') >= 0) {
+              div.innerHTML = 'HP ' + newHp + '/' + newMaxHp + (newHp <= 0 ? ' <span style="color:var(--error);font-weight:bold">\u2014 Unconscious</span>' : '');
+            }
+          });
+        }
+      }
+    });
+    if (changed) saveActiveEncounter(enc);
+    _dmLastSyncTime = Date.now();
+    // Update sync timestamp display
+    var tsEl = document.getElementById('dm-sync-time');
+    if (tsEl) tsEl.textContent = 'Synced just now';
+  }).catch(function() {
+    var tsEl = document.getElementById('dm-sync-time');
+    if (tsEl) tsEl.textContent = '\u26a0 Sync failed';
+  });
 }

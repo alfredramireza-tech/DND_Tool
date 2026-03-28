@@ -1083,6 +1083,11 @@ details[open] summary::before { content: '▾ '; }
 .dm-library-actions { display:flex; gap:6px; }
 .dm-notes-inline { width:100%; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--border); border-radius:4px; padding:6px; font-size:0.85rem; color:var(--text); resize:vertical; min-height:36px; font-family:inherit; margin-top:4px; }
 
+/* Normalize DM Screen form inputs — prevent iOS font zoom and inconsistent sizing */
+.confirm-box input[type="text"],
+.confirm-box input[type="number"],
+.confirm-box textarea { font-size:1rem !important; }
+
 /* ── Roll Result Persistence (override auto-dismiss) ── */
 .roll-result { bottom:12px; }
 .roll-result .roll-history { max-height:80px;overflow-y:auto; }
