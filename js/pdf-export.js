@@ -479,7 +479,12 @@ function exportPDF() {
   if (!c) { alert('No character data found.'); return; }
 
   if (!window.PDFLib) {
-    alert('PDF library failed to initialize. Try reloading the page.');
+    // Attempt CDN fallback
+    var script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+    script.onload = function() { if (window.PDFLib) exportPDF(); else alert('PDF library could not be loaded.'); };
+    script.onerror = function() { alert('PDF library failed to load. Check your internet connection.'); };
+    document.head.appendChild(script);
     return;
   }
 
