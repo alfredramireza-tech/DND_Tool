@@ -6,7 +6,7 @@
   "subclass": "Oath of the Ancients",
   "background": "",
   "alignment": "Lawful Neutral",
-  "level": 1,
+  "level": 2,
   "abilityScores": {
     "str": 15,
     "dex": 10,
@@ -16,10 +16,17 @@
     "cha": 14
   },
   "hp": {
-    "max": 11,
+    "max": 18,
     "hitDiceType": 10,
-    "hitDiceCount": 1,
-    "hpHistory": []
+    "hitDiceCount": 2,
+    "hpHistory": [
+      {
+        "level": 2,
+        "gained": 7,
+        "method": "average",
+        "notes": "6 (avg) + 1 CON"
+      }
+    ]
   },
   "proficiencyBonus": 2,
   "ac": 16,
@@ -36,19 +43,35 @@
     "perception"
   ],
   "cantripsKnown": [],
-  "spellSlots": {},
-  "preparedSpellCount": 0,
+  "spellSlots": {
+    "1": 2
+  },
+  "preparedSpellCount": 3,
   "currentPreparedSpells": [],
   "domainSpells": {},
   "features": [
     "Divine Sense",
-    "Lay on Hands"
+    "Lay on Hands",
+    "Divine Smite",
+    "Spellcasting",
+    "Fighting Style"
   ],
   "channelDivinityUses": 0,
   "equipment": "",
   "notes": "",
   "weapons": [],
-  "levelHistory": [],
+  "levelHistory": [
+    {
+      "level": 2,
+      "from": 1,
+      "hpMethod": "average",
+      "hpRoll": null,
+      "hpGained": 7,
+      "retroHp": false,
+      "retroHpAmount": 0,
+      "fightingStyle": "Protection"
+    }
+  ],
   "expertiseSkills": [],
   "resources": {},
   "currency": {
@@ -58,7 +81,7 @@
     "gp": 0,
     "pp": 0
   },
-  "fightingStyle": null,
+  "fightingStyle": "Protection",
   "id": "mn9u6gzjghwhn",
   "currentHp": 11,
   "tempHp": 0,
