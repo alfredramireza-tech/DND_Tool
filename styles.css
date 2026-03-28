@@ -1047,6 +1047,19 @@ details[open] summary::before { content: '▾ '; }
 .roll-history { margin-top:8px;padding-top:6px;border-top:1px solid var(--border); }
 .rh-entry { font-size:0.75rem;color:var(--text-dim);padding:1px 0; }
 
+/* ── Sticky Picker Header (spell selection screens) ── */
+.sticky-picker-header {
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.sticky-picker-header h2,
+.sticky-picker-header h3 { margin: 0 0 4px 0; }
+
 /* ── Roll Result Persistence (override auto-dismiss) ── */
 .roll-result { bottom:12px; }
 .roll-result .roll-history { max-height:80px;overflow-y:auto; }

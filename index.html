@@ -189,17 +189,21 @@
         <div class="domain-spells mt-16" id="domain-spells-display"></div>
 
         <div id="spellbook-section" class="hidden">
-          <h3 class="mt-16">Spellbook</h3>
           <p class="subtitle" id="spellbook-subtitle">Your spellbook is your collection of arcane knowledge. You prepare a subset of these each day.</p>
-          <div class="check-count" id="spellbook-count">Selected: <span class="current">0</span> / <span id="spellbook-max">6</span></div>
+          <div class="sticky-picker-header">
+            <h3>Spellbook</h3>
+            <div class="check-count" id="spellbook-count">Selected: <span class="current">0</span> / <span id="spellbook-max">6</span></div>
+          </div>
           <div class="field-error" id="err-spellbook">Select the correct number of spells for your spellbook</div>
           <div id="spellbook-spell-list"></div>
         </div>
 
-        <h3 class="mt-16">Prepared Spells</h3>
-        <div class="check-count" id="prepared-info">You can prepare <span class="current" id="prepared-max">6</span> spells (level + WIS modifier)</div>
         <p class="subtitle">These are in addition to your domain spells above. Selection is optional.</p>
-        <div class="check-count" id="prepared-count">Selected: <span class="current">0</span> / <span>6</span></div>
+        <div class="sticky-picker-header">
+          <h3>Prepared Spells</h3>
+          <div class="check-count" id="prepared-info">You can prepare <span class="current" id="prepared-max">6</span> spells (level + WIS modifier)</div>
+          <div class="check-count" id="prepared-count">Selected: <span class="current">0</span> / <span>6</span></div>
+        </div>
         <div id="prepared-spell-list"></div>
 
         <div class="step-nav">

@@ -943,18 +943,20 @@ function showCastSpellPrompt(spellName, rollType) {
   if (!spell) { doSpellRoll(spellName, rollType); return; }
   // Cantrips: no slot needed
   if (spell.level === 0) { doSpellRoll(spellName, rollType); return; }
-  // Spell Mastery: at-will casting at base level
-  if (c.spellMastery && ((c.spellMastery.firstLevel === spellName && spell.level === 1) || (c.spellMastery.secondLevel === spellName && spell.level === 2))) {
-    doSpellRoll(spellName, rollType);
-    return;
-  }
   // Get available slots
   var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
   var slots = c.spellSlots || {};
+  var isSpellMastery = c.spellMastery && ((c.spellMastery.firstLevel === spellName && spell.level === 1) || (c.spellMastery.secondLevel === spellName && spell.level === 2));
   var html = '<h3>Cast ' + escapeHtml(spellName) + '</h3>';
   html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:12px">Cast at what level?</p>';
+  // Spell Mastery: at-will button at base level
+  if (isSpellMastery) {
+    html += '<button class="btn btn-primary" style="width:100%;margin-bottom:6px;padding:12px;border:2px solid var(--success)" onclick="castSpellMasteryFree(\'' + escapeHtml(spellName) + '\',\'' + rollType + '\')">';
+    html += 'At Will (' + ordinal(spell.level) + ' Level) \u2014 Free</button>';
+  }
   var hasSlot = false;
-  for (var lvl = spell.level; lvl <= 9; lvl++) {
+  var slotStart = isSpellMastery ? spell.level + 1 : spell.level;
+  for (var lvl = slotStart; lvl <= 9; lvl++) {
     var total = slots[lvl] || 0;
     if (total === 0) continue;
     var used = 0;
@@ -968,9 +970,54 @@ function showCastSpellPrompt(spellName, rollType) {
     html += '</button>';
     if (remaining > 0) hasSlot = true;
   }
-  if (!hasSlot) html += '<p class="text-dim" style="text-align:center">No spell slots remaining!</p>';
+  if (!hasSlot && !isSpellMastery) html += '<p class="text-dim" style="text-align:center">No spell slots remaining!</p>';
   html += '<div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button></div>';
   showModal(html);
+}
+
+function castSpellMasteryFree(spellName, rollType) {
+  var c = loadCharacter();
+  if (!c) return;
+  var spell = getSpell(spellName);
+  var _castIsConc = false;
+  if (spell && spell.duration && spell.duration.toLowerCase().indexOf('concentration') >= 0) {
+    if (c.concentration && c.concentration.active) {
+      removeLinkedBuffs(c, c.concentration.spellName);
+      logEvent('Lost concentration on ' + c.concentration.spellName, c);
+    }
+    c.concentration = { active: true, spellName: spellName };
+    logEvent('Began concentrating on ' + spellName, c);
+    _castIsConc = true;
+  }
+  logEvent('Cast ' + spellName + ' at will (Spell Mastery)', c);
+  saveCurrentCharacter(c);
+  closeModal();
+  doSpellRoll(spellName, rollType);
+  var _castSpellName = spellName;
+  var _castWasConc = _castIsConc;
+  setTimeout(function() {
+    var cc = loadCharacter();
+    if (cc) showDashboard(cc, true);
+    if (_castWasConc) {
+      var buffEffects = SPELL_BUFF_EFFECTS[_castSpellName];
+      if (buffEffects && buffEffects.length > 0) {
+        var safeName = _castSpellName.replace(/'/g, "\\'");
+        var desc = buffEffects.map(function(e) {
+          if (e.type === 'acBonus') return '+' + e.value + ' AC';
+          if (e.type === 'rollReminder') return e.text;
+          if (e.type === 'reminder') return e.text;
+          return '';
+        }).filter(Boolean).join(', ');
+        showModal(
+          '<h3>Are you a target of ' + escapeHtml(_castSpellName) + '?</h3>' +
+          '<p class="text-dim" style="font-size:0.85rem">' + escapeHtml(desc) + '</p>' +
+          '<div class="confirm-actions">' +
+          '<button class="btn btn-primary" onclick="closeModal();addLinkedBuff(\'' + safeName + '\')">Yes</button>' +
+          '<button class="btn btn-secondary" onclick="closeModal()">No</button></div>'
+        );
+      }
+    }
+  }, 200);
 }
 
 function castSpellAtLevel(spellName, rollType, castLevel) {

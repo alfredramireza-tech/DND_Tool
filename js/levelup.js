@@ -1084,7 +1084,7 @@ function renderEkCantripSelectScreen() {
   var newCount = THIRD_CASTER_CANTRIPS_KNOWN[s.newLevel] || 0;
   var toChoose = newCount - oldCount;
 
-  var html = '<div class="lu-screen active"><h2>New Cantrip' + (toChoose > 1 ? 's' : '') + '</h2>';
+  var html = '<div class="lu-screen active">';
   html += '<div class="lu-callout">Choose ' + toChoose + ' new wizard cantrip' + (toChoose > 1 ? 's' : '') + '.</div>';
 
   // AT: Mage Hand is a free bonus cantrip at level 3
@@ -1096,7 +1096,8 @@ function renderEkCantripSelectScreen() {
     html += '<div style="margin-bottom:12px"><strong>Known:</strong> ' + known.map(escapeHtml).join(', ') + '</div>';
   }
 
-  html += '<div style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + s.ekCantripSelections.length + ' / ' + toChoose + '</div>';
+  html += '<div class="sticky-picker-header"><h2>New Cantrip' + (toChoose > 1 ? 's' : '') + '</h2>';
+  html += '<div style="font-size:0.85rem;color:var(--accent)">Selected: ' + s.ekCantripSelections.length + ' / ' + toChoose + '</div></div>';
   html += '<div class="lu-option-group">';
   WIZARD_CANTRIPS.forEach(function(cantrip) {
     if (known.indexOf(cantrip.name) >= 0) return;
@@ -1143,7 +1144,7 @@ function renderEkSpellSelectScreen() {
   var maxSpellLevel = 0;
   Object.keys(ekSlots).forEach(function(k) { maxSpellLevel = Math.max(maxSpellLevel, parseInt(k)); });
 
-  var html = '<div class="lu-screen active"><h2>Learn Spells</h2>';
+  var html = '<div class="lu-screen active">';
   html += '<div class="lu-callout">Choose <strong>' + toChoose + '</strong> new wizard spell' + (toChoose > 1 ? 's' : '') + '. ';
   if (isFreePickLevel) {
     html += '<strong style="color:var(--accent)">Free pick!</strong> You can choose from any school.';
@@ -1156,7 +1157,8 @@ function renderEkSpellSelectScreen() {
     html += '<div style="margin-bottom:12px"><strong>Known:</strong> ' + known.map(escapeHtml).join(', ') + '</div>';
   }
 
-  html += '<div style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + s.ekSpellSelections.length + ' / ' + toChoose + '</div>';
+  html += '<div class="sticky-picker-header"><h2>Learn Spells</h2>';
+  html += '<div style="font-size:0.85rem;color:var(--accent)">Selected: ' + s.ekSpellSelections.length + ' / ' + toChoose + '</div></div>';
 
   // Filter available spells
   var available = getAllEkSpells().filter(function(sp) {
@@ -1264,7 +1266,6 @@ function renderPaladinPrepareScreen() {
 
   var isFirst = s.newLevel === 2;
   var html = '<div class="lu-screen active">';
-  html += '<h2>' + (isFirst ? 'Prepare Your Spells' : 'Update Prepared Spells') + '</h2>';
   html += '<div class="lu-callout">' + (isFirst ? 'You can now cast spells! Choose which Paladin spells to prepare.' : 'You have access to new spell levels. Update your prepared spells if you wish.') + '</div>';
   html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:8px">Prepare up to <strong>' + maxPrep + '</strong> spells (CHA modifier ' + (chaMod >= 0 ? '+' : '') + chaMod + ' + half paladin level ' + Math.floor(s.newLevel / 2) + ').</p>';
 
@@ -1273,7 +1274,8 @@ function renderPaladinPrepareScreen() {
     html += '<div style="margin-bottom:12px"><strong>Oath Spells (always prepared):</strong> ' + oathSpells.map(escapeHtml).join(', ') + '</div>';
   }
 
-  html += '<div id="pal-prep-count" style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + current.length + ' / ' + maxPrep + '</div>';
+  html += '<div class="sticky-picker-header"><h2>' + (isFirst ? 'Prepare Your Spells' : 'Update Prepared Spells') + '</h2>';
+  html += '<div id="pal-prep-count" style="font-size:0.85rem;color:var(--accent)">Selected: ' + current.length + ' / ' + maxPrep + '</div></div>';
   html += '<div class="lu-option-group">';
   for (var sl = 1; sl <= maxSpellLevel; sl++) {
     var spells = (PALADIN_SPELLS[sl] || []).filter(function(n) { return oathSpells.indexOf(n) < 0; });
@@ -1337,12 +1339,13 @@ function renderWizardSpellbookAddScreen() {
   Object.keys(slots).forEach(function(k) { maxSpellLevel = Math.max(maxSpellLevel, parseInt(k)); });
   var newSpellLevel = s.prog.newSpellLevel;
 
-  var html = '<div class="lu-screen active"><h2>Add Spells to Spellbook</h2>';
+  var html = '<div class="lu-screen active">';
   html += '<div class="lu-callout">Choose <strong>2</strong> wizard spells to add to your spellbook.</div>';
   if (newSpellLevel) {
     html += '<div class="lu-callout highlight"><strong>New spell level unlocked!</strong> You can now learn <strong>' + ordinal(newSpellLevel) + '-level spells</strong>.</div>';
   }
-  html += '<div style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + s.wizSpellbookAdds.length + ' / 2</div>';
+  html += '<div class="sticky-picker-header"><h2>Add Spells to Spellbook</h2>';
+  html += '<div style="font-size:0.85rem;color:var(--accent)">Selected: ' + s.wizSpellbookAdds.length + ' / 2</div></div>';
   html += '<div class="lu-option-group">';
   for (var sl = 1; sl <= maxSpellLevel; sl++) {
     var spells = (WIZARD_SPELL_LIST[sl] || []).filter(function(n) { return spellbook.indexOf(n) < 0 && s.wizSpellbookAdds.indexOf(n) < 0 || s.wizSpellbookAdds.indexOf(n) >= 0; });
