@@ -174,8 +174,8 @@ function renderDashboard(c, preserveScroll) {
   // Ability Checks (saving throws & ability checks only)
   html += renderAbilityChecks(c);
 
-  // Class Abilities — collapsible, open by default, centered heading
-  html += '<div class="dash-section"><details open><summary style="text-align:center"><h2 style="display:inline">Class Abilities</h2></summary>';
+  // Class Abilities — collapsible, collapsed by default, centered heading
+  html += '<div class="dash-section"><details><summary style="text-align:center"><h2 style="display:inline">Class Abilities</h2></summary>';
 
   // Channel Divinity Tracker (Cleric or Paladin level 3+)
   if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 3)) {
@@ -431,12 +431,15 @@ function renderDashboard(c, preserveScroll) {
 
   html += '</details></div>';
 
+  // Reference — collapsible, collapsed by default, centered heading
+  html += '<div class="dash-section"><details><summary style="text-align:center"><h2 style="display:inline">Reference</h2></summary>';
+
   // Notes (inline edit)
-  html += '<div class="dash-section combat-hide"><h2>Notes <button class="inline-edit-btn" onclick="toggleNotesEdit()">Edit</button></h2>';
+  html += '<h3 style="font-size:1rem;margin:8px 0">Notes <button class="inline-edit-btn" onclick="toggleNotesEdit()">Edit</button></h3>';
   html += '<div id="notes-area">';
   if (c.notes) html += '<div class="dash-text">' + escapeHtml(c.notes) + '</div>';
   else html += '<p class="text-dim">No notes</p>';
-  html += '</div></div>';
+  html += '</div>';
 
   // Session Journal
   html += renderJournal(c);
@@ -446,6 +449,8 @@ function renderDashboard(c, preserveScroll) {
 
   // Quick Rules Reference
   html += renderQuickRules();
+
+  html += '</details></div>';
 
   // Actions — 2-column grid
   html += '<div class="dash-actions-grid combat-hide">';
