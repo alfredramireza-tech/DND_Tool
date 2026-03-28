@@ -569,7 +569,7 @@ details[open] summary::before { content: '▾ '; }
   background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text);
 }
 .hud-dice-select {
-  padding: 4px 2px; font-size: 0.75rem;
+  padding: 4px 2px; font-size: 0.75rem; text-align: center;
   background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text);
 }
 .hud-dice-roll-btn {

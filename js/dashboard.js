@@ -105,9 +105,6 @@ function renderDashboard(c, preserveScroll) {
   html += '<button class="btn btn-secondary" onclick="showMaxHpBoostPrompt()" style="font-size:0.8rem;padding:6px 12px">+ Max HP</button>';
   html += '</div>';
 
-  // Ability Checks (saving throws & ability checks only — dice roller moved to HUD, weapon attacks in HUD)
-  html += renderAbilityChecks(c);
-
   // Compute AC buff annotation (from externalBuffs only)
   var acBuff = 0;
   if (c.externalBuffs) {
@@ -115,8 +112,8 @@ function renderDashboard(c, preserveScroll) {
   }
   var acNote = acBuff > 0 ? ' <span style="font-size:0.7rem;color:var(--accent)">(+' + acBuff + ')</span>' : '';
 
-  // Stats — collapsible, collapsed by default
-  html += '<div class="dash-section"><details><summary><h2 style="display:inline">Stats</h2></summary>';
+  // Stats — collapsible, collapsed by default, centered heading
+  html += '<div class="dash-section"><details><summary style="text-align:center"><h2 style="display:inline">Stats</h2></summary>';
   // Stat cards
   html += '<div class="stat-grid">';
   html += '<div class="stat-card"><div class="stat-value">' + ac + acNote + '</div><div class="stat-label">Armor Class</div></div>';
@@ -152,7 +149,21 @@ function renderDashboard(c, preserveScroll) {
     html += '<span class="tag accent">' + skill.name + ' +' + bonus + (isExpertise ? ' (E)' : '') + '</span> ';
   });
   html += '</div></details>';
+  // Features & Traits sub-section — collapsed by default
+  html += '<details><summary><h3 style="display:inline;font-size:1rem">Features &amp; Traits</h3></summary>';
+  if (c.features && c.features.length > 0) {
+    html += '<ul class="feature-list">';
+    c.features.forEach(function(f) { html += '<li>' + f + '</li>'; });
+    html += '</ul>';
+  } else {
+    html += '<p class="text-dim">No features yet</p>';
+  }
+  html += '<div class="text-dim mt-8" style="font-size:0.85rem">Hit Dice: ' + c.hp.hitDiceCount + 'd' + c.hp.hitDiceType + '</div>';
+  html += '</details>';
   html += '</details></div>';
+
+  // Ability Checks (saving throws & ability checks only)
+  html += renderAbilityChecks(c);
 
   // Channel Divinity Tracker (Cleric or Paladin level 3+)
   if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 3)) {
@@ -281,14 +292,15 @@ function renderDashboard(c, preserveScroll) {
   html += '<button class="rest-btn" onclick="confirmLongRest()">Long Rest<span class="rest-label">Restores everything</span></button>';
   html += '</div></div></div>';
 
-  // (Ability Scores and Proficiencies now inside Stats section above)
+  // Spells — collapsible, centered heading
+  html += '<div class="dash-section"><details><summary style="text-align:center"><h2 style="display:inline">Spells</h2></summary>';
 
-  // Cantrips — compact chips with tap-to-expand
+  // Cantrips
   var displayCantrips = (c.cantripsKnown || []).slice();
   var hasInnateLight = c.race === 'Aasimar' && displayCantrips.indexOf('Light') < 0;
   if (hasInnateLight) displayCantrips.push('Light');
   if (displayCantrips.length > 0) {
-    html += '<div class="dash-section"><h2>Cantrips</h2>';
+    html += '<h3 style="font-size:1rem;margin:8px 0">Cantrips</h3>';
     html += '<div class="cantrip-chips">';
     displayCantrips.forEach(function(name, ci) {
       var isInnate = (name === 'Light' && hasInnateLight) || (name === 'Light' && c.race === 'Aasimar');
@@ -296,25 +308,24 @@ function renderDashboard(c, preserveScroll) {
     });
     html += '</div>';
     html += '<div id="cantrip-detail-area"></div>';
-    html += '</div>';
   }
 
-  // Domain/Oath Spells — collapsible
+  // Domain/Oath Spells
   if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 2)) {
     var domainLabel = c.class === 'Paladin' ? 'Oath Spells' : 'Domain Spells';
     var domainList = getDomainSpellList(c.level, c.class, c.subclass);
-    html += '<div class="dash-section"><details><summary><h2 style="display:inline">' + domainLabel + ' <span class="badge">Always Prepared</span></h2> <span class="text-dim" style="font-size:0.85rem">(' + domainList.length + ')</span></summary>';
+    html += '<details><summary><h3 style="display:inline;font-size:1rem">' + domainLabel + ' <span class="badge">Always Prepared</span></h3> <span class="text-dim" style="font-size:0.85rem">(' + domainList.length + ')</span></summary>';
     domainList.forEach(function(name) {
       var sp = getSpell(name);
       if (sp) html += renderSpellCard(sp, c, { domain: true });
       else html += '<span class="tag accent">' + escapeHtml(name) + '</span>';
     });
-    html += '</details></div>';
+    html += '</details>';
   }
 
-  // Prepared Spells (Cleric or Paladin) — collapsible
+  // Prepared Spells
   if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 2)) {
-    html += '<div class="dash-section"><details><summary><h2 style="display:inline">Prepared Spells</h2> <span class="text-dim" style="font-size:0.85rem">(' + (c.currentPreparedSpells || []).length + '/' + c.preparedSpellCount + ')</span></summary>';
+    html += '<details><summary><h3 style="display:inline;font-size:1rem">Prepared Spells</h3> <span class="text-dim" style="font-size:0.85rem">(' + (c.currentPreparedSpells || []).length + '/' + c.preparedSpellCount + ')</span></summary>';
     if (c.currentPreparedSpells && c.currentPreparedSpells.length > 0) {
       c.currentPreparedSpells.forEach(function(name) {
         var sp = getSpell(name);
@@ -324,11 +335,33 @@ function renderDashboard(c, preserveScroll) {
     } else {
       html += '<p class="text-dim">No prepared spells selected</p>';
     }
-    html += '</details></div>';
+    html += '</details>';
   }
 
-  // Weapons (from weapons array — single source of truth)
-  html += '<div class="dash-section"><h2>Weapons <button class="inline-edit-btn" onclick="showWeaponForm(-1)">+ Add</button></h2>';
+  html += '</details></div>';
+
+  // Inventory — collapsible, centered heading
+  html += '<div class="dash-section"><details><summary style="text-align:center"><h2 style="display:inline">Inventory</h2></summary>';
+
+  // Currency (at top)
+  var cur = c.currency || { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
+  html += '<h3 style="font-size:1rem;margin:8px 0">Currency</h3>';
+  html += '<div class="currency-grid">';
+  ['cp', 'sp', 'ep', 'gp', 'pp'].forEach(function(d) {
+    html += '<div class="currency-cell">';
+    html += '<div class="cur-label">' + d.toUpperCase() + '</div>';
+    html += '<div class="cur-value" id="cur-' + d + '" onclick="editCurrency(\'' + d + '\')">' + (cur[d] || 0) + '</div>';
+    html += '<div class="cur-btns">';
+    html += '<button class="cur-adj" onclick="event.stopPropagation();adjustCurrency(\'' + d + '\',-1)">−</button>';
+    html += '<button class="cur-adj" onclick="event.stopPropagation();adjustCurrency(\'' + d + '\',1)">+</button>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+  var gpEquiv = (cur.cp / 100) + (cur.sp / 10) + (cur.ep / 2) + cur.gp + (cur.pp * 10);
+  html += '<div class="currency-total">≈ ' + gpEquiv.toFixed(1) + ' GP total</div>';
+
+  // Weapons
+  html += '<h3 style="font-size:1rem;margin:16px 0 8px">Weapons <button class="inline-edit-btn" onclick="showWeaponForm(-1)">+ Add</button></h3>';
   html += '<div id="weapon-form-area"></div>';
   if (c.weapons && c.weapons.length > 0) {
     c.weapons.forEach(function(w, wi) {
@@ -349,10 +382,9 @@ function renderDashboard(c, preserveScroll) {
   } else {
     html += '<p class="text-dim">No weapons</p>';
   }
-  html += '</div>';
 
-  // Equipment (equipped + inventory)
-  html += '<div class="dash-section combat-hide"><h2>Equipped Gear <button class="inline-edit-btn" onclick="showEquipForm(-1)">+ Add</button></h2>';
+  // Equipped Gear
+  html += '<h3 style="font-size:1rem;margin:16px 0 8px">Equipped Gear <button class="inline-edit-btn" onclick="showEquipForm(-1)">+ Add</button></h3>';
   html += '<div id="equip-form-area"></div>';
   var equipped = c.equippedItems || [];
   if (equipped.length > 0) {
@@ -376,7 +408,7 @@ function renderDashboard(c, preserveScroll) {
   }
 
   // Quick Items
-  html += '<h3 class="mt-16" style="font-size:0.95rem">Quick Items</h3>';
+  html += '<h3 style="font-size:1rem;margin:16px 0 8px">Quick Items</h3>';
   html += '<div class="quick-add">';
   html += '<input type="text" id="quick-item-input" placeholder="Add item..." onclick="event.stopPropagation()" onkeydown="if(event.key===\'Enter\')addQuickItem()">';
   html += '<button class="btn btn-secondary" onclick="addQuickItem()" style="padding:8px 16px">Add</button></div>';
@@ -386,31 +418,14 @@ function renderDashboard(c, preserveScroll) {
   });
   html += '</div>';
 
-  // Bulk Gear
-  html += '<h3 class="mt-16" style="font-size:0.95rem">Inventory <button class="inline-edit-btn" onclick="toggleBulkGearEdit()">Edit</button></h3>';
+  // Inventory (bulk gear text)
+  html += '<h3 style="font-size:1rem;margin:16px 0 8px">Inventory <button class="inline-edit-btn" onclick="toggleBulkGearEdit()">Edit</button></h3>';
   html += '<div id="bulk-gear-area">';
   if (c.bulkGear) html += '<div class="dash-text">' + escapeHtml(c.bulkGear) + '</div>';
   else html += '<p class="text-dim">No inventory items</p>';
-  html += '</div></div>';
-
-  // Currency
-  html += '<div class="combat-hide">';
-  var cur = c.currency || { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
-  html += '<div class="dash-section"><h2>Currency</h2>';
-  html += '<div class="currency-grid">';
-  ['cp', 'sp', 'ep', 'gp', 'pp'].forEach(function(d) {
-    html += '<div class="currency-cell">';
-    html += '<div class="cur-label">' + d.toUpperCase() + '</div>';
-    html += '<div class="cur-value" id="cur-' + d + '" onclick="editCurrency(\'' + d + '\')">' + (cur[d] || 0) + '</div>';
-    html += '<div class="cur-btns">';
-    html += '<button class="cur-adj" onclick="event.stopPropagation();adjustCurrency(\'' + d + '\',-1)">−</button>';
-    html += '<button class="cur-adj" onclick="event.stopPropagation();adjustCurrency(\'' + d + '\',1)">+</button>';
-    html += '</div></div>';
-  });
   html += '</div>';
-  var gpEquiv = (cur.cp / 100) + (cur.sp / 10) + (cur.ep / 2) + cur.gp + (cur.pp * 10);
-  html += '<div class="currency-total">≈ ' + gpEquiv.toFixed(1) + ' GP total</div></div>';
-  html += '</div>'; // end combat-hide for currency
+
+  html += '</details></div>';
 
   // Notes (inline edit)
   html += '<div class="dash-section combat-hide"><h2>Notes <button class="inline-edit-btn" onclick="toggleNotesEdit()">Edit</button></h2>';
@@ -421,17 +436,6 @@ function renderDashboard(c, preserveScroll) {
 
   // Session Journal
   html += renderJournal(c);
-
-  // Features
-  html += '<div class="dash-section combat-hide"><h2>Features &amp; Traits</h2>';
-  if (c.features && c.features.length > 0) {
-    html += '<ul class="feature-list">';
-    c.features.forEach(function(f) { html += '<li>' + f + '</li>'; });
-    html += '</ul>';
-  } else {
-    html += '<p class="text-dim">No features yet</p>';
-  }
-  html += '<div class="text-dim mt-8" style="font-size:0.85rem">Hit Dice: ' + c.hp.hitDiceCount + 'd' + c.hp.hitDiceType + '</div></div>';
 
   // Session Log
   html += renderSessionLog(c);
