@@ -70,6 +70,8 @@ function startLevelUp() {
     ekSpellSwap: { from: null, to: null },
     // Rogue-specific
     newExpertiseSkills: [],
+    // Paladin spell preparation
+    paladinPrepSelections: [],
     // Wizard-specific
     wizSpellbookAdds: [],
     wizNewCantrip: null,
@@ -134,6 +136,9 @@ function startLevelUp() {
     var oldOathSpells = getOathSpells(palSub, char.level);
     var newOathSpells = getOathSpells(palSub, newLevel);
     if (JSON.stringify(oldOathSpells) !== JSON.stringify(newOathSpells)) screens.push('domainspells');
+    // Spell preparation: required at level 2 (first spells), offered at new spell level access (5, 9, 13, 17)
+    var palNewSpellLevel = [5, 9, 13, 17].indexOf(newLevel) >= 0;
+    if (newLevel === 2 || palNewSpellLevel) screens.push('paladinPrepare');
     // Features
     var palFeats = getPaladinLevelFeatures(newLevel, palSub);
     if (palFeats.length > 0) screens.push('features');
@@ -218,6 +223,7 @@ function renderLuScreen() {
     case 'ekSpellSelect': container.innerHTML = renderEkSpellSelectScreen(); break;
     case 'paladinFightingStyle': container.innerHTML = renderPaladinFightingStyleScreen(); break;
     case 'expertiseSelect': container.innerHTML = renderExpertiseSelectScreen(); break;
+    case 'paladinPrepare': container.innerHTML = renderPaladinPrepareScreen(); break;
     case 'wizardCantrip': container.innerHTML = renderWizardCantripScreen(); break;
     case 'wizardSpellbookAdd': container.innerHTML = renderWizardSpellbookAddScreen(); break;
     case 'spellMastery': container.innerHTML = renderSpellMasteryScreen(); break;
@@ -321,6 +327,13 @@ function validateLuScreen() {
       return true;
     case 'expertiseSelect':
       if (luState.newExpertiseSkills.length !== 2) { alert('Please choose exactly 2 skills for Expertise.'); return false; }
+      return true;
+    case 'paladinPrepare':
+      // Required at level 2 (first time getting spells), optional at higher levels
+      if (luState.newLevel === 2) {
+        var palPrepSelected = document.querySelectorAll('input[name="pal-prepare"]:checked').length;
+        if (palPrepSelected === 0) { alert('Please prepare at least one spell.'); return false; }
+      }
       return true;
     case 'wizardCantrip':
       if (!luState.wizNewCantrip) { alert('Please select a cantrip.'); return false; }
@@ -1231,6 +1244,67 @@ function luToggleEkSpell(name) {
 }
 
 /* ═══════════════════════════════════════════
+   PALADIN SPELL PREPARATION (Level-Up)
+   ═══════════════════════════════════════════ */
+
+function renderPaladinPrepareScreen() {
+  var s = luState;
+  var chaMod = mod(s.char.abilityScores.cha + (s.abilityChanges.cha || 0));
+  var maxPrep = Math.max(1, chaMod + Math.floor(s.newLevel / 2));
+  var sub = s.char.subclass || s.subclassSelection || '';
+  var oathSpells = (typeof getOathSpells === 'function') ? getOathSpells(sub, s.newLevel) : [];
+  var slots = getHalfCasterSlots(s.newLevel);
+  var maxSpellLevel = 0;
+  Object.keys(slots).forEach(function(k) { maxSpellLevel = Math.max(maxSpellLevel, parseInt(k)); });
+
+  var current = s.char.currentPreparedSpells || [];
+  // Use previous selections if revisiting this screen
+  if (s.paladinPrepSelections.length > 0) current = s.paladinPrepSelections;
+
+  var isFirst = s.newLevel === 2;
+  var html = '<div class="lu-screen active">';
+  html += '<h2>' + (isFirst ? 'Prepare Your Spells' : 'Update Prepared Spells') + '</h2>';
+  html += '<div class="lu-callout">' + (isFirst ? 'You can now cast spells! Choose which Paladin spells to prepare.' : 'You have access to new spell levels. Update your prepared spells if you wish.') + '</div>';
+  html += '<p class="text-dim" style="font-size:0.85rem;margin-bottom:8px">Prepare up to <strong>' + maxPrep + '</strong> spells (CHA modifier ' + (chaMod >= 0 ? '+' : '') + chaMod + ' + half paladin level ' + Math.floor(s.newLevel / 2) + ').</p>';
+
+  // Show oath spells as always-prepared (read-only)
+  if (oathSpells.length > 0) {
+    html += '<div style="margin-bottom:12px"><strong>Oath Spells (always prepared):</strong> ' + oathSpells.map(escapeHtml).join(', ') + '</div>';
+  }
+
+  html += '<div id="pal-prep-count" style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + current.length + ' / ' + maxPrep + '</div>';
+  html += '<div class="lu-option-group">';
+  for (var sl = 1; sl <= maxSpellLevel; sl++) {
+    var spells = (PALADIN_SPELLS[sl] || []).filter(function(n) { return oathSpells.indexOf(n) < 0; });
+    if (spells.length === 0) continue;
+    html += '<h3 style="margin:12px 0 8px;font-size:1rem;color:var(--accent)">' + ordinal(sl) + ' Level</h3>';
+    spells.forEach(function(name) {
+      var checked = current.indexOf(name) >= 0;
+      html += '<label style="display:block;padding:4px 0;cursor:pointer"><input type="checkbox" name="pal-prepare" value="' + escapeHtml(name) + '"' + (checked ? ' checked' : '') + ' onclick="event.stopPropagation();onPalPrepChange(' + maxPrep + ')"> ' + escapeHtml(name) + '</label>';
+    });
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function onPalPrepChange(maxPrep) {
+  var count = document.querySelectorAll('input[name="pal-prepare"]:checked').length;
+  var el = document.getElementById('pal-prep-count');
+  if (el) el.textContent = 'Selected: ' + count + ' / ' + maxPrep;
+  // Enforce limit
+  if (count > maxPrep) {
+    var all = document.querySelectorAll('input[name="pal-prepare"]:checked');
+    all[all.length - 1].checked = false;
+    count--;
+    if (el) el.textContent = 'Selected: ' + count + ' / ' + maxPrep;
+  }
+  // Store selections in luState
+  var selected = [];
+  document.querySelectorAll('input[name="pal-prepare"]:checked').forEach(function(cb) { selected.push(cb.value); });
+  luState.paladinPrepSelections = selected;
+}
+
+/* ═══════════════════════════════════════════
    WIZARD LEVEL-UP SCREENS
    ═══════════════════════════════════════════ */
 
@@ -1622,6 +1696,12 @@ function renderLuSummary() {
     }
   }
 
+  // Paladin: prepared spells from level-up
+  if (s.cls === 'Paladin' && s.paladinPrepSelections.length > 0) {
+    html += '<div class="lu-summary-section"><h3>Prepared Spells</h3>';
+    html += '<div class="tag-list">' + s.paladinPrepSelections.map(function(sp) { return '<span class="tag accent">' + escapeHtml(sp) + '</span>'; }).join('') + '</div></div>';
+  }
+
   // Wizard-specific summary items
   if (s.cls === 'Wizard') {
     if (s.wizNewCantrip) {
@@ -1916,6 +1996,10 @@ function confirmLevelUp() {
     char.features = getPaladinFeatures(newLevel, char.subclass);
     // Oath spells (stored in domainSpells for backward compat)
     char.domainSpells = getDomainSpells(newLevel, 'Paladin', char.subclass);
+    // Apply spell preparation selections (if the prep screen was shown)
+    if (s.paladinPrepSelections.length > 0) {
+      char.currentPreparedSpells = s.paladinPrepSelections;
+    }
   } else if (cls === 'Wizard') {
     // Subclass (level 2)
     if (s.subclassSelection) {
