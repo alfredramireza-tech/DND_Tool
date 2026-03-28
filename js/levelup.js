@@ -22,6 +22,8 @@ function startLevelUp() {
     prog = PALADIN_PROGRESSION[newLevel];
   } else if (cls === 'Rogue') {
     prog = ROGUE_PROGRESSION[newLevel];
+  } else if (cls === 'Wizard') {
+    prog = WIZARD_PROGRESSION[newLevel];
   } else {
     prog = CLERIC_PROGRESSION[newLevel];
   }
@@ -68,6 +70,11 @@ function startLevelUp() {
     ekSpellSwap: { from: null, to: null },
     // Rogue-specific
     newExpertiseSkills: [],
+    // Wizard-specific
+    wizSpellbookAdds: [],
+    wizNewCantrip: null,
+    wizSpellMastery: { firstLevel: null, secondLevel: null },
+    wizSignatureSpells: [],
     // Screens
     screens: [],
     currentScreen: 0,
@@ -151,6 +158,25 @@ function startLevelUp() {
     // Features
     var rogueFeats = getRogueLevelFeatures(newLevel, rogueSub);
     if (rogueFeats.length > 0) screens.push('features');
+  } else if (cls === 'Wizard') {
+    var wizSub = char.subclass || '';
+    // Subclass at level 2
+    if (newLevel === 2 && !wizSub) screens.push('subclassSelect');
+    // New cantrip
+    if (prog.newCantrip) screens.push('wizardCantrip');
+    // Spellbook adds (every level)
+    screens.push('wizardSpellbookAdd');
+    // Spell Mastery (level 18)
+    if (newLevel === 18) screens.push('spellMastery');
+    // Signature Spells (level 20)
+    if (newLevel === 20) screens.push('signatureSpells');
+    // Spell slot changes
+    var oldWizSlots = getFullCasterSlots(char.level);
+    var newWizSlots = getFullCasterSlots(newLevel);
+    if (JSON.stringify(oldWizSlots) !== JSON.stringify(newWizSlots)) screens.push('spellslots');
+    // Features
+    var wizFeats = getWizardLevelFeatures(newLevel, wizSub);
+    if (wizFeats.length > 0) screens.push('features');
   } else {
     // Cleric screens
     if (prog.newCantrip) screens.push('cantrip');
@@ -192,6 +218,10 @@ function renderLuScreen() {
     case 'ekSpellSelect': container.innerHTML = renderEkSpellSelectScreen(); break;
     case 'paladinFightingStyle': container.innerHTML = renderPaladinFightingStyleScreen(); break;
     case 'expertiseSelect': container.innerHTML = renderExpertiseSelectScreen(); break;
+    case 'wizardCantrip': container.innerHTML = renderWizardCantripScreen(); break;
+    case 'wizardSpellbookAdd': container.innerHTML = renderWizardSpellbookAddScreen(); break;
+    case 'spellMastery': container.innerHTML = renderSpellMasteryScreen(); break;
+    case 'signatureSpells': container.innerHTML = renderSignatureSpellsScreen(); break;
   }
 
   // Update nav buttons
@@ -291,6 +321,18 @@ function validateLuScreen() {
       return true;
     case 'expertiseSelect':
       if (luState.newExpertiseSkills.length !== 2) { alert('Please choose exactly 2 skills for Expertise.'); return false; }
+      return true;
+    case 'wizardCantrip':
+      if (!luState.wizNewCantrip) { alert('Please select a cantrip.'); return false; }
+      return true;
+    case 'wizardSpellbookAdd':
+      if (luState.wizSpellbookAdds.length !== 2) { alert('Please choose exactly 2 spells for your spellbook.'); return false; }
+      return true;
+    case 'spellMastery':
+      if (!luState.wizSpellMastery.firstLevel || !luState.wizSpellMastery.secondLevel) { alert('Please select one 1st-level and one 2nd-level spell.'); return false; }
+      return true;
+    case 'signatureSpells':
+      if (luState.wizSignatureSpells.length !== 2) { alert('Please select exactly 2 third-level spells.'); return false; }
       return true;
     default:
       return true;
@@ -581,6 +623,20 @@ function getAsiDerivedChanges(changes, scores, s) {
       }
     }
   }
+  // Wizard: INT affects Spell DC / Attack / Prepared Spells
+  if (s.cls === 'Wizard') {
+    if (changes.int) {
+      var oldWizIntMod = mod(scores.int);
+      var newWizIntMod = mod(scores.int + changes.int);
+      if (newWizIntMod !== oldWizIntMod) {
+        derived.push({ label: 'Spell Save DC', old: 8 + newProfBonus + oldWizIntMod, new_: 8 + newProfBonus + newWizIntMod });
+        derived.push({ label: 'Spell Attack', old: '+' + (newProfBonus + oldWizIntMod), new_: '+' + (newProfBonus + newWizIntMod) });
+        var oldWizPrep = Math.max(1, s.newLevel + oldWizIntMod);
+        var newWizPrep = Math.max(1, s.newLevel + newWizIntMod);
+        derived.push({ label: 'Prepared Spells', old: oldWizPrep, new_: newWizPrep });
+      }
+    }
+  }
   // Paladin: CHA affects Spell DC / Attack / Prepared Spells
   if (s.cls === 'Paladin') {
     if (changes.cha) {
@@ -660,6 +716,15 @@ function renderSpellSlotsScreen() {
     oldPrepCount = Math.max(1, oldChaMod + Math.floor(s.char.level / 2));
     newPrepCount = Math.max(1, newChaMod + Math.floor(s.newLevel / 2));
     prepLabel = 'CHA modifier + half paladin level';
+  } else if (s.cls === 'Wizard') {
+    oldSlots = getFullCasterSlots(s.char.level);
+    newSlots = getFullCasterSlots(s.newLevel);
+    var intChange = s.abilityChanges.int || 0;
+    var oldIntMod = mod(s.char.abilityScores.int);
+    var newIntMod = mod(s.char.abilityScores.int + intChange);
+    oldPrepCount = Math.max(1, s.char.level + oldIntMod);
+    newPrepCount = Math.max(1, s.newLevel + newIntMod);
+    prepLabel = 'level + INT modifier';
   } else {
     // Cleric
     oldSlots = s.char.spellSlots;
@@ -768,6 +833,9 @@ function renderFeaturesScreen() {
   } else if (s.cls === 'Rogue') {
     features = getRogueLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
     featureDescriptions = ROGUE_FEATURE_DESCRIPTIONS;
+  } else if (s.cls === 'Wizard') {
+    features = getWizardLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
+    featureDescriptions = WIZARD_FEATURE_DESCRIPTIONS;
   } else {
     features = s.prog.features || [];
     featureDescriptions = CLERIC_FEATURE_DESCRIPTIONS;
@@ -1162,6 +1230,125 @@ function luToggleEkSpell(name) {
   renderLuScreen();
 }
 
+/* ═══════════════════════════════════════════
+   WIZARD LEVEL-UP SCREENS
+   ═══════════════════════════════════════════ */
+
+function renderWizardCantripScreen() {
+  var s = luState;
+  var known = (s.char.cantripsKnown || []).slice();
+  var available = WIZARD_CANTRIPS.filter(function(name) { return known.indexOf(name) < 0; });
+  var html = '<div class="lu-screen active"><h2>New Cantrip</h2>';
+  html += '<div class="lu-callout">Choose 1 new wizard cantrip. You currently know: <strong>' + known.join(', ') + '</strong></div>';
+  html += '<div class="lu-option-group">';
+  available.forEach(function(name) {
+    var selected = s.wizNewCantrip === name;
+    var sp = getSpell(name);
+    var desc = sp ? sp.description.substring(0, 100) + (sp.description.length > 100 ? '...' : '') : '';
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizNewCantrip=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen()">';
+    html += '<div class="opt-title">' + escapeHtml(name) + '</div>';
+    if (desc) html += '<div class="opt-desc" style="font-size:0.8rem">' + desc + '</div>';
+    html += '</div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function renderWizardSpellbookAddScreen() {
+  var s = luState;
+  var spellbook = (s.char.spellbook || []).slice();
+  var slots = getFullCasterSlots(s.newLevel);
+  var maxSpellLevel = 0;
+  Object.keys(slots).forEach(function(k) { maxSpellLevel = Math.max(maxSpellLevel, parseInt(k)); });
+  var newSpellLevel = s.prog.newSpellLevel;
+
+  var html = '<div class="lu-screen active"><h2>Add Spells to Spellbook</h2>';
+  html += '<div class="lu-callout">Choose <strong>2</strong> wizard spells to add to your spellbook.</div>';
+  if (newSpellLevel) {
+    html += '<div class="lu-callout highlight"><strong>New spell level unlocked!</strong> You can now learn <strong>' + ordinal(newSpellLevel) + '-level spells</strong>.</div>';
+  }
+  html += '<div style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + s.wizSpellbookAdds.length + ' / 2</div>';
+  html += '<div class="lu-option-group">';
+  for (var sl = 1; sl <= maxSpellLevel; sl++) {
+    var spells = (WIZARD_SPELL_LIST[sl] || []).filter(function(n) { return spellbook.indexOf(n) < 0 && s.wizSpellbookAdds.indexOf(n) < 0 || s.wizSpellbookAdds.indexOf(n) >= 0; });
+    spells = spells.filter(function(n) { return spellbook.indexOf(n) < 0; });
+    if (spells.length === 0) continue;
+    html += '<h3 style="margin:16px 0 8px;font-size:1rem;color:var(--accent)">' + ordinal(sl) + ' Level</h3>';
+    spells.forEach(function(name) {
+      var selected = s.wizSpellbookAdds.indexOf(name) >= 0;
+      var sp = getSpell(name);
+      var desc = sp ? sp.description.substring(0, 80) + (sp.description.length > 80 ? '...' : '') : '';
+      html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luToggleWizSpellbook(\'' + name.replace(/'/g, "\\'") + '\')">';
+      html += '<div class="opt-title">' + escapeHtml(name) + (sp ? ' <span class="text-dim" style="font-size:0.75rem">' + sp.school + '</span>' : '') + '</div>';
+      if (desc) html += '<div class="opt-desc" style="font-size:0.8rem">' + desc + '</div>';
+      html += '</div>';
+    });
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function luToggleWizSpellbook(name) {
+  var idx = luState.wizSpellbookAdds.indexOf(name);
+  if (idx >= 0) { luState.wizSpellbookAdds.splice(idx, 1); }
+  else if (luState.wizSpellbookAdds.length < 2) { luState.wizSpellbookAdds.push(name); }
+  renderLuScreen();
+}
+
+function renderSpellMasteryScreen() {
+  var s = luState;
+  var spellbook = s.char.spellbook || [];
+  var level1 = spellbook.filter(function(n) { var sp = getSpell(n); return sp && sp.level === 1; });
+  var level2 = spellbook.filter(function(n) { var sp = getSpell(n); return sp && sp.level === 2; });
+
+  var html = '<div class="lu-screen active"><h2>Spell Mastery</h2>';
+  html += '<div class="lu-callout highlight">Choose one 1st-level and one 2nd-level spell from your spellbook. You can cast these at their lowest level <strong>without expending a spell slot</strong>.</div>';
+
+  html += '<h3 style="margin:12px 0 8px">1st-Level Spell</h3>';
+  html += '<div class="lu-option-group">';
+  level1.forEach(function(name) {
+    var selected = s.wizSpellMastery.firstLevel === name;
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizSpellMastery.firstLevel=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen()">';
+    html += '<div class="opt-title">' + escapeHtml(name) + '</div></div>';
+  });
+  html += '</div>';
+
+  html += '<h3 style="margin:12px 0 8px">2nd-Level Spell</h3>';
+  html += '<div class="lu-option-group">';
+  level2.forEach(function(name) {
+    var selected = s.wizSpellMastery.secondLevel === name;
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizSpellMastery.secondLevel=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen()">';
+    html += '<div class="opt-title">' + escapeHtml(name) + '</div></div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function renderSignatureSpellsScreen() {
+  var s = luState;
+  var spellbook = s.char.spellbook || [];
+  var level3 = spellbook.filter(function(n) { var sp = getSpell(n); return sp && sp.level === 3; });
+
+  var html = '<div class="lu-screen active"><h2>Signature Spells</h2>';
+  html += '<div class="lu-callout highlight">Choose <strong>2</strong> third-level spells from your spellbook. They are <strong>always prepared</strong> (don\'t count against your limit) and you can cast each once <strong>without a spell slot</strong>. Recharges on short or long rest.</div>';
+  html += '<div style="margin-bottom:8px;font-size:0.85rem;color:var(--accent)">Selected: ' + s.wizSignatureSpells.length + ' / 2</div>';
+  html += '<div class="lu-option-group">';
+  level3.forEach(function(name) {
+    var selected = s.wizSignatureSpells.indexOf(name) >= 0;
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luToggleSignatureSpell(\'' + name.replace(/'/g, "\\'") + '\')">';
+    html += '<div class="opt-title">' + escapeHtml(name) + '</div></div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function luToggleSignatureSpell(name) {
+  var idx = luState.wizSignatureSpells.indexOf(name);
+  if (idx >= 0) { luState.wizSignatureSpells.splice(idx, 1); }
+  else if (luState.wizSignatureSpells.length < 2) { luState.wizSignatureSpells.push(name); }
+  renderLuScreen();
+}
+
 function renderProfBonusScreen() {
   var s = luState;
   var oldProf = getProfBonus(s.char.level);
@@ -1190,6 +1377,13 @@ function renderProfBonusScreen() {
     var palNewDC = 8 + newProf + chaMod;
     changes.push({ label: 'Spell Save DC', old: palOldDC, new_: palNewDC });
     changes.push({ label: 'Spell Attack Bonus', old: '+' + (oldProf + chaMod), new_: '+' + (newProf + chaMod) });
+  } else if (s.cls === 'Wizard') {
+    var wizIntChange = s.abilityChanges.int || 0;
+    var wizIntMod = mod(scores.int + wizIntChange);
+    var wizOldDC = 8 + oldProf + wizIntMod;
+    var wizNewDC = 8 + newProf + wizIntMod;
+    changes.push({ label: 'Spell Save DC', old: wizOldDC, new_: wizNewDC });
+    changes.push({ label: 'Spell Attack Bonus', old: '+' + (oldProf + wizIntMod), new_: '+' + (newProf + wizIntMod) });
   } else if (s.cls === 'Rogue') {
     var rSub2 = s.char.subclass || s.subclassSelection;
     if (rSub2 === 'Arcane Trickster') {
@@ -1328,9 +1522,9 @@ function renderLuSummary() {
   }
 
   // Spell slots
-  if (s.cls === 'Cleric' || s.cls === 'Paladin') {
-    var sumOldSlots = s.cls === 'Paladin' ? getHalfCasterSlots(char.level) : char.spellSlots;
-    var sumNewSlots = s.cls === 'Paladin' ? getHalfCasterSlots(s.newLevel) : s.prog.spellSlots;
+  if (s.cls === 'Cleric' || s.cls === 'Paladin' || s.cls === 'Wizard') {
+    var sumOldSlots = s.cls === 'Paladin' ? getHalfCasterSlots(char.level) : s.cls === 'Wizard' ? getFullCasterSlots(char.level) : char.spellSlots;
+    var sumNewSlots = s.cls === 'Paladin' ? getHalfCasterSlots(s.newLevel) : s.cls === 'Wizard' ? getFullCasterSlots(s.newLevel) : s.prog.spellSlots;
     var slotsChanged = JSON.stringify(sumOldSlots) !== JSON.stringify(sumNewSlots);
     if (slotsChanged) {
       html += '<div class="lu-summary-section"><h3>Spell Slots</h3>';
@@ -1358,6 +1552,11 @@ function renderLuSummary() {
       var chaChg = s.abilityChanges.cha || 0;
       sumOldPrep = Math.max(1, mod(char.abilityScores.cha) + Math.floor(char.level / 2));
       sumNewPrep = Math.max(1, mod(char.abilityScores.cha + chaChg) + Math.floor(s.newLevel / 2));
+    } else if (s.cls === 'Wizard') {
+      var intChg = s.abilityChanges.int || 0;
+      var newIntMod2 = mod(char.abilityScores.int + intChg);
+      sumOldPrep = Math.max(1, char.level + mod(char.abilityScores.int));
+      sumNewPrep = Math.max(1, s.newLevel + newIntMod2);
     } else {
       var wisChange = s.abilityChanges.wis || 0;
       var newWisMod = mod(char.abilityScores.wis + wisChange);
@@ -1423,6 +1622,26 @@ function renderLuSummary() {
     }
   }
 
+  // Wizard-specific summary items
+  if (s.cls === 'Wizard') {
+    if (s.wizNewCantrip) {
+      html += '<div class="lu-summary-section"><h3>New Cantrip</h3><div class="tag accent">' + escapeHtml(s.wizNewCantrip) + '</div></div>';
+    }
+    if (s.wizSpellbookAdds.length > 0) {
+      html += '<div class="lu-summary-section"><h3>Spellbook Additions</h3>';
+      html += '<div class="tag-list">' + s.wizSpellbookAdds.map(function(sp) { return '<span class="tag accent">' + escapeHtml(sp) + '</span>'; }).join('') + '</div></div>';
+    }
+    if (s.wizSpellMastery.firstLevel) {
+      html += '<div class="lu-summary-section"><h3>Spell Mastery</h3>';
+      html += '<div class="tag accent">' + escapeHtml(s.wizSpellMastery.firstLevel) + ' (1st, At Will)</div>';
+      html += '<div class="tag accent">' + escapeHtml(s.wizSpellMastery.secondLevel) + ' (2nd, At Will)</div></div>';
+    }
+    if (s.wizSignatureSpells.length > 0) {
+      html += '<div class="lu-summary-section"><h3>Signature Spells</h3>';
+      html += '<div class="tag-list">' + s.wizSignatureSpells.map(function(sp) { return '<span class="tag accent">' + escapeHtml(sp) + ' (3rd)</span>'; }).join('') + '</div></div>';
+    }
+  }
+
   // Features
   var allFeatures = [];
   if (s.cls === 'Fighter') {
@@ -1431,6 +1650,8 @@ function renderLuSummary() {
     allFeatures = getPaladinLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
   } else if (s.cls === 'Rogue') {
     allFeatures = getRogueLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
+  } else if (s.cls === 'Wizard') {
+    allFeatures = getWizardLevelFeatures(s.newLevel, s.char.subclass || s.subclassSelection);
   } else {
     allFeatures = (s.prog.features || []).slice();
     if (s.prog.channelDivinityUses > getChannelDivUses(char.level)) {
@@ -1460,6 +1681,15 @@ function renderLuSummary() {
     var oAtk = oldProf + mod(char.abilityScores.wis);
     var nAtk = newProf + wMod;
     if (oAtk !== nAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oAtk, new_: '+' + nAtk });
+  } else if (s.cls === 'Wizard') {
+    var wizChg = s.abilityChanges.int || 0;
+    var wizMod = mod(char.abilityScores.int + wizChg);
+    var oWizDC = 8 + oldProf + mod(char.abilityScores.int);
+    var nWizDC = 8 + newProf + wizMod;
+    if (oWizDC !== nWizDC) derivedChanges.push({ label: 'Spell Save DC', old: oWizDC, new_: nWizDC });
+    var oWizAtk = oldProf + mod(char.abilityScores.int);
+    var nWizAtk = newProf + wizMod;
+    if (oWizAtk !== nWizAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oWizAtk, new_: '+' + nWizAtk });
   } else if (s.cls === 'Rogue') {
     var rSub3 = s.char.subclass || s.subclassSelection;
     if (rSub3 === 'Arcane Trickster') {
@@ -1686,6 +1916,58 @@ function confirmLevelUp() {
     char.features = getPaladinFeatures(newLevel, char.subclass);
     // Oath spells (stored in domainSpells for backward compat)
     char.domainSpells = getDomainSpells(newLevel, 'Paladin', char.subclass);
+  } else if (cls === 'Wizard') {
+    // Subclass (level 2)
+    if (s.subclassSelection) {
+      char.subclass = s.subclassSelection;
+      historyEntry.subclass = s.subclassSelection;
+    }
+    // New cantrip
+    if (s.wizNewCantrip) {
+      if (!char.cantripsKnown) char.cantripsKnown = [];
+      char.cantripsKnown.push(s.wizNewCantrip);
+      historyEntry.newCantrip = s.wizNewCantrip;
+    }
+    // Spellbook additions
+    if (s.wizSpellbookAdds.length > 0) {
+      if (!char.spellbook) char.spellbook = [];
+      char.spellbook = char.spellbook.concat(s.wizSpellbookAdds);
+      historyEntry.spellbookAdds = s.wizSpellbookAdds;
+    }
+    // Spell Mastery (level 18)
+    if (s.wizSpellMastery.firstLevel) {
+      char.spellMastery = { firstLevel: s.wizSpellMastery.firstLevel, secondLevel: s.wizSpellMastery.secondLevel };
+      historyEntry.spellMastery = char.spellMastery;
+    }
+    // Signature Spells (level 20)
+    if (s.wizSignatureSpells.length > 0) {
+      char.signatureSpells = s.wizSignatureSpells;
+      if (!char.resources) char.resources = {};
+      char.resources.signatureSpellUses = {};
+      s.wizSignatureSpells.forEach(function(sp) { char.resources.signatureSpellUses[sp] = false; });
+      historyEntry.signatureSpells = s.wizSignatureSpells;
+    }
+    // Spell slots (full caster)
+    char.spellSlots = getFullCasterSlots(newLevel);
+    // Prepared spell count (INT-based)
+    char.preparedSpellCount = Math.max(1, newLevel + mod(char.abilityScores.int));
+    // Features
+    char.features = getWizardFeatures(newLevel, char.subclass);
+    // Portent dice (Divination, level 2+)
+    if (char.subclass === 'School of Divination' && newLevel >= 2) {
+      var numPortent = newLevel >= 14 ? 3 : 2;
+      if (!char.resources) char.resources = {};
+      char.resources.portentDice = [];
+      for (var pi = 0; pi < numPortent; pi++) {
+        char.resources.portentDice.push({ value: Math.floor(Math.random() * 20) + 1, used: false });
+      }
+    }
+    // Arcane Ward (Abjuration) — update max every level
+    if (char.subclass === 'School of Abjuration' && newLevel >= 2) {
+      if (!char.resources) char.resources = {};
+      if (!char.resources.arcaneWard) char.resources.arcaneWard = { current: 0, max: 0 };
+      char.resources.arcaneWard.max = newLevel * 2 + mod(char.abilityScores.int);
+    }
   } else {
     // Cleric
     if (s.prog.newCantrip && s.newCantrip) {
