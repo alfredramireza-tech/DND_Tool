@@ -82,6 +82,7 @@ function pdfSpellLine(name, c) {
   var cd = CLASS_DATA[c.class];
   if (cd && cd.spellcastingAbility) castAbility = cd.spellcastingAbility;
   if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') castAbility = 'int';
+  if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') castAbility = 'int';
   var abilMod = mod(c.abilityScores[castAbility]);
   var prof = c.proficiencyBonus;
   var dc = 8 + prof + abilMod;
@@ -226,6 +227,9 @@ async function fillPdfTemplate(c) {
   pdfSetText(form, 'HDTotal', String(c.level), 8);
   pdfSetText(form, 'ProBonus', '+' + profBonus, 10);
 
+  // Inspiration
+  if (c.inspiration) pdfCheckBox(form, 'Inspiration');
+
   // Passive Perception
   var percSkill = PDF_SKILL_MAP.perception;
   var percMod = mod(scores[percSkill.ability] || 10);
@@ -245,7 +249,7 @@ async function fillPdfTemplate(c) {
     var atkBonus = abilMod + (w.proficient ? profBonus : 0) + (w.magicBonus || 0);
     // Fighting style bonuses
     var fsAtk = 0, fsDmg = 0, fsNote = '';
-    if (c.class === 'Fighter') {
+    if (c.class === 'Fighter' || c.class === 'Paladin') {
       var isRanged = w.notes && (/ranged|bow|crossbow/i.test(w.notes) || w.ability === 'dex');
       if ((c.fightingStyle === 'Archery' || c.fightingStyle2 === 'Archery') && isRanged) fsAtk = 2;
       if ((c.fightingStyle === 'Dueling' || c.fightingStyle2 === 'Dueling') && !isRanged && !(/two-handed|2h|versatile/i.test(w.notes || ''))) fsDmg = 2;
@@ -318,6 +322,18 @@ async function fillPdfTemplate(c) {
   if (c.class === 'Fighter' && c.subclass === 'Battle Master' && c.maneuversKnown && c.maneuversKnown.length > 0) {
     allFeatures.push('Maneuvers: ' + c.maneuversKnown.join(', '));
   }
+  // Wizard Spell Mastery (level 18+) and Signature Spells (level 20)
+  if (c.class === 'Wizard') {
+    if (c.level >= 18 && c.spellMastery) {
+      var smParts = [];
+      if (c.spellMastery.firstLevel) smParts.push(c.spellMastery.firstLevel + ' (1st)');
+      if (c.spellMastery.secondLevel) smParts.push(c.spellMastery.secondLevel + ' (2nd)');
+      if (smParts.length) allFeatures.push('Spell Mastery (at will): ' + smParts.join(', '));
+    }
+    if (c.level >= 20 && c.signatureSpells && c.signatureSpells.length > 0) {
+      allFeatures.push('Signature Spells (1/SR free): ' + c.signatureSpells.join(', '));
+    }
+  }
   var featText = allFeatures.join('\n');
   pdfSetText(form, 'Features and Traits', featText, 6);
 
@@ -368,7 +384,10 @@ async function fillPdfTemplate(c) {
     var spellDC = 8 + profBonus + castMod;
     var spellAtk = profBonus + castMod;
     var abilLabel = { wis: 'WIS', int: 'INT', cha: 'CHA' };
-    pdfSetText(form, 'Spellcasting Class 2', (c.class || '') + ' ' + (abilLabel[castAbility] || ''), 10);
+    var castClassName = c.class || '';
+    if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') castClassName = 'Fighter (EK)';
+    if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') castClassName = 'Rogue (AT)';
+    pdfSetText(form, 'Spellcasting Class 2', castClassName + ' ' + (abilLabel[castAbility] || ''), 10);
     pdfSetText(form, 'SpellSaveDC  2', String(spellDC), 12);
     pdfSetText(form, 'SpellAtkBonus 2', (spellAtk >= 0 ? '+' : '') + spellAtk, 12);
 
@@ -405,10 +424,17 @@ async function fillPdfTemplate(c) {
 
     // Spell slots (unified — all classes use c.spellSlots)
     var spellSlots = c.spellSlots || {};
+    var slotsUsed = c.spellSlotsUsed || {};
     for (var lvl = 1; lvl <= 9; lvl++) {
       var total = spellSlots[lvl] || 0;
       if (total > 0) {
         pdfSetText(form, PDF_SLOT_TOTAL_FIELDS[lvl], String(total), 10);
+        // Check used slot checkboxes
+        var used = slotsUsed[lvl] || 0;
+        var slotCheckboxes = PDF_SLOT_CHECKBOXES[lvl] || [];
+        for (var si = 0; si < used && si < slotCheckboxes.length; si++) {
+          pdfCheckBox(form, slotCheckboxes[si]);
+        }
       }
     }
 

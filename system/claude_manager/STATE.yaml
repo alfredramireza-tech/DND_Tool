@@ -6,7 +6,7 @@
 # =============================================================================
 
 current:
-  task: "Wizard class + Dashboard UX overhaul"
+  task: "DM Screen + PDF Filler completion"
   status: "COMPLETE"
 
 resume_point: |
@@ -14,74 +14,56 @@ resume_point: |
     Cleric, Fighter, Paladin, Rogue, Wizard.
   Barbarian and Monk remain stubs (25-30%, not needed by party).
 
-  Wizard implementation (5 handoffs + 2 audits):
-    - Spell data: 86 entries added, SPELL_DB at 290, 100% coverage
-    - Onboarding: spellbook picker, WIZARD_CANTRIPS, INT-based prep
-    - Dashboard: Arcane Recovery, Portent, Arcane Ward, Empowered Evocation,
-      Spell Mastery, Signature Spells, spellbook + Copy Spell, prepared management
-    - Level-up: all screens including Spell Mastery (18), Signature Spells (20)
-    - PHB audit: zero errors, 1 UX warning (Spell Mastery upcast)
-    - UX walk-through audit: 11/11 pass across 5 classes
+  DM Screen — Phase 1+2 complete (6 handoffs):
+    - Initiative tracker with full combat loop
+    - Monster library CRUD, duplicate, auto-roll initiative
+    - NPC attack/damage rolls, conditions, concentration
+    - Multi-target damage, encounter log, per-encounter notes
+    - Cloud sync (dm/dm-screen.json, 30s debounce)
+    - PC auto-import from Party View + live sync (60s)
+    - Password protection (default "dm", admin reset "tis")
+    - Past encounter viewer
 
-  Dashboard UX overhaul:
-    - Collapsible groups: Rest, Stats, Ability Checks, Class Abilities, Spells, Inventory, Reference, Actions
-    - Spells auto-expand in Combat Mode, Spell Slots inside Spells group
-    - HUD: dice roller + initiative/combat buttons, sticky section headings
-    - Re-render fix: <details> state preservation + conditional scrollTo
-    - Session log race condition fixed + targeted DOM update for rolls
+  PDF Filler — 100% complete:
+    - All 5 classes fully mapped (spells, resources, features, proficiencies)
+    - Checkbox mapping: saves, skills, spell slots, inspiration
+    - Page 2 fields, expertise handling, fighting style weapon bonuses
+    - CDN fallback for pdf-lib loading failures
 
-  Infrastructure fixes:
-    - Scroll preservation in level-up spell pickers
-    - Cloud delete actually works now (deleteFromCloud accepts charName)
-    - Paladin level 2 spell preparation step added
-    - Wizard onboarding subtitles updated (permanent vs daily messaging)
-    - Notification hooks configured (Windows)
-    - Git editor set to notepad
+  UX fixes this session:
+    - Spell Mastery upcast (at-will + voluntary upcast with slot)
+    - Sticky spell picker headers (6 screens)
 
   Spec status:
-    - 9 archived, SPEC_PALADIN_WIZARD_AMENDMENT can also archive (all items resolved)
-    - Active: SPEC_WIZARD (complete, reference), SPEC_PDF_FILLER (~85%), SPEC_DM_SCREEN (not started)
+    - Active: SPEC_DM_SCREEN (Phase 3 unbuilt — condition durations, drag-reorder, history search)
+    - Archive this session: SPEC_WIZARD, SPEC_PALADIN_WIZARD_AMENDMENT, SPEC_PDF_FILLER
+    - 9 previously archived
 
-  NEXT PRIORITY: DM Screen build from SPEC_DM_SCREEN.md.
+  NEXT PRIORITIES:
+    - Table-test DM Screen Phase 1+2, collect feedback
+    - DM Screen Phase 3 if needed (condition durations, drag-reorder, history search)
+    - Barbarian (blocked on roll system flat bonus + damage type)
+    - SRD 5.1 compliance (open decision)
+    - Avatar images (designed, not spec'd)
 
 open_loops:
-  - "Spell Mastery upcast UX: at-will works but player can't choose to upcast with a slot. Minor edge case."
-  - "DM Screen — SPEC_DM_SCREEN.md complete. Ready to build."
-  - "Barbarian/Monk at 25-30% — stubs only, not needed by current party."
-  - "PDF Filler gaps — checkbox mapping, expertise, page 2 fields, newer class resources."
-  - "SPEC_PALADIN_WIZARD_AMENDMENT — all 3 items resolved, archive next session."
-  - "SPEC_WIZARD — complete, can archive next session."
+  - "DM Screen Phase 3 — condition duration tracking, drag-to-reorder, encounter history search. Wait for table feedback."
+  - "Barbarian/Monk at 25-30% — stubs only. Barbarian blocked on roll system gaps (flat bonus + damage roll type)."
+  - "SRD 5.1 compliance — subclass losses + spell renames. Decision open."
+  - "Avatar images — designed but not spec'd."
 
 gap_log:
   - date: "2026-03-28"
-    gap: "logEvent() race condition — caller's stale copy overwrote log entries"
-    cause: "logEvent() loaded a fresh character, added entry, saved. Callers that had already modified c would then saveCurrentCharacter(c) — overwriting the log."
-    resolution: "logEvent(text, charObj) accepts optional char object. 37 callers in combat.js and resources.js pass c directly."
-    severity: "high — session log appeared non-functional for all roll events"
-  - date: "2026-03-28"
-    gap: "Session log entries written to localStorage but DOM never updated after rolls"
-    cause: "showRollResult() calls logEvent() but doesn't re-render. Session log HTML was stale."
-    resolution: "Added targeted DOM prepend in showRollResult() to update session log in-place."
-    severity: "medium — entries existed in data but invisible to user"
-  - date: "2026-03-28"
-    gap: "deleteFromCloud() silently failed — looked up character in localStorage after it was already deleted"
-    cause: "Delete flow removed from localStorage first, then called deleteFromCloud() which tried to load the character to get its name"
-    resolution: "deleteFromCloud() now accepts charName parameter directly. Both home screen and dashboard delete paths pass the name before removing from localStorage."
-    severity: "medium — characters appeared deleted but persisted as ghosts in GitHub repo and Party View"
-  - date: "2026-03-28"
-    gap: "PHB mechanical audits don't catch onboarding UX bugs (wrong subtitles, picker pulling from wrong source)"
-    cause: "Audit verified formulas, counts, and data model but didn't walk through screens as a user"
-    resolution: "Added UX walk-through audit as a separate step. Ran 11 test combinations across 5 classes. Will include in future class builds."
-    severity: "medium — mechanically correct but confusing user-facing text"
-  - date: "2026-03-28"
-    gap: "Paladin level 1→2 level-up grants spellcasting but never offers spell preparation"
-    cause: "Level-up flow announced the feature and showed slots but had no preparation picker. Player exited with slots but zero prepared spells."
-    resolution: "Added paladinPrepare screen to level-up. Required at level 2, optional at 5/9/13/17 when new spell levels unlock."
-    severity: "high — Paladin was functionally unable to cast spells after leveling to 2"
+    gap: "PDF inline pdf-lib (525KB) fails to parse on some devices/browsers"
+    cause: "Unknown — could be parser size limit, browser version issue, or caching. All code structurally intact."
+    resolution: "Added CDN fallback in exportPDF(). Dynamically loads pdf-lib from CloudFlare CDN when window.PDFLib is undefined."
+    severity: "medium — PDF export broken on affected devices without the fallback"
 
 recent_activity:
-  - "Wizard fully implemented: spell data (86), onboarding, dashboard, level-up, PHB audit (zero errors)"
-  - "UX walk-through audit: 11/11 pass across 5 classes (Cleric, Fighter, Paladin, Rogue, Wizard)"
-  - "Dashboard UX overhaul: collapsible groups, HUD dice roller, initiative/combat in HUD, sticky headings"
-  - "Re-render fixes: <details> state preservation, conditional scrollTo, level-up scroll preservation"
-  - "Session log fixes (race condition + DOM update), cloud delete fix, Paladin level-2 spell prep, Wizard subtitles"
+  - "Spell Mastery upcast fix: castSpellMasteryFree() with concentration/logging, slot loop starts at spell.level+1"
+  - "Sticky spell picker headers: 6 screens, callouts scroll away, title+counter stick"
+  - "DM Screen Phase 1 MVP: 4 handoffs (foundation, initiative, combat actions, monster library)"
+  - "PDF export CDN fallback for pdf-lib parse failures"
+  - "DM Screen Phase 2: cloud sync + PC auto-import + live sync"
+  - "DM Screen password protection: gate on entry, change from within, admin reset"
+  - "PDF Filler: 17 fixes, all 5 classes complete, checkboxes mapped, page 2, expertise, inspiration"

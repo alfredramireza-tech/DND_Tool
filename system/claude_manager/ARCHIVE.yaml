@@ -81,3 +81,17 @@ sessions:
       - "Nested <details> sticky headings require careful top offset to account for sticky HUD — top:0 hides behind the HUD"
       - "Paladin spell data was created during session 4 but not tracked in STATE.yaml — led to incorrect gap estimates. Always verify live data before claiming gaps."
     next: "DM Screen build from SPEC_DM_SCREEN.md. Archive SPEC_WIZARD and SPEC_PALADIN_WIZARD_AMENDMENT (both complete). PDF Filler update for newer classes. Barbarian/Monk if party needs them."
+
+  - date: "2026-03-28"
+    session: 7
+    summary: "Spell Mastery upcast fix, sticky picker headers, DM Screen full build (Phase 1 MVP in 4 handoffs + Phase 2 cloud/import + password protection), PDF export CDN fallback, PDF Filler completion (17 fixes closing all gaps for 5 classes)"
+    learned:
+      - "Multi-target damage + concentration reminders conflict: batching damage across multiple NPCs requires collecting concentration saves into a single summary modal, not sequential interrupting modals. Split dealDamage into applyDamage (pure data) + dealDamage (UI) layers."
+      - "Initiative reordering has three distinct currentTurn adjustment cases (moved entry before, after, or IS current turn) — all three need explicit handling or the wrong combatant becomes active."
+      - "Live PC sync during combat must use targeted DOM updates, not full re-renders — modals, multi-select state, and scroll position would all be destroyed by re-rendering."
+      - "showHomeScreen() cleanup for DM sync wasn't needed — all navigation paths from encounter to home pass through showDmScreen() first, which already stops the interval."
+      - "Sticky picker headers should only contain the title + counter, not callouts — callout text is too tall for iPad and defeats the purpose of keeping the counter visible."
+      - "Spell Mastery/Signature Spell picker lists are short enough that sticky headers add complexity for no practical benefit — scope trim was correct."
+      - "PDF inline script (525KB) can fail to parse on some devices. CDN fallback is a pragmatic safety net that preserves offline-first intent while catching edge cases."
+      - "PDF checkbox mapping can be done programmatically via widget annotation coordinates rather than visual inspection — essential for headless CC environments."
+    next: "Table-test DM Screen. Phase 3 based on feedback. Barbarian if party needs it (blocked on roll system gaps). SRD 5.1 decision. Avatar images."
