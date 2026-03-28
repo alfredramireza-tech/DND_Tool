@@ -47,7 +47,7 @@
     ]
   },
   "proficiencyBonus": 2,
-  "ac": 19,
+  "ac": 17,
   "speed": 25,
   "initiative": -1,
   "savingThrows": [
@@ -193,61 +193,10 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [
-    {
-      "time": "5:01 PM",
-      "text": "1d20: 9"
-    },
-    {
-      "time": "4:58 PM",
-      "text": "2d20: 35"
-    },
-    {
-      "time": "4:58 PM",
-      "text": "2d20: 11"
-    },
-    {
-      "time": "4:58 PM",
-      "text": "2d20: 13"
-    },
-    {
-      "time": "4:58 PM",
-      "text": "2d20: 5"
-    },
-    {
-      "time": "4:57 PM",
-      "text": "1d20: 11"
-    },
-    {
-      "time": "4:26 PM",
-      "text": "CHA Save: 18"
-    },
-    {
-      "time": "4:26 PM",
-      "text": "WIS Save: 16"
-    },
-    {
-      "time": "4:26 PM",
-      "text": "Initiative: 9"
-    },
-    {
-      "time": "4:26 PM",
-      "text": "Initiative: 9"
-    }
-  ],
+  "sessionLog": [],
   "inspiration": true,
   "journal": [],
-  "externalBuffs": [
-    {
-      "spellName": "Shield of Faith",
-      "effects": [
-        {
-          "type": "acBonus",
-          "value": 2
-        }
-      ]
-    }
-  ],
+  "externalBuffs": [],
   "maxHpBoost": {
     "value": 0,
     "source": ""
