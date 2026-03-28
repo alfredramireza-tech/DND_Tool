@@ -682,7 +682,7 @@ function showStep(n) {
         var sbSize = getWizardSpellbookSize(level);
         document.getElementById('spellbook-max').textContent = sbSize;
         var sbSubtitle = document.getElementById('spellbook-subtitle');
-        if (sbSubtitle) sbSubtitle.textContent = 'Choose ' + sbSize + ' wizard spells for your spellbook.';
+        if (sbSubtitle) sbSubtitle.textContent = 'These spells are permanently added to your spellbook. Choose carefully \u2014 your spellbook only grows from here (2 more per level-up, plus scrolls you find).';
       } else {
         spellbookSection.classList.add('hidden');
       }
@@ -701,7 +701,7 @@ function showStep(n) {
     var subtitleEl = document.querySelector('#step-4 .subtitle');
     if (subtitleEl) {
       if (isWizard) {
-        subtitleEl.textContent = 'Choose from your spellbook. Selection is optional.';
+        subtitleEl.textContent = 'Choose your spells for today. You can change your prepared spells after any long rest on the dashboard.';
       } else if (cls4 === 'Paladin') {
         subtitleEl.textContent = 'These are in addition to your oath spells above. Selection is optional.';
       } else {
@@ -1080,7 +1080,8 @@ function detectScoreMode() {
 
 function onCantripChange() {
   const level = parseInt(document.getElementById('f-level').value) || 3;
-  const maxCantrips = getCantripsCount(level);
+  var cls = document.getElementById('f-class').value || 'Cleric';
+  const maxCantrips = getCantripsCount(level, cls);
 
   // Use reusable enforcer
   enforceSelectionLimit('cantrip', maxCantrips);
