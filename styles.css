@@ -174,7 +174,7 @@ details[open] summary::before { content: '▾ '; }
 .dash-section { margin-bottom: 24px; }
 .dash-section h2 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 12px; }
 .dash-section > details[open] > summary {
-  position: sticky; top: 0; z-index: 40;
+  position: sticky; top: var(--hud-height, 0px); z-index: 40;
   background: var(--bg); padding: 8px 0; margin: 0 0 4px;
 }
 .ability-row-dash {

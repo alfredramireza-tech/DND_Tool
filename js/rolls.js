@@ -57,6 +57,30 @@ function showRollResult(label, diceResults, modifier, modLabel, total, extra, ro
   var ctx = rollContext || {};
   // Log the roll
   logEvent(label + ': ' + total);
+  // Live-update session log DOM without full re-render
+  var logContainer = document.querySelector('.session-log');
+  if (logContainer) {
+    var now = new Date();
+    var _h = now.getHours(), _m = now.getMinutes();
+    var _ampm = _h >= 12 ? 'PM' : 'AM';
+    _h = _h % 12 || 12;
+    var _timeStr = _h + ':' + (_m < 10 ? '0' : '') + _m + ' ' + _ampm;
+    var _entry = document.createElement('div');
+    _entry.className = 'slog-entry';
+    _entry.innerHTML = '<span class="slog-time">' + _timeStr + '</span><span class="slog-text">' + escapeHtml(label + ': ' + total) + '</span>';
+    logContainer.prepend(_entry);
+  }
+  // Update session log count in summary
+  var _logSummaries = document.querySelectorAll('details.dice-rolls-outer > summary');
+  _logSummaries.forEach(function(s) {
+    if (s.textContent.indexOf('Session Log') >= 0) {
+      var _countSpan = s.querySelector('.text-dim');
+      if (_countSpan) {
+        var _cur = parseInt(_countSpan.textContent.match(/\d+/)) || 0;
+        _countSpan.textContent = '(' + (_cur + 1) + ')';
+      }
+    }
+  });
   // Add to roll history
   addToRollHistory(label, total);
   // Determine CSS class
