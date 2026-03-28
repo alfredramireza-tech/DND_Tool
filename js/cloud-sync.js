@@ -179,13 +179,13 @@ function downloadCloudChar(path) {
   }).catch(function(err) { closeModal(); alert('Download failed: ' + err.message); });
 }
 
-function deleteFromCloud(charId) {
-  var c = loadAllCharacters().find(function(ch) { return ch.id === charId; });
+function deleteFromCloud(charId, charName) {
   var headers = getGitHubHeaders();
+  if (!headers) return;
   // Try readable filename first, then fall back to id-based
   var filenames = [];
-  if (c && c.name) {
-    var slug = cloudFileName(c);
+  if (charName) {
+    var slug = charName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     filenames.push('characters/' + slug + '.json');
     filenames.push('characters/' + slug + '-' + charId.substring(0, 6) + '.json');
   }

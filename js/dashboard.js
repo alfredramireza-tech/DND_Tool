@@ -535,8 +535,10 @@ function hideResetModal() { document.getElementById('reset-modal').classList.add
 function confirmReset() {
   if (activeCharId) {
     var chars = loadAllCharacters();
+    var charToDelete = chars.find(function(ch) { return ch.id === activeCharId; });
     chars = chars.filter(function(ch) { return ch.id !== activeCharId; });
     saveAllCharacters(chars);
+    if (charToDelete) deleteFromCloud(activeCharId, charToDelete.name);
   }
   hideResetModal();
   isEditing = false;

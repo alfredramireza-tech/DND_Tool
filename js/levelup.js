@@ -203,7 +203,8 @@ function startLevelUp() {
   renderLuScreen();
 }
 
-function renderLuScreen() {
+function renderLuScreen(preserveScroll) {
+  var savedScroll = preserveScroll ? window.scrollY : 0;
   const screen = luState.screens[luState.currentScreen];
   const container = document.getElementById('lu-screens');
 
@@ -242,7 +243,7 @@ function renderLuScreen() {
   nextBtn.onclick = isLast ? confirmLevelUp : luNext;
   nextBtn.className = isLast ? 'btn btn-primary btn-large' : 'btn btn-primary';
 
-  window.scrollTo(0, 0);
+  window.scrollTo(0, savedScroll);
 }
 
 function luNext() {
@@ -410,7 +411,7 @@ function luSelectHpMethod(method) {
     luState.hpRoll = null;
     luState.hpGained = luState.avgRoll + luState.conMod + luState.dwarfBonus;
   }
-  renderLuScreen();
+  renderLuScreen(true);
   if (method === 'roll') {
     const input = document.getElementById('lu-hp-roll');
     if (input) input.focus();
@@ -423,7 +424,7 @@ function luUpdateHpRoll(val) {
     luState.hpGained = luState.hpRoll + luState.conMod + luState.dwarfBonus;
   }
   // Only re-render the result area, not the whole screen (to keep focus)
-  renderLuScreen();
+  renderLuScreen(true);
   const input = document.getElementById('lu-hp-roll');
   if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
 }
@@ -472,7 +473,7 @@ function renderAsiScreen() {
             Your CON modifier is increasing from ${modStr(scores.con)} to ${newConMod >= 0 ? '+' : ''}${newConMod}.
           </p>
           <label>
-            <input type="checkbox" ${s.retroHp ? 'checked' : ''} onchange="luState.retroHp=this.checked;renderLuScreen()">
+            <input type="checkbox" ${s.retroHp ? 'checked' : ''} onchange="luState.retroHp=this.checked;renderLuScreen(true)">
             Apply retroactive HP? (+${retroAmount} HP for ${s.char.level} previous levels)
           </label>
           <p style="font-size:0.8rem;color:var(--text-dim);margin-top:4px">Some tables house-rule retroactive HP from CON increases. Check if your table uses this.</p>
@@ -496,7 +497,7 @@ function luSelectAsi(choice) {
   }
   luState.asiChoice = choice;
   luState.abilityChanges = {};
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderAsiPlus2() {
@@ -548,7 +549,7 @@ function luSetAsiAbility(slot, ability) {
   if (slot === 2) luState.asiAbility2 = ability || null;
   luState.retroHp = false;
   luState.retroHpAmount = 0;
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderModChangeNote(ability, increase) {
@@ -701,7 +702,7 @@ function renderCantripScreen() {
     <h2>New Cantrip</h2>
     <div class="lu-callout">You learn one additional cleric cantrip. You currently know: <strong>${known.join(', ')}</strong></div>
     <div class="lu-option-group">
-      ${available.map(c => `<div class="lu-option ${luState.newCantrip === c ? 'selected' : ''}" onclick="luState.newCantrip='${c}';renderLuScreen()">
+      ${available.map(c => `<div class="lu-option ${luState.newCantrip === c ? 'selected' : ''}" onclick="luState.newCantrip='${c}';renderLuScreen(true)">
         <div class="opt-title">${c}</div>
       </div>`).join('')}
     </div>
@@ -956,7 +957,7 @@ function renderSubclassSelectScreen() {
 
 function luSelectSubclass(sub) {
   luState.subclassSelection = sub;
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderFightingStyleSelectScreen() {
@@ -979,7 +980,7 @@ function renderFightingStyleSelectScreen() {
 
 function luSelectFightingStyle(style) {
   luState.fightingStyleSelection = style;
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderPaladinFightingStyleScreen() {
@@ -1031,7 +1032,7 @@ function luToggleExpertise(skill) {
   } else if (s.newExpertiseSkills.length < 2) {
     s.newExpertiseSkills.push(skill);
   }
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderManeuverSelectScreen() {
@@ -1072,7 +1073,7 @@ function luToggleManeuver(name) {
   } else if (s.maneuverSelections.length < newToChoose) {
     s.maneuverSelections.push(name);
   }
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderEkCantripSelectScreen() {
@@ -1121,7 +1122,7 @@ function luToggleEkCantrip(name) {
   } else if (s.ekCantripSelections.length < toChoose) {
     s.ekCantripSelections.push(name);
   }
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderEkSpellSelectScreen() {
@@ -1226,7 +1227,7 @@ function renderEkSpellSelectScreen() {
 function luSetSpellSwapFrom(val) {
   luState.ekSpellSwap.from = val || null;
   luState.ekSpellSwap.to = null;
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function luToggleEkSpell(name) {
@@ -1240,7 +1241,7 @@ function luToggleEkSpell(name) {
   } else if (s.ekSpellSelections.length < toChoose) {
     s.ekSpellSelections.push(name);
   }
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 /* ═══════════════════════════════════════════
@@ -1319,7 +1320,7 @@ function renderWizardCantripScreen() {
     var selected = s.wizNewCantrip === name;
     var sp = getSpell(name);
     var desc = sp ? sp.description.substring(0, 100) + (sp.description.length > 100 ? '...' : '') : '';
-    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizNewCantrip=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen()">';
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizNewCantrip=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen(true)">';
     html += '<div class="opt-title">' + escapeHtml(name) + '</div>';
     if (desc) html += '<div class="opt-desc" style="font-size:0.8rem">' + desc + '</div>';
     html += '</div>';
@@ -1366,7 +1367,7 @@ function luToggleWizSpellbook(name) {
   var idx = luState.wizSpellbookAdds.indexOf(name);
   if (idx >= 0) { luState.wizSpellbookAdds.splice(idx, 1); }
   else if (luState.wizSpellbookAdds.length < 2) { luState.wizSpellbookAdds.push(name); }
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderSpellMasteryScreen() {
@@ -1382,7 +1383,7 @@ function renderSpellMasteryScreen() {
   html += '<div class="lu-option-group">';
   level1.forEach(function(name) {
     var selected = s.wizSpellMastery.firstLevel === name;
-    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizSpellMastery.firstLevel=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen()">';
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizSpellMastery.firstLevel=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen(true)">';
     html += '<div class="opt-title">' + escapeHtml(name) + '</div></div>';
   });
   html += '</div>';
@@ -1391,7 +1392,7 @@ function renderSpellMasteryScreen() {
   html += '<div class="lu-option-group">';
   level2.forEach(function(name) {
     var selected = s.wizSpellMastery.secondLevel === name;
-    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizSpellMastery.secondLevel=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen()">';
+    html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luState.wizSpellMastery.secondLevel=\'' + name.replace(/'/g, "\\'") + '\';renderLuScreen(true)">';
     html += '<div class="opt-title">' + escapeHtml(name) + '</div></div>';
   });
   html += '</div></div>';
@@ -1420,7 +1421,7 @@ function luToggleSignatureSpell(name) {
   var idx = luState.wizSignatureSpells.indexOf(name);
   if (idx >= 0) { luState.wizSignatureSpells.splice(idx, 1); }
   else if (luState.wizSignatureSpells.length < 2) { luState.wizSignatureSpells.push(name); }
-  renderLuScreen();
+  renderLuScreen(true);
 }
 
 function renderProfBonusScreen() {

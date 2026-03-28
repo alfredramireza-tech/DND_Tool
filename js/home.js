@@ -208,9 +208,10 @@ function showDeleteConfirm(id, name) {
 
 function doDeleteChar(id, alsoCloud) {
   var chars = loadAllCharacters();
+  var charToDelete = chars.find(function(ch) { return ch.id === id; });
   chars = chars.filter(function(ch) { return ch.id !== id; });
   saveAllCharacters(chars);
-  if (alsoCloud) deleteFromCloud(id);
+  if (alsoCloud && charToDelete) deleteFromCloud(id, charToDelete.name);
   closeModal();
   renderHomeScreen();
 }
