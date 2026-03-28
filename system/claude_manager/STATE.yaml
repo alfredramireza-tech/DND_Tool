@@ -6,67 +6,82 @@
 # =============================================================================
 
 current:
-  task: "Rogue class + Data architecture refactor"
+  task: "Wizard class + Dashboard UX overhaul"
   status: "COMPLETE"
 
 resume_point: |
-  Rogue fully implemented and audited (4 handoffs + PHB audit — zero mechanical errors).
-  Three subclasses complete: Thief, Assassin, Arcane Trickster (with spellcasting).
+  All 5 playable classes complete, PHB-audited, and UX-audited:
+    Cleric, Fighter, Paladin, Rogue, Wizard.
+  Barbarian and Monk remain stubs (25-30%, not needed by party).
 
-  Data architecture fully refactored and audit-verified (T4, 8 phases):
-    - Unified spell database: SPELL_DB (204 spells), CANTRIP_DATA (22 cantrips), single getSpell() lookup
-    - Domain-organized files: shared.js, spells.js, spell-lists.js, plus one file per class
-    - Unified slot storage: all classes use spellSlots / spellSlotsUsed / spellsKnown
-    - Slot tables renamed: FULL_CASTER_SLOTS, HALF_CASTER_SLOTS, THIRD_CASTER_SLOTS
-    - data/progression.js deleted, data/cleric.js created
-    - Wizard data in fighter.js relocated to proper domain files
-    - All orphaned code deleted, all backward-compat aliases removed
-    - Post-refactor audit: zero breaking issues across 8 categories
+  Wizard implementation (5 handoffs + 2 audits):
+    - Spell data: 86 entries added, SPELL_DB at 290, 100% coverage
+    - Onboarding: spellbook picker, WIZARD_CANTRIPS, INT-based prep
+    - Dashboard: Arcane Recovery, Portent, Arcane Ward, Empowered Evocation,
+      Spell Mastery, Signature Spells, spellbook + Copy Spell, prepared management
+    - Level-up: all screens including Spell Mastery (18), Signature Spells (20)
+    - PHB audit: zero errors, 1 UX warning (Spell Mastery upcast)
+    - UX walk-through audit: 11/11 pass across 5 classes
 
-  Conductor updated: Discipline #6 added (catch misplacement at the second consumer).
+  Dashboard UX overhaul:
+    - Collapsible groups: Rest, Stats, Ability Checks, Class Abilities, Spells, Inventory, Reference, Actions
+    - Spells auto-expand in Combat Mode, Spell Slots inside Spells group
+    - HUD: dice roller + initiative/combat buttons, sticky section headings
+    - Re-render fix: <details> state preservation + conditional scrollTo
+    - Session log race condition fixed + targeted DOM update for rolls
 
-  Wizard data layer ready (data/wizard.js: progression, 8 subclasses, feature descriptions, helpers).
-  Wizard blocked on: spell data for levels 5-9 (~70 spells) + 16 missing at levels 1-4.
+  Infrastructure fixes:
+    - Scroll preservation in level-up spell pickers
+    - Cloud delete actually works now (deleteFromCloud accepts charName)
+    - Paladin level 2 spell preparation step added
+    - Wizard onboarding subtitles updated (permanent vs daily messaging)
+    - Notification hooks configured (Windows)
+    - Git editor set to notepad
 
-  Current file structure:
-    data/shared.js       — SKILLS, ABILITIES, ABILITY_NAMES, FIGHTING_STYLES, SAMPLE_CHARACTER, BLANK_DEFAULTS
-    data/classes.js      — CLASS_DATA (7 classes), COLOR_THEMES (7 themes)
-    data/spells.js       — SPELL_DB (204), CANTRIP_DATA (22), getSpell(), SPELL_BUFF_EFFECTS
-    data/spell-lists.js  — All class spell rosters, filtered builds, slot tables, domain/oath spells
-    data/cleric.js       — CLERIC_PROGRESSION, CLERIC_FEATURE_DESCRIPTIONS, CLERIC_LEVEL_TO_SPELL_LEVEL
-    data/fighter.js      — Fighter progression, features, BM maneuvers, getAllEkSpells()
-    data/paladin.js      — Paladin progression, features, helpers (OATH_SPELLS moved to spell-lists.js)
-    data/rogue.js        — Rogue progression, features, getSneakAttackDice()
-    data/wizard.js       — Wizard progression, 8 subclass features, 43 feature descriptions, helpers
+  Spec status:
+    - 9 archived, SPEC_PALADIN_WIZARD_AMENDMENT can also archive (all items resolved)
+    - Active: SPEC_WIZARD (complete, reference), SPEC_PDF_FILLER (~85%), SPEC_DM_SCREEN (not started)
 
-  NEXT PRIORITY: Wizard spell data (Handoff 2: ~86 missing spells), then Wizard onboarding/dashboard/level-up.
+  NEXT PRIORITY: DM Screen build from SPEC_DM_SCREEN.md.
 
 open_loops:
-  - "Wizard spell data: 86 spells missing from SPELL_DB (16 at levels 1-4, 70 at levels 5-9). Handoff 2 ready to frame."
-  - "Wizard onboarding/dashboard/level-up: Handoffs 3-5 after spell data."
-  - "DM Screen — SPEC_DM_SCREEN.md complete. Build after Wizard."
+  - "Spell Mastery upcast UX: at-will works but player can't choose to upcast with a slot. Minor edge case."
+  - "DM Screen — SPEC_DM_SCREEN.md complete. Ready to build."
   - "Barbarian/Monk at 25-30% — stubs only, not needed by current party."
+  - "PDF Filler gaps — checkbox mapping, expertise, page 2 fields, newer class resources."
+  - "SPEC_PALADIN_WIZARD_AMENDMENT — all 3 items resolved, archive next session."
+  - "SPEC_WIZARD — complete, can archive next session."
 
 gap_log:
-  - date: "2026-03-27"
-    gap: "Bulk search-and-replace corrupted prefixed names (FIGHTER_FEATURE_DESCRIPTIONS → FIGHTER_CLERIC_FEATURE_DESCRIPTIONS)"
-    cause: "Renaming FEATURE_DESCRIPTIONS to CLERIC_FEATURE_DESCRIPTIONS hit all strings containing the substring, including FIGHTER_FEATURE_DESCRIPTIONS"
-    resolution: "CC caught and fixed the cascading rename. Future renames should use word-boundary-aware search (whole-word match) not substring replacement."
-    severity: "medium — would have broken Fighter feature display if not caught"
-  - date: "2026-03-27"
-    gap: "Double-comma bug (},,) after merging WIZARD_SPELL_DB into SPELL_DB — 85 undefined array entries"
-    cause: "Mechanical merge of two large arrays introduced trailing commas that JavaScript parsed as undefined slots"
-    resolution: "Fixed with sed. Future large array merges should include a post-merge validation step (check for undefined entries)."
-    severity: "high — would have caused silent spell lookup failures"
-  - date: "2026-03-27"
-    gap: "First-consumer placement: Wizard spell data lived in data/fighter.js because EK was the first consumer"
-    cause: "No governance principle existed to catch shared data being placed in a consumer-specific file"
-    resolution: "Added Conductor Discipline #6: Catch misplacement at the second consumer. Three rules: import smell detection, PM routing decision, debt protocol."
-    severity: "high — caused confusing cross-file dependencies and motivated the full data architecture refactor"
+  - date: "2026-03-28"
+    gap: "logEvent() race condition — caller's stale copy overwrote log entries"
+    cause: "logEvent() loaded a fresh character, added entry, saved. Callers that had already modified c would then saveCurrentCharacter(c) — overwriting the log."
+    resolution: "logEvent(text, charObj) accepts optional char object. 37 callers in combat.js and resources.js pass c directly."
+    severity: "high — session log appeared non-functional for all roll events"
+  - date: "2026-03-28"
+    gap: "Session log entries written to localStorage but DOM never updated after rolls"
+    cause: "showRollResult() calls logEvent() but doesn't re-render. Session log HTML was stale."
+    resolution: "Added targeted DOM prepend in showRollResult() to update session log in-place."
+    severity: "medium — entries existed in data but invisible to user"
+  - date: "2026-03-28"
+    gap: "deleteFromCloud() silently failed — looked up character in localStorage after it was already deleted"
+    cause: "Delete flow removed from localStorage first, then called deleteFromCloud() which tried to load the character to get its name"
+    resolution: "deleteFromCloud() now accepts charName parameter directly. Both home screen and dashboard delete paths pass the name before removing from localStorage."
+    severity: "medium — characters appeared deleted but persisted as ghosts in GitHub repo and Party View"
+  - date: "2026-03-28"
+    gap: "PHB mechanical audits don't catch onboarding UX bugs (wrong subtitles, picker pulling from wrong source)"
+    cause: "Audit verified formulas, counts, and data model but didn't walk through screens as a user"
+    resolution: "Added UX walk-through audit as a separate step. Ran 11 test combinations across 5 classes. Will include in future class builds."
+    severity: "medium — mechanically correct but confusing user-facing text"
+  - date: "2026-03-28"
+    gap: "Paladin level 1→2 level-up grants spellcasting but never offers spell preparation"
+    cause: "Level-up flow announced the feature and showed slots but had no preparation picker. Player exited with slots but zero prepared spells."
+    resolution: "Added paladinPrepare screen to level-up. Required at level 2, optional at 5/9/13/17 when new spell levels unlock."
+    severity: "high — Paladin was functionally unable to cast spells after leveling to 2"
 
 recent_activity:
-  - "Rogue fully implemented (4 handoffs: data layer, dashboard+expertise+sneak attack, level-up, Arcane Trickster spellcasting)"
-  - "Rogue PHB Audit: zero mechanical errors, found pre-existing toggleSlot bug + EK long rest bug"
-  - "Conductor Discipline #6 added: catch misplacement at the second consumer (PM/CC collaborative design)"
-  - "Data Architecture Refactor (T4, 8 phases): unified spell DB, domain-organized files, unified slot storage, deleted progression.js"
-  - "Post-Refactor Audit + cleanup: zero breaking issues, 5 cosmetic items resolved"
+  - "Wizard fully implemented: spell data (86), onboarding, dashboard, level-up, PHB audit (zero errors)"
+  - "UX walk-through audit: 11/11 pass across 5 classes (Cleric, Fighter, Paladin, Rogue, Wizard)"
+  - "Dashboard UX overhaul: collapsible groups, HUD dice roller, initiative/combat in HUD, sticky headings"
+  - "Re-render fixes: <details> state preservation, conditional scrollTo, level-up scroll preservation"
+  - "Session log fixes (race condition + DOM update), cloud delete fix, Paladin level-2 spell prep, Wizard subtitles"

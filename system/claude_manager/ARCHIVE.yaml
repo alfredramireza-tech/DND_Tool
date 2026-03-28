@@ -65,3 +65,19 @@ sessions:
       - "Three parallel storage patterns (ekSlotsUsed/atSlotsUsed/spellSlotsUsed) caused the toggleSlot bug — unified storage eliminated the entire category of error"
       - "Independent CC review of PM's governance proposals produces better results than either alone — the PM/CC debate on Discipline #6 yielded a stronger final version"
     next: "Wizard spell data (~86 missing entries), then Wizard onboarding/dashboard/level-up. Then DM Screen."
+
+  - date: "2026-03-28"
+    session: 6
+    summary: "Wizard full implementation (5 handoffs + PHB audit + UX audit), dashboard UX overhaul (collapsible groups, HUD dice roller/initiative/combat, sticky headings, re-render fixes), session log fixes, cloud delete fix, Paladin level-2 spell prep, 9 specs archived, UX walk-through audit (11/11 pass)"
+    learned:
+      - "logEvent() race condition: when logEvent loads/saves independently but the caller also saves, the caller's save overwrites the log entry. Pass the char object through so both write to the same reference."
+      - "Static HTML from data doesn't update when data changes without re-render — targeted DOM updates needed for real-time display"
+      - "deleteFromCloud() was silently failing because it tried to read the character after local deletion. Always capture needed data before destroying the source."
+      - "PHB audits catch mechanical errors but not UX bugs (wrong subtitles, wrong picker source). UX walk-through audits are a separate necessary step — add to future class builds."
+      - "Paladin level 1→2 is a unique case: only class that gains spellcasting via level-up rather than at level 1 or level 3. The level-up flow needs a preparation step at that transition."
+      - "Spell Mastery at-will path that skips slot prompt also blocks voluntary upcasting — binary skip/prompt isn't enough for full PHB compliance"
+      - "Batching related data work (Wizard + Paladin spell audit in one pass) reduces merge risk — fewer passes into the same file means fewer merge bugs"
+      - "Wizard spellbook onboarding needs clear UX messaging: spellbook choices are permanent, prepared choices are daily. Players need to understand the commitment level of each selection."
+      - "Nested <details> sticky headings require careful top offset to account for sticky HUD — top:0 hides behind the HUD"
+      - "Paladin spell data was created during session 4 but not tracked in STATE.yaml — led to incorrect gap estimates. Always verify live data before claiming gaps."
+    next: "DM Screen build from SPEC_DM_SCREEN.md. Archive SPEC_WIZARD and SPEC_PALADIN_WIZARD_AMENDMENT (both complete). PDF Filler update for newer classes. Barbarian/Monk if party needs them."
