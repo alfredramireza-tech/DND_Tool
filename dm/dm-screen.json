@@ -1,0 +1,106 @@
+{
+  "encounters": [
+    {
+      "id": "enc_1774736630144",
+      "name": "Encounter 1",
+      "created": 1774736630145,
+      "initiative": [
+        {
+          "id": "init_pc_mnajixxnd6h00",
+          "name": "Mage",
+          "type": "pc",
+          "charId": "mnajixxnd6h00",
+          "initiative": null,
+          "ac": 12,
+          "maxHp": 22,
+          "currentHp": 7,
+          "conditions": [],
+          "concentration": null,
+          "attack": "",
+          "notes": "",
+          "dexMod": null
+        },
+        {
+          "id": "init_pc_mnajn080rkrta",
+          "name": "Rogue",
+          "type": "pc",
+          "charId": "mnajn080rkrta",
+          "initiative": null,
+          "ac": 13,
+          "maxHp": 31,
+          "currentHp": 31,
+          "conditions": [],
+          "concentration": null,
+          "attack": "",
+          "notes": "",
+          "dexMod": null
+        },
+        {
+          "id": "init_pc_mn12z7a2x0032",
+          "name": "Thorin Iron Shield",
+          "type": "pc",
+          "charId": "mn12z7a2x0032",
+          "initiative": null,
+          "ac": 17,
+          "maxHp": 34,
+          "currentHp": 34,
+          "conditions": [],
+          "concentration": null,
+          "attack": "",
+          "notes": "",
+          "dexMod": null
+        },
+        {
+          "id": "init_1774736649072_469y",
+          "name": "Gobo",
+          "type": "npc",
+          "initiative": null,
+          "ac": 1,
+          "maxHp": 9,
+          "currentHp": 9,
+          "conditions": [],
+          "concentration": null,
+          "attackBonus": 1,
+          "damageDice": "1d6",
+          "damageType": "Slashing",
+          "attack": "+1, 1d6 Slashing",
+          "notes": "",
+          "dexMod": 1,
+          "hpFormula": null
+        }
+      ],
+      "currentTurn": 0,
+      "round": 0,
+      "notes": "",
+      "log": [],
+      "active": true
+    }
+  ],
+  "quickMonsters": [
+    {
+      "name": "Gobo",
+      "ac": 1,
+      "maxHp": 9,
+      "hpFormula": null,
+      "attackBonus": 1,
+      "damageDice": "1d6",
+      "damageType": "Slashing",
+      "dexMod": 1,
+      "notes": ""
+    },
+    {
+      "name": "Gobo",
+      "ac": 1,
+      "maxHp": 9,
+      "hpFormula": null,
+      "attackBonus": 1,
+      "damageDice": "1d6",
+      "damageType": "Slashing",
+      "dexMod": 1,
+      "notes": ""
+    }
+  ],
+  "sessionNotes": "",
+  "passwordHash": "h2h53ho5y",
+  "lastModified": "2026-03-28T22:24:39.074Z"
+}
