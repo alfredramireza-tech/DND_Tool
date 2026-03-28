@@ -25,6 +25,37 @@ function saveDmData(data, skipCloud) {
   if (!skipCloud) scheduleDmCloudSave();
 }
 
+function showDmChangePassword() {
+  showModal(
+    '<h3>Change DM Password</h3>' +
+    '<div style="display:flex;flex-direction:column;gap:8px">' +
+    '<input type="password" id="dm-pw-cur" placeholder="Current password" style="min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);font-size:1rem">' +
+    '<input type="password" id="dm-pw-new" placeholder="New password" style="min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);font-size:1rem">' +
+    '<input type="password" id="dm-pw-conf" placeholder="Confirm new password" style="min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);font-size:1rem">' +
+    '</div>' +
+    '<div id="dm-pw-chg-err" style="color:var(--error);font-size:0.85rem;min-height:20px;margin-top:4px"></div>' +
+    '<div class="confirm-actions">' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-primary" onclick="applyDmPasswordChange()">Change</button></div>'
+  );
+  setTimeout(function() { var el = document.getElementById('dm-pw-cur'); if (el) el.focus(); }, 100);
+}
+
+function applyDmPasswordChange() {
+  var cur = document.getElementById('dm-pw-cur').value;
+  var nw = document.getElementById('dm-pw-new').value;
+  var conf = document.getElementById('dm-pw-conf').value;
+  var err = document.getElementById('dm-pw-chg-err');
+  var data = loadDmData();
+  if (simpleHash(cur) !== data.passwordHash) { if (err) err.textContent = 'Current password is wrong.'; return; }
+  if (!nw) { if (err) err.textContent = 'New password cannot be empty.'; return; }
+  if (nw !== conf) { if (err) err.textContent = "Passwords don't match."; return; }
+  data.passwordHash = simpleHash(nw);
+  saveDmData(data);
+  closeModal();
+  showDmRollResult('Done', 'Password changed.');
+}
+
 var _dmCloudSaveTimer = null;
 function scheduleDmCloudSave() {
   if (_dmCloudSaveTimer) clearTimeout(_dmCloudSaveTimer);

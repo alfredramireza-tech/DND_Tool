@@ -34,6 +34,7 @@ function renderHomeScreen() {
   html += '</div>';
   html += '<div style="margin-top:40px;padding-top:20px;border-top:1px solid var(--border)">';
   html += '<button class="btn" onclick="confirmClearAllData()" style="width:100%;background:transparent;color:var(--error);border:1px solid var(--error);font-size:0.85rem;padding:10px">Clear All Data</button>';
+  html += '<button onclick="showAdminPanel()" style="background:none;border:none;color:var(--text-dim);font-size:0.75rem;margin-top:12px;cursor:pointer;padding:4px;width:100%;text-align:center">Admin</button>';
   html += '</div></div>';
   document.getElementById('homescreen-content').innerHTML = html;
 }
@@ -64,6 +65,48 @@ function doClearAllData() {
   sessionUnlockedIds = [];
   activeCharId = null;
   location.reload();
+}
+
+var ADMIN_HASH = simpleHash('tis');
+
+function showAdminPanel() {
+  showModal(
+    '<h3>Admin Access</h3>' +
+    '<input type="password" id="admin-pw-input" placeholder="Admin password" style="width:100%;box-sizing:border-box;min-height:44px;padding:8px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);font-size:1rem;margin-bottom:8px" onkeydown="if(event.key===\'Enter\')checkAdminPassword()">' +
+    '<div id="admin-pw-error" style="color:var(--error);font-size:0.85rem;min-height:20px"></div>' +
+    '<div class="confirm-actions">' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-primary" onclick="checkAdminPassword()">Unlock</button></div>'
+  );
+  setTimeout(function() { var el = document.getElementById('admin-pw-input'); if (el) el.focus(); }, 100);
+}
+
+function checkAdminPassword() {
+  var input = document.getElementById('admin-pw-input');
+  var val = input ? input.value : '';
+  if (simpleHash(val) === ADMIN_HASH) {
+    showAdminOptions();
+  } else {
+    var err = document.getElementById('admin-pw-error');
+    if (err) err.textContent = 'Wrong admin password.';
+    if (input) { input.value = ''; input.focus(); }
+  }
+}
+
+function showAdminOptions() {
+  showModal(
+    '<h3>Admin Panel</h3>' +
+    '<button class="btn btn-secondary" style="width:100%;margin-bottom:8px;min-height:44px" onclick="resetDmPassword()">Reset DM Password</button>' +
+    '<div class="confirm-actions"><button class="btn btn-secondary" onclick="closeModal()">Close</button></div>'
+  );
+}
+
+function resetDmPassword() {
+  var data = loadDmData();
+  data.passwordHash = simpleHash('dm');
+  saveDmData(data);
+  closeModal();
+  alert('DM password reset to default.');
 }
 
 function loadCharFromHome(id) {
