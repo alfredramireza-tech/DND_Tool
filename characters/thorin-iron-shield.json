@@ -155,7 +155,7 @@
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 0,
-    "2": 0
+    "2": 1
   },
   "channelDivinityUsed": 0,
   "equippedItems": [
@@ -197,6 +197,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "8:06 PM",
+      "text": "Prayer of Healing — Healing: 22"
+    },
+    {
+      "time": "8:06 PM",
+      "text": "Cast Prayer of Healing at 2nd level (2 slots remaining)"
+    },
     {
       "time": "8:05 PM",
       "text": "CHA Save: 20"
