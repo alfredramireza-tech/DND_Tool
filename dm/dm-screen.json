@@ -6,11 +6,29 @@
       "created": 1774736630145,
       "initiative": [
         {
+          "id": "init_1774736649072_469y",
+          "name": "Gobo",
+          "type": "npc",
+          "initiative": 5,
+          "ac": 1,
+          "maxHp": 9,
+          "currentHp": 6,
+          "conditions": [],
+          "concentration": null,
+          "attackBonus": 1,
+          "damageDice": "1d6",
+          "damageType": "Slashing",
+          "attack": "+1, 1d6 Slashing",
+          "notes": "",
+          "dexMod": 1,
+          "hpFormula": null
+        },
+        {
           "id": "init_pc_mnajixxnd6h00",
           "name": "Mage",
           "type": "pc",
           "charId": "mnajixxnd6h00",
-          "initiative": null,
+          "initiative": 3,
           "ac": 12,
           "maxHp": 22,
           "currentHp": 7,
@@ -25,7 +43,7 @@
           "name": "Rogue",
           "type": "pc",
           "charId": "mnajn080rkrta",
-          "initiative": null,
+          "initiative": 2,
           "ac": 13,
           "maxHp": 31,
           "currentHp": 31,
@@ -40,7 +58,7 @@
           "name": "Thorin Iron Shield",
           "type": "pc",
           "charId": "mn12z7a2x0032",
-          "initiative": null,
+          "initiative": 1,
           "ac": 17,
           "maxHp": 34,
           "currentHp": 34,
@@ -49,35 +67,26 @@
           "attack": "",
           "notes": "",
           "dexMod": null
-        },
-        {
-          "id": "init_1774736649072_469y",
-          "name": "Gobo",
-          "type": "npc",
-          "initiative": 5,
-          "ac": 1,
-          "maxHp": 9,
-          "currentHp": 9,
-          "conditions": [],
-          "concentration": null,
-          "attackBonus": 1,
-          "damageDice": "1d6",
-          "damageType": "Slashing",
-          "attack": "+1, 1d6 Slashing",
-          "notes": "",
-          "dexMod": 1,
-          "hpFormula": null
         }
       ],
       "currentTurn": 0,
-      "round": 0,
+      "round": 1,
       "notes": "",
-      "log": [],
+      "log": [
+        {
+          "time": "2026-03-29T01:58:47.867Z",
+          "text": "Gobo attack: d20[17] + 1 = 18"
+        },
+        {
+          "time": "2026-03-29T01:58:51.084Z",
+          "text": "Gobo damage: 5 Slashing"
+        }
+      ],
       "active": true
     }
   ],
   "quickMonsters": [],
   "sessionNotes": "",
   "passwordHash": "h24uc3775j7",
-  "lastModified": "2026-03-29T01:56:11.840Z"
+  "lastModified": "2026-03-29T01:59:22.065Z"
 }
