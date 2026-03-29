@@ -40,7 +40,7 @@ function renderSelectionCard(name, options) {
 function buildSpellSelectionBody(spell, char) {
   var cd = CLASS_DATA[char.class] || CLASS_DATA.Cleric;
   var castAbility = cd.spellcastingAbility || ((char.subclass === 'Eldritch Knight' || char.subclass === 'Arcane Trickster') ? 'int' : 'wis');
-  var abilMod = mod(char.abilityScores[castAbility] || 10);
+  var abilMod = getEffectiveMod(char, castAbility);
   var profBonus = char.proficiencyBonus || getProfBonus(char.level || 1);
   var dc = 8 + profBonus + abilMod;
   var atkBonus = profBonus + abilMod;
@@ -116,7 +116,7 @@ function enforceSelectionLimit(name, max, countElId) {
 function getSpellSummaryLine(spell, char) {
   var cd = CLASS_DATA[char.class] || CLASS_DATA.Cleric;
   var castAbility = cd.spellcastingAbility || ((char.subclass === 'Eldritch Knight' || char.subclass === 'Arcane Trickster') ? 'int' : 'wis');
-  var castMod = mod(char.abilityScores[castAbility] || 10);
+  var castMod = getEffectiveMod(char, castAbility);
   const profBonus = char.proficiencyBonus;
   const dc = 8 + profBonus + castMod;
   const atkBonus = profBonus + castMod;
@@ -185,7 +185,7 @@ function renderSpellCard(spell, char, options) {
   const opts = options || {};
   var cd = CLASS_DATA[char.class] || CLASS_DATA.Cleric;
   var castAbility = cd.spellcastingAbility || ((char.subclass === 'Eldritch Knight' || char.subclass === 'Arcane Trickster') ? 'int' : 'wis');
-  var castMod = mod(char.abilityScores[castAbility] || 10);
+  var castMod = getEffectiveMod(char, castAbility);
   const profBonus = char.proficiencyBonus;
   const dc = 8 + profBonus + castMod;
   const atkBonus = profBonus + castMod;
@@ -272,7 +272,7 @@ function renderAbilityChecks(c) {
   html += '<div class="save-check-grid">';
   ABILITIES.forEach(ab => {
     const isProficient = c.savingThrows.includes(ab);
-    const bonus = mod(c.abilityScores[ab]) + (isProficient ? c.proficiencyBonus : 0);
+    const bonus = getEffectiveMod(c, ab) + (isProficient ? c.proficiencyBonus : 0) + getEquipSaveBonus(c, ab);
     html += `<button class="save-check-btn ${isProficient ? 'proficient' : ''}" onclick="doAbilityRoll('${ab}',${isProficient})">
       <span class="sc-ab">${ABILITY_NAMES[ab]}${isProficient ? ' *' : ''}</span>
       <span class="sc-bonus">${bonus >= 0 ? '+' : ''}${bonus}</span>
@@ -290,7 +290,7 @@ function renderAbilityChecks(c) {
       const isProficient = c.skillProficiencies.some(s => s.toLowerCase() === sk.name.toLowerCase());
       const isExpertise = (c.expertiseSkills || []).some(s => s.toLowerCase() === sk.name.toLowerCase());
       const profMult = isExpertise ? 2 : (isProficient ? 1 : 0);
-      const bonus = mod(c.abilityScores[sk.ability]) + c.proficiencyBonus * profMult;
+      const bonus = getEffectiveMod(c, sk.ability) + c.proficiencyBonus * profMult;
       const btnClass = isExpertise ? 'proficient expertise' : (isProficient ? 'proficient' : '');
       html += `<button class="skill-roll-btn ${btnClass}" onclick="doSkillRoll('${sk.name}')">
         ${sk.name} ${bonus >= 0 ? '+' : ''}${bonus}${isExpertise ? ' (E)' : ''}</button>`;

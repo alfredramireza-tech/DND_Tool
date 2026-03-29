@@ -43,7 +43,7 @@ function buildQuickActions(c) {
   var actions = [];
   // Add all weapons
   (c.weapons || []).forEach(function(w, i) {
-    var abilMod = mod(c.abilityScores[w.ability] || 10);
+    var abilMod = getEffectiveMod(c, w.ability || 'str');
     var profB = w.proficient ? c.proficiencyBonus : 0;
     var magB = w.magicBonus || 0;
     var atkB = abilMod + profB + magB;
@@ -83,7 +83,7 @@ function renderQuickAction(c) {
   } else if (current.type === 'cantrip') {
     var sp = current.spell;
     var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
-    var castMod = mod(c.abilityScores[cd.spellcastingAbility] || c.abilityScores.wis);
+    var castMod = getEffectiveMod(c, cd.spellcastingAbility || 'wis');
     var spellDC = 8 + c.proficiencyBonus + castMod;
     // Build stats line
     var statsLine = '';
@@ -341,7 +341,7 @@ var lastInitiative = null;
 function rollInitiative() {
   var c = loadCharacter();
   if (!c) return;
-  var dexMod = mod(c.abilityScores.dex);
+  var dexMod = getEffectiveMod(c, 'dex');
   var bonus = dexMod;
   var extraLabel = 'DEX';
   var extra = '';
@@ -1079,7 +1079,7 @@ function doSpellRollAtLevel(spellName, rollType, castLevel) {
   var spell = getSpell(spellName);
   if (!spell) return;
   var cd = CLASS_DATA[char.class] || CLASS_DATA.Cleric;
-  var castMod = mod(char.abilityScores[cd.spellcastingAbility] || char.abilityScores.wis);
+  var castMod = getEffectiveMod(char, cd.spellcastingAbility || 'wis');
   var profBonus = char.proficiencyBonus;
 
   if (rollType === 'attack') {
@@ -1274,8 +1274,8 @@ function showPartyCharDetail(idx) {
   var ac = (c.equippedItems && c.equippedItems.length > 0) ? calculateAC(c) : c.ac;
   var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
   var isCaster = cd.isCaster;
-  var spellDC = isCaster ? 8 + c.proficiencyBonus + mod(c.abilityScores[cd.spellcastingAbility]) : 0;
-  var spellAtk = isCaster ? c.proficiencyBonus + mod(c.abilityScores[cd.spellcastingAbility]) : 0;
+  var spellDC = isCaster ? 8 + c.proficiencyBonus + getEffectiveMod(c, cd.spellcastingAbility) : 0;
+  var spellAtk = isCaster ? c.proficiencyBonus + getEffectiveMod(c, cd.spellcastingAbility) : 0;
 
   var html = '<div class="home-screen">';
   html += '<button class="btn btn-secondary" onclick="renderPartyGrid(document.getElementById(\'homescreen-content\'))" style="margin-bottom:12px">\u2190 Back to Party</button>';
@@ -1327,15 +1327,15 @@ function showPartyCharDetail(idx) {
   html += '<h3 style="margin-top:16px">Ability Scores</h3><div class="ability-row-dash">';
   ABILITIES.forEach(function(ab) {
     html += '<div class="ability-card"><div class="ab-name">' + ABILITY_NAMES[ab] + '</div>';
-    html += '<div class="ab-mod">' + modStr(c.abilityScores[ab]) + '</div>';
-    html += '<div class="ab-score">' + c.abilityScores[ab] + '</div></div>';
+    html += '<div class="ab-mod">' + modStr(getEffectiveAbilityScore(c, ab)) + '</div>';
+    html += '<div class="ab-score">' + getEffectiveAbilityScore(c, ab) + '</div></div>';
   });
   html += '</div>';
 
   // Saving Throws
   html += '<h3 style="margin-top:12px">Saving Throws</h3><div>';
   (c.savingThrows || []).forEach(function(st) {
-    var bonus = mod(c.abilityScores[st]) + c.proficiencyBonus;
+    var bonus = getEffectiveMod(c, st) + c.proficiencyBonus + getEquipSaveBonus(c, st);
     html += '<span class="tag accent">' + ABILITY_NAMES[st] + ' +' + bonus + '</span> ';
   });
   html += '</div>';
@@ -1346,7 +1346,7 @@ function showPartyCharDetail(idx) {
     var skill = SKILLS.find(function(s) { return s.name.toLowerCase() === sk.toLowerCase(); });
     if (!skill) return;
     var isExp = c.expertiseSkills && c.expertiseSkills.indexOf(sk.toLowerCase()) >= 0;
-    var bonus = mod(c.abilityScores[skill.ability]) + c.proficiencyBonus * (isExp ? 2 : 1);
+    var bonus = getEffectiveMod(c, skill.ability) + c.proficiencyBonus * (isExp ? 2 : 1);
     html += '<span class="tag accent">' + skill.name + ' +' + bonus + (isExp ? ' (E)' : '') + '</span>';
   });
   html += '</div>';
@@ -1416,7 +1416,7 @@ function showPartyCharDetail(idx) {
   if (c.weapons && c.weapons.length > 0) {
     html += '<h3 style="margin-top:12px">Weapons</h3>';
     c.weapons.forEach(function(w) {
-      var abilMod = mod(c.abilityScores[w.ability] || 10);
+      var abilMod = getEffectiveMod(c, w.ability || 'str');
       var profB = w.proficient ? c.proficiencyBonus : 0;
       var magB = w.magicBonus || 0;
       var atkTotal = abilMod + profB + magB;

@@ -6,6 +6,46 @@
 function mod(score) { return Math.floor((score - 10) / 2); }
 function modStr(score) { const m = mod(score); return m >= 0 ? '+' + m : '' + m; }
 
+function isItemActive(item) {
+  if (!item.requiresAttunement) return true;
+  return !!item.attuned;
+}
+
+function getEffectiveAbilityScore(c, ability) {
+  var base = c.abilityScores[ability] || 10;
+  var highestOverride = null;
+  var totalBonus = 0;
+  (c.equippedItems || []).forEach(function(item) {
+    if (!isItemActive(item)) return;
+    if (item.abilityOverride && item.abilityOverride[ability] !== undefined) {
+      var ov = item.abilityOverride[ability];
+      if (highestOverride === null || ov > highestOverride) highestOverride = ov;
+    }
+    if (item.abilityBonus && item.abilityBonus[ability]) {
+      totalBonus += item.abilityBonus[ability];
+    }
+  });
+  var effective = highestOverride !== null ? Math.max(base, highestOverride) : base;
+  effective += totalBonus;
+  return effective;
+}
+
+function getEffectiveMod(c, ability) {
+  return mod(getEffectiveAbilityScore(c, ability));
+}
+
+function getEquipSaveBonus(c, ability) {
+  var total = 0;
+  (c.equippedItems || []).forEach(function(item) {
+    if (!isItemActive(item)) return;
+    if (item.saveBonusAll) total += item.saveBonusAll;
+    if (item.saveBonusSpecific && item.saveBonusSpecific[ability]) {
+      total += item.saveBonusSpecific[ability];
+    }
+  });
+  return total;
+}
+
 function escapeHtml(text) {
   var div = document.createElement('div');
   div.textContent = text || '';
@@ -98,7 +138,7 @@ function migrateCharacter(c) {
     if (!c.resources) c.resources = {};
     if (!c.resources.arcaneRecovery) c.resources.arcaneRecovery = { used: 0, max: 1 };
     if (c.subclass === 'School of Divination' && !c.resources.portentDice) c.resources.portentDice = [];
-    if (c.subclass === 'School of Abjuration' && !c.resources.arcaneWard) c.resources.arcaneWard = { current: 0, max: c.level * 2 + mod(c.abilityScores.int) };
+    if (c.subclass === 'School of Abjuration' && !c.resources.arcaneWard) c.resources.arcaneWard = { current: 0, max: c.level * 2 + getEffectiveMod(c, 'int') };
     if (c.signatureSpells && !c.resources.signatureSpellUses) {
       c.resources.signatureSpellUses = {};
       c.signatureSpells.forEach(function(sp) { c.resources.signatureSpellUses[sp] = false; });
@@ -118,7 +158,7 @@ function calculateAC(c) {
     if (item.slot === 'armor') armor = item;
     if (item.slot === 'shield') shieldBonus += ((item.stats && item.stats.acBonus) || 2) + (item.magicBonus || 0);
   });
-  var dexMod = mod(c.abilityScores.dex);
+  var dexMod = getEffectiveMod(c, 'dex');
   var ac;
   if (!armor) {
     var classDef = CLASS_DATA[c.class];
@@ -126,7 +166,7 @@ function calculateAC(c) {
       if (classDef.unarmoredNoShield && shieldBonus > 0) {
         ac = 10 + dexMod;
       } else {
-        ac = 10 + dexMod + mod(c.abilityScores[classDef.unarmoredDefense]);
+        ac = 10 + dexMod + getEffectiveMod(c, classDef.unarmoredDefense);
       }
     } else {
       ac = 10 + dexMod;

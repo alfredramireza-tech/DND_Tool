@@ -19,8 +19,8 @@ function renderDashboard(c, preserveScroll) {
   var container = document.getElementById('dashboard-content');
   var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
   var isCaster = cd.isCaster;
-  var spellDC = isCaster ? 8 + c.proficiencyBonus + mod(c.abilityScores[cd.spellcastingAbility]) : 0;
-  var spellAtk = isCaster ? c.proficiencyBonus + mod(c.abilityScores[cd.spellcastingAbility]) : 0;
+  var spellDC = isCaster ? 8 + c.proficiencyBonus + getEffectiveMod(c, cd.spellcastingAbility) : 0;
+  var spellAtk = isCaster ? c.proficiencyBonus + getEffectiveMod(c, cd.spellcastingAbility) : 0;
   var ac = (c.equippedItems && c.equippedItems.length > 0) ? calculateAC(c) : c.ac;
   var effectiveMax = getEffectiveMaxHp(c);
   var currentHp = c.currentHp !== undefined ? c.currentHp : effectiveMax;
@@ -138,15 +138,15 @@ function renderDashboard(c, preserveScroll) {
   html += '<details open><summary><h3 style="display:inline;font-size:1rem">Ability Scores</h3></summary><div class="ability-row-dash">';
   ABILITIES.forEach(function(ab) {
     html += '<div class="ability-card"><div class="ab-name">' + ABILITY_NAMES[ab] + '</div>';
-    html += '<div class="ab-mod">' + modStr(c.abilityScores[ab]) + '</div>';
-    html += '<div class="ab-score">' + c.abilityScores[ab] + '</div></div>';
+    html += '<div class="ab-mod">' + modStr(getEffectiveAbilityScore(c, ab)) + '</div>';
+    html += '<div class="ab-score">' + getEffectiveAbilityScore(c, ab) + '</div></div>';
   });
   html += '</div></details>';
   // Proficiencies sub-section
   html += '<details open><summary><h3 style="display:inline;font-size:1rem">Proficiencies</h3></summary>';
   html += '<div style="margin:8px 0"><span class="text-dim" style="font-size:0.85rem">Saving Throws: </span>';
   (c.savingThrows || []).forEach(function(st) {
-    var bonus = mod(c.abilityScores[st]) + c.proficiencyBonus;
+    var bonus = getEffectiveMod(c, st) + c.proficiencyBonus + getEquipSaveBonus(c, st);
     html += '<span class="tag accent">' + ABILITY_NAMES[st] + ' +' + bonus + '</span> ';
   });
   html += '</div><div><span class="text-dim" style="font-size:0.85rem">Skills: </span>';
@@ -154,7 +154,7 @@ function renderDashboard(c, preserveScroll) {
     var skill = SKILLS.find(function(s) { return s.name.toLowerCase() === sk.toLowerCase(); });
     if (!skill) { html += '<span class="tag">' + sk + '</span> '; return; }
     var isExpertise = c.expertiseSkills && c.expertiseSkills.indexOf(sk.toLowerCase()) >= 0;
-    var bonus = mod(c.abilityScores[skill.ability]) + c.proficiencyBonus * (isExpertise ? 2 : 1);
+    var bonus = getEffectiveMod(c, skill.ability) + c.proficiencyBonus * (isExpertise ? 2 : 1);
     html += '<span class="tag accent">' + skill.name + ' +' + bonus + (isExpertise ? ' (E)' : '') + '</span> ';
   });
   html += '</div></details>';
@@ -273,7 +273,7 @@ function renderDashboard(c, preserveScroll) {
         .replace(/half your level \(round up\)/g, Math.ceil(c.level / 2) + '');
       // Necrotic Shroud: compute CHA save DC
       if (c.subrace === 'Fallen') {
-        var chaSaveDC = 8 + c.proficiencyBonus + mod(c.abilityScores.cha);
+        var chaSaveDC = 8 + c.proficiencyBonus + getEffectiveMod(c, 'cha');
         transDesc = transDesc.replace('a CHA save', 'a CHA save (DC ' + chaSaveDC + ')');
       }
       html += renderResourceTracker(trans.name, 'aasTransform', 1, c, {
@@ -334,7 +334,7 @@ function renderDashboard(c, preserveScroll) {
 
   // Prepared Spells
   if (c.class === 'Cleric' || (c.class === 'Paladin' && c.level >= 2) || c.class === 'Wizard') {
-    var wizPrepCount = c.class === 'Wizard' ? getWizardPreparedCount(c.level, mod(c.abilityScores.int)) : c.preparedSpellCount;
+    var wizPrepCount = c.class === 'Wizard' ? getWizardPreparedCount(c.level, getEffectiveMod(c, 'int')) : c.preparedSpellCount;
     var prepDisplay = c.class === 'Wizard' ? (c.currentPreparedSpells || []).length + '/' + wizPrepCount : (c.currentPreparedSpells || []).length + '/' + c.preparedSpellCount;
     html += '<details><summary><h3 style="display:inline;font-size:1rem">Prepared Spells</h3> <span class="text-dim" style="font-size:0.85rem">(' + prepDisplay + ')</span></summary>';
     if (c.class === 'Wizard') {
@@ -400,7 +400,7 @@ function renderDashboard(c, preserveScroll) {
   html += '<div id="weapon-form-area"></div>';
   if (c.weapons && c.weapons.length > 0) {
     c.weapons.forEach(function(w, wi) {
-      var abilMod = mod(c.abilityScores[w.ability] || 10);
+      var abilMod = getEffectiveMod(c, w.ability || 'str');
       var profB = w.proficient ? c.proficiencyBonus : 0;
       var magB = w.magicBonus || 0;
       var atkTotal = abilMod + profB + magB;
@@ -644,7 +644,7 @@ function renderFighterDashboard(c) {
 
   // Champion: Survivor
   if (sub === 'Champion' && c.level >= 18) {
-    var survivorHeal = 5 + mod(c.abilityScores.con);
+    var survivorHeal = 5 + getEffectiveMod(c, 'con');
     var halfMax = Math.floor(getEffectiveMaxHp(c) / 2);
     html += '<div class="dash-section"><h2>Survivor</h2>';
     html += '<p class="text-dim" style="font-size:0.85rem">Regain ' + survivorHeal + ' HP per turn when below ' + halfMax + ' HP (and above 0 HP).</p></div>';
@@ -678,8 +678,8 @@ function renderFighterDashboard(c) {
 
   // Eldritch Knight: Spell DC / Attack + Spell Slots
   if (sub === 'Eldritch Knight' && c.level >= 3) {
-    var ekDC = 8 + c.proficiencyBonus + mod(c.abilityScores.int);
-    var ekAtk = c.proficiencyBonus + mod(c.abilityScores.int);
+    var ekDC = 8 + c.proficiencyBonus + getEffectiveMod(c, 'int');
+    var ekAtk = c.proficiencyBonus + getEffectiveMod(c, 'int');
     html += '<div class="stat-grid" style="margin-bottom:16px">';
     html += '<div class="stat-card"><div class="stat-value">' + ekDC + '</div><div class="stat-label">Spell Save DC</div></div>';
     html += '<div class="stat-card"><div class="stat-value">+' + ekAtk + '</div><div class="stat-label">Spell Attack</div></div>';
@@ -743,7 +743,7 @@ function renderFighterDashboard(c) {
 function renderPaladinDashboard(c) {
   var html = '';
   var sub = c.subclass || '';
-  var chaMod = mod(c.abilityScores.cha);
+  var chaMod = getEffectiveMod(c, 'cha');
 
   // Divine Smite Reference Card (level 2+)
   if (c.level >= 2) {
@@ -1005,7 +1005,7 @@ function renderRogueDashboard(c) {
           html += '<p style="margin-top:8px;font-size:0.85rem;color:var(--text-dim)">Surprised target: weapon dice \u00d72 + sneak attack dice \u00d72</p>';
           html += '</div></div>';
         } else if (featName === 'Death Strike') {
-          var dsDC = 8 + mod(c.abilityScores.dex) + c.proficiencyBonus;
+          var dsDC = 8 + getEffectiveMod(c, 'dex') + c.proficiencyBonus;
           html += '<div class="cd-card" onclick="this.classList.toggle(\'expanded\')">';
           html += '<div class="cd-card-header"><span class="cd-name">Death Strike</span>';
           html += '<span class="cd-brief">CON save DC ' + dsDC + '</span>';
@@ -1026,7 +1026,7 @@ function renderRogueDashboard(c) {
 
   // Arcane Trickster spell section (level 3+)
   if (sub === 'Arcane Trickster' && c.level >= 3) {
-    var atIntMod = mod(c.abilityScores.int);
+    var atIntMod = getEffectiveMod(c, 'int');
     var atDC = 8 + c.proficiencyBonus + atIntMod;
     var atAtk = c.proficiencyBonus + atIntMod;
     html += '<div class="stat-grid" style="margin-bottom:16px">';
@@ -1101,7 +1101,7 @@ function renderRogueDashboard(c) {
 function renderWizardDashboard(c) {
   var html = '';
   var sub = c.subclass || '';
-  var intMod = mod(c.abilityScores.int);
+  var intMod = getEffectiveMod(c, 'int');
 
   // Arcane Recovery (level 1+)
   var arBudget = getArcaneRecoveryBudget(c.level);

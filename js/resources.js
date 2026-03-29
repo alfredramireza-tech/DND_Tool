@@ -96,7 +96,7 @@ function applyHpChange(mode) {
     // Concentration save prompt
     if (c.concentration && c.concentration.active && actualDmg > 0) {
       var concDC = Math.max(10, Math.floor(actualDmg / 2));
-      var conBonus = mod(c.abilityScores.con) + (c.savingThrows.indexOf('con') >= 0 ? c.proficiencyBonus : 0);
+      var conBonus = getEffectiveMod(c, 'con') + (c.savingThrows.indexOf('con') >= 0 ? c.proficiencyBonus : 0) + getEquipSaveBonus(c, 'con');
       saveCurrentCharacter(c);
       closeModal();
       showModal(
@@ -374,7 +374,7 @@ function adjustArcaneWard(delta) {
   var c = loadCharacter();
   if (!c) return;
   if (!c.resources) c.resources = {};
-  var intMod = mod(c.abilityScores.int);
+  var intMod = getEffectiveMod(c, 'int');
   var wardMax = c.level * 2 + intMod;
   if (!c.resources.arcaneWard) c.resources.arcaneWard = { current: 0, max: wardMax };
   c.resources.arcaneWard.max = wardMax;
@@ -386,7 +386,7 @@ function adjustArcaneWard(delta) {
 function showChangePreparedWizard() {
   var c = loadCharacter();
   if (!c) return;
-  var intMod = mod(c.abilityScores.int);
+  var intMod = getEffectiveMod(c, 'int');
   var maxPrep = getWizardPreparedCount(c.level, intMod);
   var current = c.currentPreparedSpells || [];
   var spellbook = c.spellbook || [];

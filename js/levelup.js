@@ -29,7 +29,7 @@ function startLevelUp() {
   }
   if (!prog) { alert('No progression data for level ' + newLevel); return; }
 
-  const conMod = mod(char.abilityScores.con);
+  const conMod = getEffectiveMod(char, 'con');
   const isHillDwarf = char.race === 'Hill Dwarf';
   const hitDie = cd.hitDice;
   const avgRoll = Math.floor(hitDie / 2) + 1; // d8→5, d10→6, d12→7
@@ -725,8 +725,9 @@ function renderSpellSlotsScreen() {
     oldSlots = getHalfCasterSlots(s.char.level);
     newSlots = getHalfCasterSlots(s.newLevel);
     var chaChange = s.abilityChanges.cha || 0;
-    var oldChaMod = mod(s.char.abilityScores.cha);
-    var newChaMod = mod(s.char.abilityScores.cha + chaChange);
+    var oldChaMod = getEffectiveMod(s.char, 'cha');
+    var origCha = s.char.abilityScores.cha; s.char.abilityScores.cha += chaChange;
+    var newChaMod = getEffectiveMod(s.char, 'cha'); s.char.abilityScores.cha = origCha;
     oldPrepCount = Math.max(1, oldChaMod + Math.floor(s.char.level / 2));
     newPrepCount = Math.max(1, newChaMod + Math.floor(s.newLevel / 2));
     prepLabel = 'CHA modifier + half paladin level';
@@ -734,8 +735,9 @@ function renderSpellSlotsScreen() {
     oldSlots = getFullCasterSlots(s.char.level);
     newSlots = getFullCasterSlots(s.newLevel);
     var intChange = s.abilityChanges.int || 0;
-    var oldIntMod = mod(s.char.abilityScores.int);
-    var newIntMod = mod(s.char.abilityScores.int + intChange);
+    var oldIntMod = getEffectiveMod(s.char, 'int');
+    var origInt = s.char.abilityScores.int; s.char.abilityScores.int += intChange;
+    var newIntMod = getEffectiveMod(s.char, 'int'); s.char.abilityScores.int = origInt;
     oldPrepCount = Math.max(1, s.char.level + oldIntMod);
     newPrepCount = Math.max(1, s.newLevel + newIntMod);
     prepLabel = 'level + INT modifier';
@@ -743,9 +745,10 @@ function renderSpellSlotsScreen() {
     // Cleric
     oldSlots = s.char.spellSlots;
     newSlots = s.prog.spellSlots;
-    var oldWisMod = mod(s.char.abilityScores.wis);
+    var oldWisMod = getEffectiveMod(s.char, 'wis');
     var wisChange = s.abilityChanges.wis || 0;
-    var newWisMod = mod(s.char.abilityScores.wis + wisChange);
+    var origWis = s.char.abilityScores.wis; s.char.abilityScores.wis += wisChange;
+    var newWisMod = getEffectiveMod(s.char, 'wis'); s.char.abilityScores.wis = origWis;
     oldPrepCount = Math.max(1, s.char.level + oldWisMod);
     newPrepCount = Math.max(1, s.newLevel + newWisMod);
     prepLabel = 'level + WIS modifier';
@@ -1013,7 +1016,7 @@ function renderExpertiseSelectScreen() {
   profSkills.forEach(function(sk) {
     var name = sk.charAt(0).toUpperCase() + sk.slice(1);
     var skill = SKILLS.find(function(s2) { return s2.name.toLowerCase() === sk.toLowerCase(); });
-    var abilMod = skill ? mod(s.char.abilityScores[skill.ability]) : 0;
+    var abilMod = skill ? getEffectiveMod(s.char, skill.ability) : 0;
     var expBonus = abilMod + s.char.proficiencyBonus * 2;
     var selected = s.newExpertiseSkills.indexOf(sk) >= 0;
     html += '<div class="lu-option ' + (selected ? 'selected' : '') + '" onclick="luToggleExpertise(\'' + sk.replace(/'/g, "\\'") + '\')">';
@@ -1252,7 +1255,8 @@ function luToggleEkSpell(name) {
 
 function renderPaladinPrepareScreen() {
   var s = luState;
-  var chaMod = mod(s.char.abilityScores.cha + (s.abilityChanges.cha || 0));
+  var _origCha = s.char.abilityScores.cha; s.char.abilityScores.cha += (s.abilityChanges.cha || 0);
+  var chaMod = getEffectiveMod(s.char, 'cha'); s.char.abilityScores.cha = _origCha;
   var maxPrep = Math.max(1, chaMod + Math.floor(s.newLevel / 2));
   var sub = s.char.subclass || s.subclassSelection || '';
   var oathSpells = (typeof getOathSpells === 'function') ? getOathSpells(sub, s.newLevel) : [];
@@ -1628,17 +1632,20 @@ function renderLuSummary() {
     var sumOldPrep, sumNewPrep;
     if (s.cls === 'Paladin') {
       var chaChg = s.abilityChanges.cha || 0;
-      sumOldPrep = Math.max(1, mod(char.abilityScores.cha) + Math.floor(char.level / 2));
-      sumNewPrep = Math.max(1, mod(char.abilityScores.cha + chaChg) + Math.floor(s.newLevel / 2));
+      sumOldPrep = Math.max(1, getEffectiveMod(char, 'cha') + Math.floor(char.level / 2));
+      var _oc = char.abilityScores.cha; char.abilityScores.cha += chaChg;
+      sumNewPrep = Math.max(1, getEffectiveMod(char, 'cha') + Math.floor(s.newLevel / 2)); char.abilityScores.cha = _oc;
     } else if (s.cls === 'Wizard') {
       var intChg = s.abilityChanges.int || 0;
-      var newIntMod2 = mod(char.abilityScores.int + intChg);
-      sumOldPrep = Math.max(1, char.level + mod(char.abilityScores.int));
+      sumOldPrep = Math.max(1, char.level + getEffectiveMod(char, 'int'));
+      var _oi = char.abilityScores.int; char.abilityScores.int += intChg;
+      var newIntMod2 = getEffectiveMod(char, 'int'); char.abilityScores.int = _oi;
       sumNewPrep = Math.max(1, s.newLevel + newIntMod2);
     } else {
       var wisChange = s.abilityChanges.wis || 0;
-      var newWisMod = mod(char.abilityScores.wis + wisChange);
-      sumOldPrep = Math.max(1, char.level + mod(char.abilityScores.wis));
+      sumOldPrep = Math.max(1, char.level + getEffectiveMod(char, 'wis'));
+      var _ow = char.abilityScores.wis; char.abilityScores.wis += wisChange;
+      var newWisMod = getEffectiveMod(char, 'wis'); char.abilityScores.wis = _ow;
       sumNewPrep = Math.max(1, s.newLevel + newWisMod);
     }
     if (sumOldPrep !== sumNewPrep) {
@@ -1756,60 +1763,61 @@ function renderLuSummary() {
 
   // Derived stats summary
   var derivedChanges = [];
+  // Helper: simulate new effective mod after ASI change
+  function _simMod(ab, chg) {
+    if (!chg) return getEffectiveMod(char, ab);
+    var orig = char.abilityScores[ab]; char.abilityScores[ab] += chg;
+    var r = getEffectiveMod(char, ab); char.abilityScores[ab] = orig; return r;
+  }
   if (s.cls === 'Cleric') {
     var wisChg = s.abilityChanges.wis || 0;
-    var wMod = mod(char.abilityScores.wis + wisChg);
-    var oDC = 8 + oldProf + mod(char.abilityScores.wis);
-    var nDC = 8 + newProf + wMod;
+    var oDC = 8 + oldProf + getEffectiveMod(char, 'wis');
+    var nDC = 8 + newProf + _simMod('wis', wisChg);
     if (oDC !== nDC) derivedChanges.push({ label: 'Spell Save DC', old: oDC, new_: nDC });
-    var oAtk = oldProf + mod(char.abilityScores.wis);
-    var nAtk = newProf + wMod;
+    var oAtk = oldProf + getEffectiveMod(char, 'wis');
+    var nAtk = newProf + _simMod('wis', wisChg);
     if (oAtk !== nAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oAtk, new_: '+' + nAtk });
   } else if (s.cls === 'Wizard') {
     var wizChg = s.abilityChanges.int || 0;
-    var wizMod = mod(char.abilityScores.int + wizChg);
-    var oWizDC = 8 + oldProf + mod(char.abilityScores.int);
-    var nWizDC = 8 + newProf + wizMod;
+    var oWizDC = 8 + oldProf + getEffectiveMod(char, 'int');
+    var nWizDC = 8 + newProf + _simMod('int', wizChg);
     if (oWizDC !== nWizDC) derivedChanges.push({ label: 'Spell Save DC', old: oWizDC, new_: nWizDC });
-    var oWizAtk = oldProf + mod(char.abilityScores.int);
-    var nWizAtk = newProf + wizMod;
+    var oWizAtk = oldProf + getEffectiveMod(char, 'int');
+    var nWizAtk = newProf + _simMod('int', wizChg);
     if (oWizAtk !== nWizAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oWizAtk, new_: '+' + nWizAtk });
   } else if (s.cls === 'Rogue') {
     var rSub3 = s.char.subclass || s.subclassSelection;
     if (rSub3 === 'Arcane Trickster') {
       var iChg2 = s.abilityChanges.int || 0;
-      var iMod2 = mod(char.abilityScores.int + iChg2);
-      var oAtDC = 8 + oldProf + mod(char.abilityScores.int);
-      var nAtDC = 8 + newProf + iMod2;
+      var oAtDC = 8 + oldProf + getEffectiveMod(char, 'int');
+      var nAtDC = 8 + newProf + _simMod('int', iChg2);
       if (oAtDC !== nAtDC) derivedChanges.push({ label: 'Spell Save DC', old: oAtDC, new_: nAtDC });
-      var oAtAtk = oldProf + mod(char.abilityScores.int);
-      var nAtAtk = newProf + iMod2;
+      var oAtAtk = oldProf + getEffectiveMod(char, 'int');
+      var nAtAtk = newProf + _simMod('int', iChg2);
       if (oAtAtk !== nAtAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oAtAtk, new_: '+' + nAtAtk });
     }
   } else if (s.cls === 'Paladin') {
     var chaChg2 = s.abilityChanges.cha || 0;
-    var cMod = mod(char.abilityScores.cha + chaChg2);
-    var oPalDC = 8 + oldProf + mod(char.abilityScores.cha);
-    var nPalDC = 8 + newProf + cMod;
+    var oPalDC = 8 + oldProf + getEffectiveMod(char, 'cha');
+    var nPalDC = 8 + newProf + _simMod('cha', chaChg2);
     if (oPalDC !== nPalDC) derivedChanges.push({ label: 'Spell Save DC', old: oPalDC, new_: nPalDC });
-    var oPalAtk = oldProf + mod(char.abilityScores.cha);
-    var nPalAtk = newProf + cMod;
+    var oPalAtk = oldProf + getEffectiveMod(char, 'cha');
+    var nPalAtk = newProf + _simMod('cha', chaChg2);
     if (oPalAtk !== nPalAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oPalAtk, new_: '+' + nPalAtk });
   } else if (s.cls === 'Fighter') {
     var fSub = s.char.subclass || s.subclassSelection;
     if (fSub === 'Eldritch Knight') {
       var iChg = s.abilityChanges.int || 0;
-      var iMod = mod(char.abilityScores.int + iChg);
-      var oEkDC = 8 + oldProf + mod(char.abilityScores.int);
-      var nEkDC = 8 + newProf + iMod;
+      var oEkDC = 8 + oldProf + getEffectiveMod(char, 'int');
+      var nEkDC = 8 + newProf + _simMod('int', iChg);
       if (oEkDC !== nEkDC) derivedChanges.push({ label: 'Spell Save DC', old: oEkDC, new_: nEkDC });
-      var oEkAtk = oldProf + mod(char.abilityScores.int);
-      var nEkAtk = newProf + iMod;
+      var oEkAtk = oldProf + getEffectiveMod(char, 'int');
+      var nEkAtk = newProf + _simMod('int', iChg);
       if (oEkAtk !== nEkAtk) derivedChanges.push({ label: 'Spell Attack', old: '+' + oEkAtk, new_: '+' + nEkAtk });
     }
     if (fSub === 'Battle Master') {
-      var oBest = Math.max(mod(char.abilityScores.str), mod(char.abilityScores.dex));
-      var nBest = Math.max(mod(char.abilityScores.str + (s.abilityChanges.str || 0)), mod(char.abilityScores.dex + (s.abilityChanges.dex || 0)));
+      var oBest = Math.max(getEffectiveMod(char, 'str'), getEffectiveMod(char, 'dex'));
+      var nBest = Math.max(_simMod('str', s.abilityChanges.str || 0), _simMod('dex', s.abilityChanges.dex || 0));
       var oBmDC = 8 + oldProf + oBest;
       var nBmDC = 8 + newProf + nBest;
       if (oBmDC !== nBmDC) derivedChanges.push({ label: 'Maneuver Save DC', old: oBmDC, new_: nBmDC });
@@ -1879,7 +1887,7 @@ function confirmLevelUp() {
 
   // Recalculate common derived stats
   char.proficiencyBonus = s.prog.proficiencyBonus;
-  char.initiative = mod(char.abilityScores.dex);
+  char.initiative = getEffectiveMod(char, 'dex');
 
   if (cls === 'Fighter') {
     // Apply subclass selection (level 3)
@@ -1992,7 +2000,7 @@ function confirmLevelUp() {
     // Spell slots (half-caster)
     char.spellSlots = getHalfCasterSlots(newLevel);
     // Prepared spell count (CHA-based)
-    var chaModFinal = mod(char.abilityScores.cha);
+    var chaModFinal = getEffectiveMod(char, 'cha');
     char.preparedSpellCount = Math.max(1, chaModFinal + Math.floor(newLevel / 2));
     // Channel Divinity
     char.channelDivinityUses = s.prog.channelDivinityUses || 0;
@@ -2038,7 +2046,7 @@ function confirmLevelUp() {
     // Spell slots (full caster)
     char.spellSlots = getFullCasterSlots(newLevel);
     // Prepared spell count (INT-based)
-    char.preparedSpellCount = Math.max(1, newLevel + mod(char.abilityScores.int));
+    char.preparedSpellCount = Math.max(1, newLevel + getEffectiveMod(char, 'int'));
     // Features
     char.features = getWizardFeatures(newLevel, char.subclass);
     // Portent dice (Divination, level 2+)
@@ -2054,7 +2062,7 @@ function confirmLevelUp() {
     if (char.subclass === 'School of Abjuration' && newLevel >= 2) {
       if (!char.resources) char.resources = {};
       if (!char.resources.arcaneWard) char.resources.arcaneWard = { current: 0, max: 0 };
-      char.resources.arcaneWard.max = newLevel * 2 + mod(char.abilityScores.int);
+      char.resources.arcaneWard.max = newLevel * 2 + getEffectiveMod(char, 'int');
     }
   } else {
     // Cleric
@@ -2063,7 +2071,7 @@ function confirmLevelUp() {
       historyEntry.newCantrip = s.newCantrip;
     }
     char.spellSlots = s.prog.spellSlots;
-    char.preparedSpellCount = Math.max(1, newLevel + mod(char.abilityScores.wis));
+    char.preparedSpellCount = Math.max(1, newLevel + getEffectiveMod(char, 'wis'));
     char.channelDivinityUses = s.prog.channelDivinityUses;
     char.features = getFeatures(newLevel);
     char.domainSpells = getDomainSpells(newLevel);

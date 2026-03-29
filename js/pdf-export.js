@@ -83,7 +83,7 @@ function pdfSpellLine(name, c) {
   if (cd && cd.spellcastingAbility) castAbility = cd.spellcastingAbility;
   if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') castAbility = 'int';
   if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') castAbility = 'int';
-  var abilMod = mod(c.abilityScores[castAbility]);
+  var abilMod = getEffectiveMod(c, castAbility);
   var prof = c.proficiencyBonus;
   var dc = 8 + prof + abilMod;
   var atk = prof + abilMod;
@@ -176,7 +176,7 @@ async function fillPdfTemplate(c) {
   var abilFields = { str:'STR', dex:'DEX', con:'CON', int:'INT', wis:'WIS', cha:'CHA' };
   var abilModFields = { str:'STRmod', dex:'DEXmod', con:'CONmod', int:'INTmod', wis:'WISmod', cha:'CHAmod' };
   abilities.forEach(function(ab) {
-    var score = scores[ab] || 10;
+    var score = getEffectiveAbilityScore(c, ab);
     var m = mod(score);
     pdfSetText(form, abilFields[ab], String(score), 10);
     pdfSetText(form, abilModFields[ab], (m >= 0 ? '+' : '') + m, 10);

@@ -132,7 +132,7 @@ const BM_MANEUVERS_KNOWN = {3:3,7:5,10:7,15:9};
 function getBmDiceCount(level) { return level >= 15 ? 6 : level >= 7 ? 5 : 4; }
 function getBmDiceSize(level) { return level >= 18 ? 12 : level >= 10 ? 10 : 8; }
 /* Maneuver Save DC = 8 + prof + max(STR mod, DEX mod) */
-function getManeuverDC(c) { return 8 + c.proficiencyBonus + Math.max(mod(c.abilityScores.str), mod(c.abilityScores.dex)); }
+function getManeuverDC(c) { return 8 + c.proficiencyBonus + Math.max(getEffectiveMod(c, 'str'), getEffectiveMod(c, 'dex')); }
 
 /* Fighter feature list builder */
 function getFighterFeatures(level, subclass) {

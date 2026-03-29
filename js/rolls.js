@@ -129,7 +129,7 @@ function doSpellRoll(spellName, rollType) {
   if (!spell) return;
 
   var cd = CLASS_DATA[char.class] || CLASS_DATA.Cleric;
-  const castMod = mod(char.abilityScores[cd.spellcastingAbility] || char.abilityScores.wis);
+  const castMod = getEffectiveMod(char, cd.spellcastingAbility || 'wis');
   const profBonus = char.proficiencyBonus;
   const isSupremeHealing = char.class === 'Cleric' && char.subclass === 'Life Domain' && char.level >= 17;
 
@@ -212,7 +212,7 @@ function doWeaponRoll(idx, rollType) {
   const char = loadCharacter();
   if (!char || !char.weapons || !char.weapons[idx]) return;
   const w = char.weapons[idx];
-  const abilMod = mod(char.abilityScores[w.ability] || 10);
+  const abilMod = getEffectiveMod(char, w.ability || 'str');
   const profBonus = w.proficient ? char.proficiencyBonus : 0;
   const magB = w.magicBonus || 0;
   const critMin = getCritRange(char);
@@ -300,7 +300,7 @@ function doWeaponRoll(idx, rollType) {
 function doAbilityRoll(ability, isProficient) {
   const char = loadCharacter();
   if (!char) return;
-  const abilMod = mod(char.abilityScores[ability]);
+  const abilMod = getEffectiveMod(char, ability);
   var extraBonus = 0;
   var extraLabel = '';
   // Remarkable Athlete: Champion 7+ adds half prof to unproficient STR/DEX/CON checks (not saves)
@@ -311,7 +311,10 @@ function doAbilityRoll(ability, isProficient) {
       extraLabel = '+' + extraBonus + ' RA';
     }
   }
-  const bonus = abilMod + (isProficient ? char.proficiencyBonus : 0) + extraBonus;
+  // Equipment save bonuses (saves only, not checks)
+  var equipSaveB = isProficient ? getEquipSaveBonus(char, ability) : 0;
+  if (equipSaveB > 0) extraLabel += '+' + equipSaveB + ' equip';
+  const bonus = abilMod + (isProficient ? char.proficiencyBonus : 0) + extraBonus + equipSaveB;
   const d20 = rollDie(20);
   var total = d20 + bonus;
   const label = ABILITY_NAMES[ability] + (isProficient ? ' Save' : ' Check');
@@ -336,7 +339,7 @@ function doSkillRoll(skillName) {
   if (!skill) return;
   const isProficient = char.skillProficiencies.some(s => s.toLowerCase() === skillName.toLowerCase());
   const isExpertise = (char.expertiseSkills || []).some(s => s.toLowerCase() === skillName.toLowerCase());
-  const abilMod = mod(char.abilityScores[skill.ability]);
+  const abilMod = getEffectiveMod(char, skill.ability);
   var extraBonus = 0;
   var extraLabel = '';
   // Remarkable Athlete: Champion 7+ adds half prof (round up) to unproficient STR/DEX/CON checks
