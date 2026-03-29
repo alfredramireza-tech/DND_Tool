@@ -47,7 +47,7 @@
     ]
   },
   "proficiencyBonus": 2,
-  "ac": 17,
+  "ac": 19,
   "speed": 25,
   "initiative": -1,
   "savingThrows": [
@@ -189,11 +189,19 @@
     "failures": 0
   },
   "concentration": {
-    "active": false,
-    "spellName": ""
+    "active": true,
+    "spellName": "Shield of Faith"
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "8:09 PM",
+      "text": "Added buff: Shield of Faith (+2 AC)"
+    },
+    {
+      "time": "8:09 PM",
+      "text": "Began concentrating on Shield of Faith"
+    },
     {
       "time": "8:07 PM",
       "text": "Long Rest — all resources restored, HP full"
@@ -325,7 +333,18 @@
   ],
   "inspiration": true,
   "journal": [],
-  "externalBuffs": [],
+  "externalBuffs": [
+    {
+      "spellName": "Shield of Faith",
+      "effects": [
+        {
+          "type": "acBonus",
+          "value": 2
+        }
+      ],
+      "linkedToConcentration": true
+    }
+  ],
   "maxHpBoost": {
     "value": 0,
     "source": ""
