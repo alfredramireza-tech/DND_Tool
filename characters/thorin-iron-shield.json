@@ -351,5 +351,17 @@
   },
   "spellbook": [],
   "spellMastery": null,
-  "signatureSpells": null
+  "signatureSpells": null,
+  "unequippedItems": [
+    {
+      "name": "SHield",
+      "slot": "shield",
+      "armorType": "heavy",
+      "stats": {
+        "acBonus": 2
+      },
+      "magicBonus": 0,
+      "notes": ""
+    }
+  ]
 }
