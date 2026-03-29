@@ -4,6 +4,7 @@
    ═══════════════════════════════════════════ */
 
 var _dmUnlocked = false;
+var _dmSkipNextCloudLoad = false;
 
 function loadDmData() {
   var data;
@@ -115,7 +116,10 @@ function showDmScreen() {
   }
 
   var localData = loadDmData();
-  if (localData.encounters.length === 0 && localData.quickMonsters.length === 0 && !localData.sessionNotes) {
+  if (_dmSkipNextCloudLoad) {
+    _dmSkipNextCloudLoad = false;
+    renderDmHome();
+  } else if (localData.encounters.length === 0 && localData.quickMonsters.length === 0 && !localData.sessionNotes) {
     renderDmHome();
     dmCloudLoad().then(function(cloudData) {
       if (cloudData && (cloudData.encounters.length > 0 || cloudData.quickMonsters.length > 0 || cloudData.sessionNotes)) {
@@ -405,6 +409,7 @@ function confirmAbandonEncounter() {
   saveDmData(data);
   dmCloudSave();
   closeModal();
+  _dmSkipNextCloudLoad = true;
   showDmScreen();
 }
 
@@ -1569,6 +1574,7 @@ function confirmDeleteEncounter(encId) {
   saveDmData(data);
   dmCloudSave();
   closeModal();
+  _dmSkipNextCloudLoad = true;
   showDmScreen();
 }
 
