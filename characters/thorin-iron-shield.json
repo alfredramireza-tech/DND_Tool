@@ -153,10 +153,7 @@
   "id": "mn12z7a2x0032",
   "currentHp": 34,
   "tempHp": 0,
-  "spellSlotsUsed": {
-    "1": 0,
-    "2": 1
-  },
+  "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
   "equippedItems": [
     {
@@ -197,6 +194,58 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "8:07 PM",
+      "text": "Long Rest — all resources restored, HP full"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Guiding Bolt — radiant: 17"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Cast Guiding Bolt at 1st level (0 slots remaining)"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Guiding Bolt — radiant: 14"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Cast Guiding Bolt at 2nd level (0 slots remaining)"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Guiding Bolt — radiant: 8"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Cast Guiding Bolt at 2nd level (1 slots remaining)"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Guiding Bolt — Attack: 24"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Cast Guiding Bolt at 1st level (1 slots remaining)"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Healing Word — Healing: 10"
+    },
+    {
+      "time": "8:07 PM",
+      "text": "Cast Healing Word at 1st level (2 slots remaining)"
+    },
+    {
+      "time": "8:06 PM",
+      "text": "Healing Word — Healing: 8"
+    },
+    {
+      "time": "8:06 PM",
+      "text": "Cast Healing Word at 1st level (3 slots remaining)"
+    },
     {
       "time": "8:06 PM",
       "text": "Prayer of Healing — Healing: 22"
