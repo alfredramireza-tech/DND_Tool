@@ -161,7 +161,6 @@ async function fillPdfTemplate(c) {
   _pdfFont = font;
 
   var profBonus = c.proficiencyBonus;
-  var scores = c.abilityScores;
   var cd = CLASS_DATA[c.class] || CLASS_DATA.Cleric;
 
   // ── Page 1: Header ──
@@ -186,9 +185,10 @@ async function fillPdfTemplate(c) {
   var saveFields = { str:'SavingThrows', dex:'SavingThrows2', con:'SavingThrows3', int:'SavingThrows4', wis:'SavingThrows5', cha:'SavingThrows6' };
   var saves = c.savingThrows || [];
   abilities.forEach(function(ab) {
-    var m = mod(scores[ab] || 10);
+    var m = getEffectiveMod(c, ab);
     var isProf = saves.indexOf(ab) >= 0;
-    var total = m + (isProf ? profBonus : 0);
+    var equipSave = isProf ? getEquipSaveBonus(c, ab) : 0;
+    var total = m + (isProf ? profBonus : 0) + equipSave;
     pdfSetText(form, saveFields[ab], (total >= 0 ? '+' : '') + total, 8);
     if (isProf) pdfCheckBox(form, PDF_SAVE_CHECKBOXES[ab]);
   });
@@ -198,7 +198,7 @@ async function fillPdfTemplate(c) {
   var expertise = c.expertiseSkills || [];
   Object.keys(PDF_SKILL_MAP).forEach(function(skill) {
     var info = PDF_SKILL_MAP[skill];
-    var m = mod(scores[info.ability] || 10);
+    var m = getEffectiveMod(c, info.ability);
     var isProf = skillProfs.indexOf(skill) >= 0;
     var isExpert = expertise.indexOf(skill) >= 0;
     var total = m + (isExpert ? profBonus * 2 : (isProf ? profBonus : 0));
@@ -216,7 +216,7 @@ async function fillPdfTemplate(c) {
   // ── Combat ──
   var ac = typeof calculateAC === 'function' ? calculateAC(c) : (c.ac || 10);
   pdfSetText(form, 'AC', String(ac), 12);
-  var initMod = mod(scores.dex || 10);
+  var initMod = getEffectiveMod(c, 'dex');
   pdfSetText(form, 'Initiative', (initMod >= 0 ? '+' : '') + initMod, 10);
   pdfSetText(form, 'Speed', String(c.speed || 30), 10);
   pdfSetText(form, 'HPMax', String(c.hp ? c.hp.max : ''), 10);
@@ -232,7 +232,7 @@ async function fillPdfTemplate(c) {
 
   // Passive Perception
   var percSkill = PDF_SKILL_MAP.perception;
-  var percMod = mod(scores[percSkill.ability] || 10);
+  var percMod = getEffectiveMod(c, percSkill.ability);
   var percProf = skillProfs.indexOf('perception') >= 0;
   var percExpert = expertise.indexOf('perception') >= 0;
   var passive = 10 + percMod + (percExpert ? profBonus * 2 : (percProf ? profBonus : 0));
@@ -245,7 +245,7 @@ async function fillPdfTemplate(c) {
   var wpnDmgFields = ['Wpn1 Damage','Wpn2 Damage ','Wpn3 Damage ','Wpn4 Damage','Wpn5 Damage'];
   weapons.slice(0, 5).forEach(function(w, i) {
     pdfSetText(form, wpnNameFields[i], w.name || '', 7);
-    var abilMod = mod(scores[w.ability] || 10);
+    var abilMod = getEffectiveMod(c, w.ability || 'str');
     var atkBonus = abilMod + (w.proficient ? profBonus : 0) + (w.magicBonus || 0);
     // Fighting style bonuses
     var fsAtk = 0, fsDmg = 0, fsNote = '';
@@ -311,7 +311,7 @@ async function fillPdfTemplate(c) {
   }
   if (c.class === 'Paladin') {
     resourceNotes.push('Lay on Hands: ' + (c.level * 5) + ' HP pool/LR');
-    var divineSenseUses = 1 + mod(scores.cha || 10);
+    var divineSenseUses = 1 + getEffectiveMod(c, 'cha');
     resourceNotes.push('Divine Sense: ' + Math.max(1, divineSenseUses) + '/LR');
     if (c.level >= 3) resourceNotes.push('Channel Divinity: 1/SR');
     resourceNotes.push('Divine Smite: 2d8+1d8/slot above 1st (max 5d8)');
@@ -376,7 +376,7 @@ async function fillPdfTemplate(c) {
   });
 
   // ── Carrying Capacity ──
-  pdfSetText(form, 'MAX Weight', String((scores.str || 10) * 15) + ' lb', 7);
+  pdfSetText(form, 'MAX Weight', String(getEffectiveAbilityScore(c, 'str') * 15) + ' lb', 7);
 
   // ── Page 2 ──
   pdfSetText(form, 'CharacterName 2', c.name, 10);
@@ -387,7 +387,7 @@ async function fillPdfTemplate(c) {
     var castAbility = cd.spellcastingAbility || 'wis';
     if (c.class === 'Fighter' && c.subclass === 'Eldritch Knight') castAbility = 'int';
     if (c.class === 'Rogue' && c.subclass === 'Arcane Trickster') castAbility = 'int';
-    var castMod = mod(scores[castAbility] || 10);
+    var castMod = getEffectiveMod(c, castAbility);
     var spellDC = 8 + profBonus + castMod;
     var spellAtk = profBonus + castMod;
     var abilLabel = { wis: 'WIS', int: 'INT', cha: 'CHA' };

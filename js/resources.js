@@ -621,17 +621,16 @@ function saveCurrencyEdit(denom) {
    EQUIPMENT SYSTEM
    ═══════════════════════════════════════════ */
 
-function showEquipForm(idx) {
-  var c = loadCharacter();
-  if (!c) return;
-  var item = idx >= 0 ? (c.equippedItems[idx] || {}) : { name: '', slot: 'other', armorType: null, stats: {}, notes: '' };
-  var area = document.getElementById('equip-form-area');
-  if (!area) return;
+function buildEquipFormHTML(item, saveFn) {
   var showArmorType = (item.slot === 'armor' || item.slot === 'shield');
-  area.innerHTML = '<div class="equip-form">' +
-    '<div class="ef-row"><div class="form-group"><label>Name</label>' +
-    '<input type="text" id="ef-name" value="' + escapeHtml(item.name || '') + '" onclick="event.stopPropagation()"></div></div>' +
-    '<div class="ef-row"><div class="form-group"><label>Slot</label>' +
+  var hasCharges = !!(item.charges);
+  var hasDaily = !!(item.dailyUses);
+  var isHeavyArmor = item.slot === 'armor' && item.armorType === 'heavy';
+  var html = '<div class="equip-form">';
+  // Section 1 — Basic
+  html += '<div class="ef-row"><div class="form-group"><label>Name</label>' +
+    '<input type="text" id="ef-name" value="' + escapeHtml(item.name || '') + '" onclick="event.stopPropagation()"></div></div>';
+  html += '<div class="ef-row"><div class="form-group"><label>Slot</label>' +
     '<select id="ef-slot" onchange="onEquipSlotChange()" onclick="event.stopPropagation()">' +
     '<option value="armor"' + (item.slot === 'armor' ? ' selected' : '') + '>Armor</option>' +
     '<option value="shield"' + (item.slot === 'shield' ? ' selected' : '') + '>Shield</option>' +
@@ -640,34 +639,108 @@ function showEquipForm(idx) {
     '<option value="other"' + (item.slot === 'other' ? ' selected' : '') + '>Other</option>' +
     '</select></div>' +
     '<div class="form-group" id="ef-armor-type-group" style="' + (showArmorType ? '' : 'display:none') + '">' +
-    '<label>Armor Type</label><select id="ef-armor-type" onclick="event.stopPropagation()">' +
+    '<label>Armor Type</label><select id="ef-armor-type" onchange="onEquipSlotChange()" onclick="event.stopPropagation()">' +
     '<option value="light"' + (item.armorType === 'light' ? ' selected' : '') + '>Light</option>' +
     '<option value="medium"' + (item.armorType === 'medium' ? ' selected' : '') + '>Medium</option>' +
     '<option value="heavy"' + (item.armorType === 'heavy' ? ' selected' : '') + '>Heavy</option>' +
-    '</select></div></div>' +
-    '<div class="ef-row"><div class="form-group"><label>Base AC / AC Bonus</label>' +
+    '</select></div></div>';
+  html += '<div class="ef-row"><div class="form-group"><label>Base AC / AC Bonus</label>' +
     '<input type="number" id="ef-ac" value="' + ((item.stats && item.stats.ac) || (item.stats && item.stats.acBonus) || '') + '" onclick="event.stopPropagation()"></div>' +
     '<div class="form-group"><label>Magic Bonus (+1, +2, etc.)</label>' +
-    '<input type="number" id="ef-magic" value="' + (item.magicBonus || 0) + '" min="0" onclick="event.stopPropagation()"></div></div>' +
-    '<div class="ef-row"><div class="form-group"><label>Notes</label>' +
-    '<input type="text" id="ef-notes" value="' + escapeHtml(item.notes || '') + '" onclick="event.stopPropagation()"></div></div>' +
-    '<div class="ef-actions">' +
-    '<button class="btn btn-primary" onclick="saveEquipItem(' + idx + ')" style="padding:10px 20px">Save</button>' +
+    '<input type="number" id="ef-magic" value="' + (item.magicBonus || 0) + '" min="0" onclick="event.stopPropagation()"></div></div>';
+  html += '<div class="ef-row"><div class="form-group"><label>Notes</label>' +
+    '<input type="text" id="ef-notes" value="' + escapeHtml(item.notes || '') + '" onclick="event.stopPropagation()"></div></div>';
+  // Section 2 — Attunement
+  html += '<div class="ef-row"><label class="ef-checkbox-label"><input type="checkbox" id="ef-attunement"' + (item.requiresAttunement ? ' checked' : '') + ' onclick="event.stopPropagation()"> Requires Attunement</label></div>';
+  // Section 3 — Charges
+  html += '<div class="ef-row"><label class="ef-checkbox-label"><input type="checkbox" id="ef-has-charges"' + (hasCharges ? ' checked' : '') + ' onchange="document.getElementById(\'ef-charges-detail\').style.display=this.checked?\'\':\'none\'" onclick="event.stopPropagation()"> Has Charges</label></div>';
+  html += '<div id="ef-charges-detail" style="' + (hasCharges ? '' : 'display:none') + '">';
+  html += '<div class="ef-row"><div class="form-group"><label>Max Charges</label>' +
+    '<input type="number" id="ef-charges-max" value="' + (hasCharges ? item.charges.max : 7) + '" min="1" onclick="event.stopPropagation()"></div>' +
+    '<div class="form-group"><label>Recharge On</label>' +
+    '<select id="ef-charges-recharge" onclick="event.stopPropagation()">' +
+    '<option value="dawn"' + (hasCharges && item.charges.rechargeOn === 'dawn' ? ' selected' : '') + '>Dawn</option>' +
+    '<option value="short"' + (hasCharges && item.charges.rechargeOn === 'short' ? ' selected' : '') + '>Short Rest</option>' +
+    '<option value="long"' + (hasCharges && item.charges.rechargeOn === 'long' ? ' selected' : '') + '>Long Rest</option>' +
+    '<option value="none"' + (hasCharges && item.charges.rechargeOn === 'none' ? ' selected' : '') + '>None</option>' +
+    '</select></div></div></div>';
+  // Section 4 — Daily Uses
+  html += '<div class="ef-row"><label class="ef-checkbox-label"><input type="checkbox" id="ef-has-daily"' + (hasDaily ? ' checked' : '') + ' onchange="document.getElementById(\'ef-daily-detail\').style.display=this.checked?\'\':\'none\'" onclick="event.stopPropagation()"> Has Daily Use</label></div>';
+  html += '<div id="ef-daily-detail" style="' + (hasDaily ? '' : 'display:none') + '">';
+  html += '<div class="ef-row"><div class="form-group"><label>Uses Per Day</label>' +
+    '<input type="number" id="ef-daily-max" value="' + (hasDaily ? item.dailyUses.max : 1) + '" min="1" onclick="event.stopPropagation()"></div>' +
+    '<div class="form-group"><label>Ability Label</label>' +
+    '<input type="text" id="ef-daily-label" value="' + escapeHtml(hasDaily ? (item.dailyUses.label || '') : '') + '" placeholder="e.g., Cast Invisibility" onclick="event.stopPropagation()"></div></div></div>';
+  // Section 5 — More Properties
+  html += '<details class="ef-advanced"><summary style="cursor:pointer;color:var(--accent);font-size:0.85rem;margin:8px 0">More Properties</summary>';
+  // Ability Override
+  html += '<div class="ef-hint">Ability Score Override <span class="text-dim">— sets score to this value (e.g., 19 for Gauntlets of Ogre Power)</span></div>';
+  html += '<div class="ef-ability-row">';
+  ABILITIES.forEach(function(ab) {
+    var val = (item.abilityOverride && item.abilityOverride[ab]) || '';
+    html += '<div class="ef-ability-cell"><label>' + ABILITY_NAMES[ab] + '</label><input type="number" id="ef-override-' + ab + '" value="' + val + '" onclick="event.stopPropagation()"></div>';
+  });
+  html += '</div>';
+  // Ability Bonus
+  html += '<div class="ef-hint">Ability Score Bonus <span class="text-dim">— adds to score (e.g., +2 CON)</span></div>';
+  html += '<div class="ef-ability-row">';
+  ABILITIES.forEach(function(ab) {
+    var val = (item.abilityBonus && item.abilityBonus[ab]) || '';
+    html += '<div class="ef-ability-cell"><label>' + ABILITY_NAMES[ab] + '</label><input type="number" id="ef-bonus-' + ab + '" value="' + val + '" onclick="event.stopPropagation()"></div>';
+  });
+  html += '</div>';
+  // Save Bonus All
+  html += '<div class="ef-row"><div class="form-group"><label>Save Bonus (All) <span class="text-dim">— +N to all saving throws</span></label>' +
+    '<input type="number" id="ef-save-all" value="' + (item.saveBonusAll || '') + '" onclick="event.stopPropagation()"></div></div>';
+  // Save Bonus Specific
+  html += '<div class="ef-hint">Save Bonus (Specific) <span class="text-dim">— per-ability save bonuses</span></div>';
+  html += '<div class="ef-ability-row">';
+  ABILITIES.forEach(function(ab) {
+    var val = (item.saveBonusSpecific && item.saveBonusSpecific[ab]) || '';
+    html += '<div class="ef-ability-cell"><label>' + ABILITY_NAMES[ab] + '</label><input type="number" id="ef-save-' + ab + '" value="' + val + '" onclick="event.stopPropagation()"></div>';
+  });
+  html += '</div>';
+  // Speed Bonus
+  html += '<div class="ef-row"><div class="form-group"><label>Speed Bonus <span class="text-dim">— +N feet to speed</span></label>' +
+    '<input type="number" id="ef-speed-bonus" value="' + (item.speedBonus || '') + '" onclick="event.stopPropagation()"></div></div>';
+  // Stealth Disadvantage
+  html += '<div class="ef-row"><label class="ef-checkbox-label"><input type="checkbox" id="ef-stealth-disadv"' + (item.stealthDisadvantage || isHeavyArmor ? ' checked' : '') + ' onclick="event.stopPropagation()"> Stealth Disadvantage</label></div>';
+  // Resistance
+  html += '<div class="ef-row"><div class="form-group"><label>Resistance <span class="text-dim">— comma-separated (e.g., fire, poison)</span></label>' +
+    '<input type="text" id="ef-resistance" value="' + escapeHtml((item.resistance || []).join(', ')) + '" onclick="event.stopPropagation()"></div></div>';
+  html += '</details>';
+  // Actions
+  html += '<div class="ef-actions">' +
+    '<button class="btn btn-primary" onclick="' + saveFn + '" style="padding:10px 20px">Save</button>' +
     '<button class="btn btn-secondary" onclick="cancelEquipForm()" style="padding:10px 20px">Cancel</button></div></div>';
+  return html;
+}
+
+function showEquipForm(idx) {
+  var c = loadCharacter();
+  if (!c) return;
+  var item = idx >= 0 ? (c.equippedItems[idx] || {}) : { name: '', slot: 'other', armorType: null, stats: {}, notes: '' };
+  var area = document.getElementById('equip-form-area');
+  if (!area) return;
+  area.innerHTML = buildEquipFormHTML(item, 'saveEquipItem(' + idx + ')');
 }
 
 function onEquipSlotChange() {
   var slot = document.getElementById('ef-slot').value;
   var g = document.getElementById('ef-armor-type-group');
   if (g) g.style.display = (slot === 'armor' || slot === 'shield') ? '' : 'none';
+  // Auto-check stealth disadvantage for heavy armor
+  var stealthEl = document.getElementById('ef-stealth-disadv');
+  if (stealthEl) {
+    var armorTypeEl = document.getElementById('ef-armor-type');
+    var armorType = armorTypeEl ? armorTypeEl.value : '';
+    stealthEl.checked = (slot === 'armor' && armorType === 'heavy');
+  }
 }
 
-function saveEquipItem(idx) {
-  var c = loadCharacter();
-  if (!c) return;
-  if (!c.equippedItems) c.equippedItems = [];
+function readEquipFormFields(oldItem) {
   var name = document.getElementById('ef-name').value.trim();
-  if (!name) return;
+  if (!name) return null;
   var slot = document.getElementById('ef-slot').value;
   var armorType = (slot === 'armor' || slot === 'shield') ? document.getElementById('ef-armor-type').value : null;
   var acVal = parseInt(document.getElementById('ef-ac').value) || 0;
@@ -678,10 +751,77 @@ function saveEquipItem(idx) {
   else if (acVal) stats.acBonus = acVal;
   var magicBonus = parseInt(document.getElementById('ef-magic').value) || 0;
   var item = { name: name, slot: slot, armorType: armorType, stats: stats, magicBonus: magicBonus, notes: notes };
+  // Attunement
+  item.requiresAttunement = document.getElementById('ef-attunement').checked;
+  item.attuned = oldItem ? (oldItem.attuned || false) : false;
+  // Charges
+  if (document.getElementById('ef-has-charges').checked) {
+    var cMax = parseInt(document.getElementById('ef-charges-max').value) || 7;
+    var oldCurrent = (oldItem && oldItem.charges) ? Math.min(oldItem.charges.current, cMax) : cMax;
+    item.charges = { max: cMax, current: oldCurrent, rechargeOn: document.getElementById('ef-charges-recharge').value };
+  } else {
+    item.charges = null;
+  }
+  // Daily Uses
+  if (document.getElementById('ef-has-daily').checked) {
+    var dMax = parseInt(document.getElementById('ef-daily-max').value) || 1;
+    var oldDCurrent = (oldItem && oldItem.dailyUses) ? Math.min(oldItem.dailyUses.current, dMax) : dMax;
+    item.dailyUses = { max: dMax, current: oldDCurrent, label: document.getElementById('ef-daily-label').value.trim() };
+  } else {
+    item.dailyUses = null;
+  }
+  // Ability Override
+  var override = {};
+  ABILITIES.forEach(function(ab) {
+    var val = parseInt(document.getElementById('ef-override-' + ab).value);
+    if (!isNaN(val) && val > 0) override[ab] = val;
+  });
+  item.abilityOverride = Object.keys(override).length > 0 ? override : null;
+  // Ability Bonus
+  var bonus = {};
+  ABILITIES.forEach(function(ab) {
+    var val = parseInt(document.getElementById('ef-bonus-' + ab).value);
+    if (!isNaN(val) && val !== 0) bonus[ab] = val;
+  });
+  item.abilityBonus = Object.keys(bonus).length > 0 ? bonus : null;
+  // Save Bonus All
+  item.saveBonusAll = parseInt(document.getElementById('ef-save-all').value) || 0;
+  // Save Bonus Specific
+  var saveSpec = {};
+  ABILITIES.forEach(function(ab) {
+    var val = parseInt(document.getElementById('ef-save-' + ab).value);
+    if (!isNaN(val) && val !== 0) saveSpec[ab] = val;
+  });
+  item.saveBonusSpecific = Object.keys(saveSpec).length > 0 ? saveSpec : null;
+  // Speed, Stealth, Resistance
+  item.speedBonus = parseInt(document.getElementById('ef-speed-bonus').value) || 0;
+  item.stealthDisadvantage = document.getElementById('ef-stealth-disadv').checked;
+  var resVal = document.getElementById('ef-resistance').value;
+  item.resistance = resVal ? resVal.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+  return item;
+}
+
+function saveEquipItem(idx) {
+  var c = loadCharacter();
+  if (!c) return;
+  if (!c.equippedItems) c.equippedItems = [];
+  var oldItem = idx >= 0 ? c.equippedItems[idx] : null;
+  var item = readEquipFormFields(oldItem);
+  if (!item) return;
   // Validate when adding new (not editing existing)
   if (idx < 0) {
     var msg = checkEquipConflict(c, item);
     if (msg) { showEquipAlert(msg); return; }
+  }
+  // Auto-attune on equip
+  if (idx < 0 && item.requiresAttunement) {
+    var attuneCount = (c.equippedItems || []).filter(function(e) { return e.requiresAttunement && e.attuned; }).length;
+    if (attuneCount < 3) {
+      item.attuned = true;
+    } else {
+      item.attuned = false;
+      showEquipAlert('Equipped but not attuned (3/3 slots full). Un-attune another item first.');
+    }
   }
   if (idx >= 0) c.equippedItems[idx] = item;
   else c.equippedItems.push(item);
@@ -692,6 +832,24 @@ function saveEquipItem(idx) {
 function cancelEquipForm() {
   var area = document.getElementById('equip-form-area');
   if (area) area.innerHTML = '';
+}
+
+function toggleAttunement(idx) {
+  var c = loadCharacter();
+  if (!c || !c.equippedItems || !c.equippedItems[idx]) return;
+  var item = c.equippedItems[idx];
+  if (item.attuned) {
+    item.attuned = false;
+  } else {
+    var attuneCount = c.equippedItems.filter(function(e) { return e.requiresAttunement && e.attuned; }).length;
+    if (attuneCount >= 3) {
+      showEquipAlert("You're already attuned to 3 items. Un-attune one first.");
+      return;
+    }
+    item.attuned = true;
+  }
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
 }
 
 function removeEquipItem(idx) {
@@ -724,6 +882,16 @@ function equipFromInventory(idx) {
   if (msg) { showEquipAlert(msg); return; }
   c.unequippedItems.splice(idx, 1);
   if (!c.equippedItems) c.equippedItems = [];
+  // Auto-attune on equip
+  if (item.requiresAttunement) {
+    var attuneCount = c.equippedItems.filter(function(e) { return e.requiresAttunement && e.attuned; }).length;
+    if (attuneCount < 3) {
+      item.attuned = true;
+    } else {
+      item.attuned = false;
+      showEquipAlert('Equipped but not attuned (3/3 slots full). Un-attune another item first.');
+    }
+  }
   c.equippedItems.push(item);
   saveCurrentCharacter(c);
   showDashboard(c, true);
@@ -766,50 +934,16 @@ function showEditUnequippedForm(idx) {
   if (!item) return;
   var area = document.getElementById('equip-form-area');
   if (!area) return;
-  var showArmorType = (item.slot === 'armor' || item.slot === 'shield');
-  area.innerHTML = '<div class="equip-form">' +
-    '<div class="ef-row"><div class="form-group"><label>Name</label>' +
-    '<input type="text" id="ef-name" value="' + escapeHtml(item.name || '') + '" onclick="event.stopPropagation()"></div></div>' +
-    '<div class="ef-row"><div class="form-group"><label>Slot</label>' +
-    '<select id="ef-slot" onchange="onEquipSlotChange()" onclick="event.stopPropagation()">' +
-    '<option value="armor"' + (item.slot === 'armor' ? ' selected' : '') + '>Armor</option>' +
-    '<option value="shield"' + (item.slot === 'shield' ? ' selected' : '') + '>Shield</option>' +
-    '<option value="ring"' + (item.slot === 'ring' ? ' selected' : '') + '>Ring</option>' +
-    '<option value="cloak"' + (item.slot === 'cloak' ? ' selected' : '') + '>Cloak</option>' +
-    '<option value="other"' + (item.slot === 'other' ? ' selected' : '') + '>Other</option>' +
-    '</select></div>' +
-    '<div class="form-group" id="ef-armor-type-group" style="' + (showArmorType ? '' : 'display:none') + '">' +
-    '<label>Armor Type</label><select id="ef-armor-type" onclick="event.stopPropagation()">' +
-    '<option value="light"' + (item.armorType === 'light' ? ' selected' : '') + '>Light</option>' +
-    '<option value="medium"' + (item.armorType === 'medium' ? ' selected' : '') + '>Medium</option>' +
-    '<option value="heavy"' + (item.armorType === 'heavy' ? ' selected' : '') + '>Heavy</option>' +
-    '</select></div></div>' +
-    '<div class="ef-row"><div class="form-group"><label>Base AC / AC Bonus</label>' +
-    '<input type="number" id="ef-ac" value="' + ((item.stats && item.stats.ac) || (item.stats && item.stats.acBonus) || '') + '" onclick="event.stopPropagation()"></div>' +
-    '<div class="form-group"><label>Magic Bonus (+1, +2, etc.)</label>' +
-    '<input type="number" id="ef-magic" value="' + (item.magicBonus || 0) + '" min="0" onclick="event.stopPropagation()"></div></div>' +
-    '<div class="ef-row"><div class="form-group"><label>Notes</label>' +
-    '<input type="text" id="ef-notes" value="' + escapeHtml(item.notes || '') + '" onclick="event.stopPropagation()"></div></div>' +
-    '<div class="ef-actions">' +
-    '<button class="btn btn-primary" onclick="saveUnequippedEdit(' + idx + ')" style="padding:10px 20px">Save</button>' +
-    '<button class="btn btn-secondary" onclick="cancelEquipForm()" style="padding:10px 20px">Cancel</button></div></div>';
+  area.innerHTML = buildEquipFormHTML(item, 'saveUnequippedEdit(' + idx + ')');
 }
 
 function saveUnequippedEdit(idx) {
   var c = loadCharacter();
   if (!c || !c.unequippedItems) return;
-  var name = document.getElementById('ef-name').value.trim();
-  if (!name) return;
-  var slot = document.getElementById('ef-slot').value;
-  var armorType = (slot === 'armor' || slot === 'shield') ? document.getElementById('ef-armor-type').value : null;
-  var acVal = parseInt(document.getElementById('ef-ac').value) || 0;
-  var notes = document.getElementById('ef-notes').value.trim();
-  var stats = {};
-  if (slot === 'shield') stats.acBonus = acVal || 2;
-  else if (slot === 'armor') stats.ac = acVal;
-  else if (acVal) stats.acBonus = acVal;
-  var magicBonus = parseInt(document.getElementById('ef-magic').value) || 0;
-  c.unequippedItems[idx] = { name: name, slot: slot, armorType: armorType, stats: stats, magicBonus: magicBonus, notes: notes };
+  var oldItem = c.unequippedItems[idx];
+  var item = readEquipFormFields(oldItem);
+  if (!item) return;
+  c.unequippedItems[idx] = item;
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }

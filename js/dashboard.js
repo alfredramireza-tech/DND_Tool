@@ -419,7 +419,11 @@ function renderDashboard(c, preserveScroll) {
   }
 
   // Equipped Gear
-  html += '<h3 style="font-size:1rem;margin:16px 0 8px">Equipped Gear <button class="inline-edit-btn" onclick="showEquipForm(-1)">+ Add</button></h3>';
+  var hasAttunement = (c.equippedItems || []).some(function(e) { return e.requiresAttunement; });
+  var attuneCount = hasAttunement ? (c.equippedItems || []).filter(function(e) { return e.requiresAttunement && e.attuned; }).length : 0;
+  html += '<h3 style="font-size:1rem;margin:16px 0 8px">Equipped Gear <button class="inline-edit-btn" onclick="showEquipForm(-1)">+ Add</button>';
+  if (hasAttunement) html += ' <span class="text-dim" style="font-size:0.8rem;font-weight:normal">Attunement: ' + attuneCount + '/3</span>';
+  html += '</h3>';
   html += '<div id="equip-form-area"></div>';
   var equipped = c.equippedItems || [];
   if (equipped.length > 0) {
@@ -436,6 +440,11 @@ function renderDashboard(c, preserveScroll) {
       html += '<button class="ei-btn" onclick="showEquipForm(' + idx + ')">Edit</button>';
       html += '<button class="ei-btn" onclick="unequipItem(' + idx + ')">Unequip</button>';
       html += '<button class="ei-btn" onclick="removeEquipItem(' + idx + ')" style="color:var(--error)">×</button>';
+      if (item.requiresAttunement) {
+        html += item.attuned
+          ? '<button class="ei-btn" onclick="toggleAttunement(' + idx + ')" style="color:var(--success)">Attuned \u2713</button>'
+          : '<button class="ei-btn" onclick="toggleAttunement(' + idx + ')" style="color:var(--text-dim)">Attune</button>';
+      }
       html += '</div></div>';
     });
   } else {

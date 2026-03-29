@@ -820,9 +820,21 @@ details[open] summary::before { content: '▾ '; }
   background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius);
   padding: 14px; margin-bottom: 10px;
 }
-.equip-form .ef-row { display: flex; gap: 8px; margin-bottom: 8px; }
-.equip-form .ef-row .form-group { flex: 1; margin-bottom: 0; }
+.equip-form .ef-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.equip-form .ef-row .form-group { flex: 1; margin-bottom: 0; min-width: 120px; }
 .equip-form .ef-actions { display: flex; gap: 8px; margin-top: 8px; }
+.ef-checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; padding: 4px 0; }
+.ef-checkbox-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+.ef-advanced { margin: 8px 0; }
+.ef-advanced > summary { list-style: none; }
+.ef-advanced > summary::before { content: '▸ '; }
+.ef-advanced[open] > summary::before { content: '▾ '; }
+.ef-hint { font-size: 0.8rem; color: var(--text-dim); margin: 8px 0 4px; }
+.ef-ability-row { display: flex; gap: 4px; margin-bottom: 8px; }
+.ef-ability-cell { flex: 1; text-align: center; }
+.ef-ability-cell label { display: block; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 2px; }
+.ef-ability-cell input { width: 100%; box-sizing: border-box; padding: 4px; text-align: center; font-size: 0.8rem;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); }
 .quick-item {
   display: inline-flex; align-items: center; gap: 6px;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
