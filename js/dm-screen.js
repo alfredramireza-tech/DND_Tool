@@ -403,6 +403,7 @@ function confirmAbandonEncounter() {
   var data = loadDmData();
   data.encounters = data.encounters.filter(function(e) { return e.id !== enc.id; });
   saveDmData(data);
+  dmCloudSave();
   closeModal();
   showDmScreen();
 }
@@ -1566,6 +1567,7 @@ function confirmDeleteEncounter(encId) {
   var data = loadDmData();
   data.encounters = data.encounters.filter(function(e) { return e.id !== encId; });
   saveDmData(data);
+  dmCloudSave();
   closeModal();
   showDmScreen();
 }
