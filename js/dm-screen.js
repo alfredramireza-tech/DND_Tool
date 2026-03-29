@@ -203,9 +203,10 @@ function renderDmHome() {
     html += '<h2 style="margin-top:24px">Past Encounters</h2>';
     past.forEach(function(enc) {
       var ago = enc.created ? getRelativeTime(enc.created) : '';
-      html += '<div style="padding:8px 12px;background:var(--surface);border-radius:var(--radius);margin-bottom:6px;cursor:pointer" onclick="viewPastEncounter(\'' + enc.id + '\')">';
-      html += '<strong>' + escapeHtml(enc.name || 'Unnamed') + '</strong>';
-      html += ' <span class="text-dim" style="font-size:0.85rem">' + (enc.round || 0) + ' rounds' + (ago ? ' \u2022 ' + ago : '') + '</span>';
+      html += '<div style="padding:8px 12px;background:var(--surface);border-radius:var(--radius);margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="viewPastEncounter(\'' + enc.id + '\')">';
+      html += '<div><strong>' + escapeHtml(enc.name || 'Unnamed') + '</strong>';
+      html += ' <span class="text-dim" style="font-size:0.85rem">' + (enc.round || 0) + ' rounds' + (ago ? ' \u2022 ' + ago : '') + '</span></div>';
+      html += '<button class="btn btn-secondary" style="padding:2px 8px;font-size:0.8rem;color:var(--error);min-height:28px" onclick="event.stopPropagation();deletePastEncounter(\'' + enc.id + '\')">\u00d7</button>';
       html += '</div>';
     });
   }
@@ -354,7 +355,7 @@ function renderEncounterSetup(container, enc) {
       html += '<div><strong>' + escapeHtml(entry.name) + '</strong> <span class="text-dim" style="font-size:0.8rem">(' + entry.type.toUpperCase() + ')</span></div>';
       html += '<div style="display:flex;align-items:center;gap:8px">';
       html += '<label style="font-size:0.8rem;color:var(--text-dim)">Init:</label>';
-      html += '<input type="number" class="dm-initiative-input" id="dm-init-val-' + i + '" value="' + (entry.initiative || '') + '" placeholder="—">';
+      html += '<input type="number" class="dm-initiative-input" id="dm-init-val-' + i + '" value="' + (entry.initiative !== null && entry.initiative !== undefined ? entry.initiative : '') + '" placeholder="—">';
       html += '<span class="text-dim" style="font-size:0.85rem">AC ' + (entry.ac || '?') + '</span>';
       html += '<span class="text-dim" style="font-size:0.85rem">HP ' + entry.currentHp + '/' + entry.maxHp + '</span>';
       if (entry.type === 'npc') html += '<button class="btn btn-secondary" style="padding:4px 8px;font-size:0.75rem;min-height:32px" onclick="showDuplicateMonsterModal(\'' + entry.id + '\')">Dup</button>';
@@ -377,9 +378,8 @@ function renderEncounterSetup(container, enc) {
     html += '<button class="btn btn-secondary" style="width:100%;min-height:44px;margin-bottom:8px" onclick="rollAllNpcInitiative()">Roll All NPC Initiative</button>';
   }
 
-  // Start Combat button
-  var canStart = enc.initiative.length >= 2 && enc.initiative.some(function(e) { return e.type === 'pc' && e.initiative; }) && enc.initiative.some(function(e) { return e.type === 'npc' && e.initiative; });
-  html += '<button class="btn btn-primary btn-large" style="width:100%;min-height:48px;margin-bottom:12px"' + (canStart ? ' onclick="startCombat()"' : ' disabled style="opacity:0.4"') + '>Start Combat</button>';
+  // Start Combat button — always enabled, validates on click
+  html += '<button class="btn btn-primary btn-large" style="width:100%;min-height:48px;margin-bottom:12px" onclick="startCombat()">Start Combat</button>';
 
   html += '<button class="btn btn-secondary" style="width:100%" onclick="showDmScreen()">\u2190 Back to DM Screen</button>';
   html += '</div>';
@@ -762,8 +762,18 @@ function startCombat() {
   // Read initiative values from inputs
   enc.initiative.forEach(function(entry, i) {
     var el = document.getElementById('dm-init-val-' + i);
-    if (el) entry.initiative = parseInt(el.value) || 0;
+    if (el) {
+      var parsed = parseFloat(el.value);
+      entry.initiative = isNaN(parsed) ? null : parsed;
+    }
   });
+  // Validate: at least 1 PC and 1 NPC with initiative entered, at least 2 combatants
+  var hasPc = enc.initiative.some(function(e) { return e.type === 'pc' && e.initiative !== null; });
+  var hasNpc = enc.initiative.some(function(e) { return e.type === 'npc' && e.initiative !== null; });
+  if (enc.initiative.length < 2 || !hasPc || !hasNpc) {
+    showDmRollResult('Cannot Start', 'Enter initiative for at least 1 PC and 1 NPC');
+    return;
+  }
   // Sort by initiative descending (ties: higher DEX mod wins, else keep order)
   enc.initiative.sort(function(a, b) {
     if (b.initiative !== a.initiative) return b.initiative - a.initiative;
@@ -1507,9 +1517,36 @@ function viewPastEncounter(encId) {
     html += '<div class="text-dim" style="font-size:0.9rem;white-space:pre-wrap">' + escapeHtml(enc.notes) + '</div>';
   }
 
-  html += '<div style="margin-top:24px"><button class="btn btn-secondary" onclick="showDmScreen()">\u2190 Back to DM Screen</button></div>';
+  html += '<div style="margin-top:24px">';
+  html += '<button class="btn btn-secondary" style="width:100%;margin-bottom:8px;color:var(--error)" onclick="deletePastEncounter(\'' + enc.id + '\')">Delete Encounter</button>';
+  html += '<button class="btn btn-secondary" style="width:100%" onclick="showDmScreen()">\u2190 Back to DM Screen</button>';
+  html += '</div>';
   html += '</div>';
   container.innerHTML = html;
+}
+
+function deletePastEncounter(encId) {
+  var data = loadDmData();
+  var active = data.encounters.find(function(e) { return e.active; });
+  if (active && active.id === encId) {
+    showDmRollResult('Cannot Delete', 'End the encounter first.');
+    return;
+  }
+  showModal(
+    '<h3>Delete Encounter?</h3>' +
+    '<p>This cannot be undone.</p>' +
+    '<div class="confirm-actions">' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-primary" style="background:var(--error)" onclick="confirmDeleteEncounter(\'' + encId + '\')">Delete</button></div>'
+  );
+}
+
+function confirmDeleteEncounter(encId) {
+  var data = loadDmData();
+  data.encounters = data.encounters.filter(function(e) { return e.id !== encId; });
+  saveDmData(data);
+  closeModal();
+  showDmScreen();
 }
 
 /* ═══════════════════════════════════════════
