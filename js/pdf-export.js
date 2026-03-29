@@ -187,7 +187,7 @@ async function fillPdfTemplate(c) {
   abilities.forEach(function(ab) {
     var m = getEffectiveMod(c, ab);
     var isProf = saves.indexOf(ab) >= 0;
-    var equipSave = isProf ? getEquipSaveBonus(c, ab) : 0;
+    var equipSave = getEquipSaveBonus(c, ab);
     var total = m + (isProf ? profBonus : 0) + equipSave;
     pdfSetText(form, saveFields[ab], (total >= 0 ? '+' : '') + total, 8);
     if (isProf) pdfCheckBox(form, PDF_SAVE_CHECKBOXES[ab]);
@@ -218,7 +218,9 @@ async function fillPdfTemplate(c) {
   pdfSetText(form, 'AC', String(ac), 12);
   var initMod = getEffectiveMod(c, 'dex');
   pdfSetText(form, 'Initiative', (initMod >= 0 ? '+' : '') + initMod, 10);
-  pdfSetText(form, 'Speed', String(c.speed || 30), 10);
+  var pdfSpeedBonus = 0;
+  (c.equippedItems || []).forEach(function(item) { if (isItemActive(item)) pdfSpeedBonus += (item.speedBonus || 0); });
+  pdfSetText(form, 'Speed', String((c.speed || 30) + pdfSpeedBonus), 10);
   pdfSetText(form, 'HPMax', String(c.hp ? c.hp.max : ''), 10);
   pdfSetText(form, 'HPCurrent', String(c.currentHp || ''), 10);
   if (c.tempHp > 0) pdfSetText(form, 'HPTemp', String(c.tempHp), 8);
@@ -273,7 +275,12 @@ async function fillPdfTemplate(c) {
   var equipLines = [];
   (c.equippedItems || []).forEach(function(item) {
     var line = item.name;
-    if (item.notes) line += ' (' + item.notes + ')';
+    var extras = [];
+    if (item.notes) extras.push(item.notes);
+    if (item.requiresAttunement && item.attuned) extras.push('attuned');
+    if (item.charges) extras.push(item.charges.current + '/' + item.charges.max + ' charges');
+    if (item.dailyUses) extras.push(item.dailyUses.current + '/' + item.dailyUses.max + ' daily');
+    if (extras.length) line += ' (' + extras.join(', ') + ')';
     equipLines.push(line);
   });
   (c.unequippedItems || []).forEach(function(item) {
@@ -341,6 +348,13 @@ async function fillPdfTemplate(c) {
       allFeatures.push('Signature Spells (1/SR free): ' + c.signatureSpells.join(', '));
     }
   }
+  // Equipment resistances
+  var pdfResistances = [];
+  (c.equippedItems || []).forEach(function(item) {
+    if (!isItemActive(item) || !item.resistance) return;
+    item.resistance.forEach(function(r) { if (pdfResistances.indexOf(r) < 0) pdfResistances.push(r); });
+  });
+  if (pdfResistances.length > 0) allFeatures.push('Resistances: ' + pdfResistances.sort().join(', '));
   var featText = allFeatures.join('\n');
   pdfSetText(form, 'Features and Traits', featText, 6);
 

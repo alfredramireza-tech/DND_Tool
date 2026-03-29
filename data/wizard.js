@@ -9,10 +9,6 @@ const WIZARD_CANTRIPS_KNOWN = {
   11:5,12:5,13:5,14:5,15:5,16:5,17:5,18:5,19:5,20:5
 };
 
-function getWizardCantripsKnown(level) {
-  return WIZARD_CANTRIPS_KNOWN[level] || 3;
-}
-
 /* Arcane Recovery budget: ceil(level / 2) total spell slot levels */
 function getArcaneRecoveryBudget(level) {
   return Math.ceil(level / 2);

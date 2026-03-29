@@ -97,6 +97,17 @@ function renderDashboard(c, preserveScroll) {
   // External buff badges
   html += renderExternalBuffBadges(c);
 
+  // Resistances from equipment
+  var resistances = [];
+  (c.equippedItems || []).forEach(function(item) {
+    if (!isItemActive(item) || !item.resistance) return;
+    item.resistance.forEach(function(r) { if (resistances.indexOf(r) < 0) resistances.push(r); });
+  });
+  resistances.sort();
+  if (resistances.length > 0) {
+    html += '<div style="font-size:0.85rem;color:var(--accent);margin:4px 0">Resistances: ' + resistances.join(', ') + '</div>';
+  }
+
   // Conditions/Concentration/Buff buttons
   html += '<div style="display:flex;gap:8px;margin:8px 0;flex-wrap:wrap">';
   html += '<button class="btn btn-secondary" onclick="showConditionsPanel()" style="font-size:0.8rem;padding:6px 12px">Conditions</button>';
@@ -126,7 +137,10 @@ function renderDashboard(c, preserveScroll) {
   // Stat cards
   html += '<div class="stat-grid">';
   html += '<div class="stat-card"><div class="stat-value">' + ac + acNote + '</div><div class="stat-label">Armor Class</div></div>';
-  html += '<div class="stat-card"><div class="stat-value">' + c.speed + ' ft</div><div class="stat-label">Speed</div></div>';
+  var equipSpeedBonus = 0;
+  (c.equippedItems || []).forEach(function(item) { if (isItemActive(item)) equipSpeedBonus += (item.speedBonus || 0); });
+  var effectiveSpeed = (c.speed || 30) + equipSpeedBonus;
+  html += '<div class="stat-card"><div class="stat-value">' + effectiveSpeed + ' ft' + (equipSpeedBonus > 0 ? ' <span style="font-size:0.65rem;color:var(--text-dim)">(' + c.speed + '+' + equipSpeedBonus + ')</span>' : '') + '</div><div class="stat-label">Speed</div></div>';
   html += '<div class="stat-card"><div class="stat-value">' + (c.initiative >= 0 ? '+' : '') + c.initiative + '</div><div class="stat-label">Initiative</div></div>';
   html += '<div class="stat-card"><div class="stat-value">+' + c.proficiencyBonus + '</div><div class="stat-label">Prof. Bonus</div></div>';
   if (isCaster && !(c.class === 'Paladin' && c.level < 2)) {
@@ -137,9 +151,17 @@ function renderDashboard(c, preserveScroll) {
   // Ability Scores sub-section
   html += '<details open><summary><h3 style="display:inline;font-size:1rem">Ability Scores</h3></summary><div class="ability-row-dash">';
   ABILITIES.forEach(function(ab) {
+    var baseScore = c.abilityScores[ab];
+    var effScore = getEffectiveAbilityScore(c, ab);
+    var isModified = effScore !== baseScore;
     html += '<div class="ability-card"><div class="ab-name">' + ABILITY_NAMES[ab] + '</div>';
-    html += '<div class="ab-mod">' + modStr(getEffectiveAbilityScore(c, ab)) + '</div>';
-    html += '<div class="ab-score">' + getEffectiveAbilityScore(c, ab) + '</div></div>';
+    html += '<div class="ab-mod">' + modStr(effScore) + '</div>';
+    if (isModified) {
+      html += '<div class="ab-score" style="color:var(--accent)">' + effScore + ' <span style="font-size:0.7rem;color:var(--text-dim)">(' + baseScore + ')</span></div>';
+    } else {
+      html += '<div class="ab-score">' + effScore + '</div>';
+    }
+    html += '</div>';
   });
   html += '</div></details>';
   // Proficiencies sub-section
@@ -435,7 +457,36 @@ function renderDashboard(c, preserveScroll) {
       if (item.stats && item.stats.ac) detail += ' · AC ' + item.stats.ac + (eiMagic ? '+' + eiMagic : '');
       if (item.stats && item.stats.acBonus) detail += ' · +' + ((item.stats.acBonus || 0) + eiMagic) + ' AC';
       if (item.notes) detail += ' · ' + item.notes;
-      html += '<div class="ei-detail">' + detail + '</div></div>';
+      html += '<div class="ei-detail">' + detail + '</div>';
+      // Charges display
+      if (item.charges && item.charges.max > 0) {
+        var chCur = item.charges.current || 0;
+        var chMax = item.charges.max;
+        html += '<div class="ei-charges">';
+        if (chMax <= 10) {
+          for (var ci = 0; ci < chMax; ci++) html += '<span class="ei-dot' + (ci < chCur ? ' filled' : '') + '">\u25CF</span>';
+        }
+        html += ' <span class="ei-charge-count">' + chCur + '/' + chMax + '</span>';
+        html += '<button class="ei-btn ei-charge-btn' + (chCur <= 0 ? ' disabled' : '') + '" onclick="event.stopPropagation();useCharge(' + idx + ')">-1</button>';
+        html += '<button class="ei-btn ei-charge-btn' + (chCur >= chMax ? ' disabled' : '') + '" onclick="event.stopPropagation();addCharge(' + idx + ')">+1</button>';
+        var rechLabel = { dawn: 'Recharges at dawn', short: 'Recharges on short rest', long: 'Recharges on long rest', none: 'Does not recharge' };
+        html += '<span class="ei-recharge-label">' + (rechLabel[item.charges.rechargeOn] || '') + '</span>';
+        html += '</div>';
+      }
+      // Daily uses display
+      if (item.dailyUses && item.dailyUses.max > 0) {
+        var duCur = item.dailyUses.current || 0;
+        var duMax = item.dailyUses.max;
+        html += '<div class="ei-charges">';
+        html += '<span class="ei-daily-label">' + escapeHtml(item.dailyUses.label || 'Use') + ':</span> ';
+        for (var di = 0; di < duMax; di++) html += '<span class="ei-dot' + (di < duCur ? ' filled' : '') + '">\u25CF</span>';
+        html += ' <span class="ei-charge-count">' + duCur + '/' + duMax + '</span>';
+        html += '<button class="ei-btn ei-charge-btn' + (duCur <= 0 ? ' disabled' : '') + '" onclick="event.stopPropagation();useDailyAbility(' + idx + ')">Use</button>';
+        html += '<button class="ei-btn ei-charge-btn' + (duCur >= duMax ? ' disabled' : '') + '" onclick="event.stopPropagation();addDailyUse(' + idx + ')">+</button>';
+        html += '<span class="ei-recharge-label">Recharges on long rest</span>';
+        html += '</div>';
+      }
+      html += '</div>';
       html += '<div class="ei-actions">';
       html += '<button class="ei-btn" onclick="showEquipForm(' + idx + ')">Edit</button>';
       html += '<button class="ei-btn" onclick="unequipItem(' + idx + ')">Unequip</button>';
@@ -463,6 +514,13 @@ function renderDashboard(c, preserveScroll) {
       if (item.stats && item.stats.ac) detail += ' · AC ' + item.stats.ac + (eiMagic ? '+' + eiMagic : '');
       if (item.stats && item.stats.acBonus) detail += ' · +' + ((item.stats.acBonus || 0) + eiMagic) + ' AC';
       html += '<div class="ei-detail">' + detail + '</div>';
+      // Read-only charge/daily status for unequipped items
+      if (item.charges && item.charges.max > 0) {
+        html += '<div class="ei-charges"><span class="ei-charge-count">Charges: ' + (item.charges.current || 0) + '/' + item.charges.max + '</span></div>';
+      }
+      if (item.dailyUses && item.dailyUses.max > 0) {
+        html += '<div class="ei-charges"><span class="ei-charge-count">' + escapeHtml(item.dailyUses.label || 'Daily') + ': ' + (item.dailyUses.current || 0) + '/' + item.dailyUses.max + '</span></div>';
+      }
       html += '<div style="margin-top:4px"><input type="text" class="uneq-note-input" id="uneq-note-' + idx + '" value="' + escapeHtml(item.notes || '') + '" placeholder="Notes..." onblur="saveUnequippedNote(' + idx + ')" onclick="event.stopPropagation()"></div>';
       html += '</div><div class="ei-actions">';
       html += '<button class="ei-btn" onclick="equipFromInventory(' + idx + ')">Equip</button>';

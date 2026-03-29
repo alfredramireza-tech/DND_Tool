@@ -104,7 +104,7 @@ function applyHpChange(mode) {
         '<p>You took ' + actualDmg + ' damage while concentrating on <strong>' + escapeHtml(c.concentration.spellName) + '</strong>.</p>' +
         '<p>CON save DC <strong>' + concDC + '</strong> (your bonus: +' + conBonus + ')</p>' +
         '<div class="confirm-actions">' +
-        '<button class="btn btn-primary" onclick="closeModal();doAbilityRoll(\'con\',' + (c.savingThrows.indexOf('con') >= 0) + ')">Roll CON Save</button>' +
+        '<button class="btn btn-primary" onclick="closeModal();doAbilityRoll(\'con\',' + (c.savingThrows.indexOf('con') >= 0) + ',true)">Roll CON Save</button>' +
         '<button class="btn btn-secondary" onclick="closeModal();dropConcentration()">Failed \u2014 Drop</button>' +
         '<button class="btn btn-secondary" onclick="closeModal()">Maintained</button></div>'
       );
@@ -476,9 +476,15 @@ function doCopySpellToSpellbook(name) {
 function confirmShortRest() {
   var c = loadCharacter();
   var desc = 'This will ';
-  if (c && c.class === 'Cleric') desc += 'restore all Channel Divinity uses.';
-  else if (c && c.class === 'Paladin') desc += 'restore Channel Divinity.';
-  else desc += 'allow recovery of some abilities.';
+  if (c && c.class === 'Cleric') desc += 'restore all Channel Divinity uses';
+  else if (c && c.class === 'Paladin') desc += 'restore Channel Divinity';
+  else desc += 'allow recovery of some abilities';
+  // Equipment that recharges on short rest
+  if (c) {
+    var srItems = (c.equippedItems || []).filter(function(item) { return isItemActive(item) && item.charges && item.charges.rechargeOn === 'short' && item.charges.current < item.charges.max; });
+    if (srItems.length > 0) desc += ', recharge ' + srItems.map(function(i) { return i.name; }).join(', ');
+  }
+  desc += '.';
   showModal(
     '<h3>Short Rest</h3><p>' + desc + '</p>' +
     '<div class="confirm-actions">' +
@@ -494,6 +500,13 @@ function confirmLongRest() {
   if (cdInfo.isCaster) desc += ', restore all spell slots';
   if (c && c.class === 'Cleric') desc += ', restore Channel Divinity';
   if (c && c.class === 'Paladin') desc += ', restore Channel Divinity, Lay on Hands pool, Divine Sense, and Cleansing Touch';
+  // Equipment recharge on long rest
+  if (c) {
+    var hasRechargeEquip = (c.equippedItems || []).some(function(item) {
+      return isItemActive(item) && ((item.charges && item.charges.rechargeOn !== 'none' && item.charges.current < item.charges.max) || (item.dailyUses && item.dailyUses.current < item.dailyUses.max));
+    });
+    if (hasRechargeEquip) desc += ', recharge all equipment';
+  }
   desc += '.';
   showModal(
     '<h3>Long Rest</h3><p>' + desc + '</p>' +
@@ -522,6 +535,17 @@ function doShortRest() {
       }
     });
   }
+  // Recharge equipment charges on short rest
+  (c.equippedItems || []).forEach(function(item) {
+    if (!isItemActive(item) || !item.charges) return;
+    if (item.charges.rechargeOn === 'short') {
+      var oldCurrent = item.charges.current;
+      item.charges.current = item.charges.max;
+      if (oldCurrent < item.charges.max) {
+        logEvent(item.name + ' recharged to ' + item.charges.max + '/' + item.charges.max, c);
+      }
+    }
+  });
   logEvent('Short Rest \u2014 ' + getShortRestDescription(c.class, c.subclass, c.level), c);
   saveCurrentCharacter(c);
   closeModal();
@@ -543,13 +567,40 @@ function doLongRest() {
   if (c.class === 'Cleric' || c.class === 'Paladin') c.channelDivinityUsed = 0;
   if (c.resources) {
     Object.keys(c.resources).forEach(function(key) {
-      c.resources[key].used = 0;
+      if (key === 'signatureSpellUses' && typeof c.resources[key] === 'object' && !c.resources[key].max) {
+        Object.keys(c.resources[key]).forEach(function(sp) { c.resources[key][sp] = false; });
+      } else if (key === 'portentDice') {
+        // Portent dice are re-rolled below, skip here
+      } else {
+        c.resources[key].used = 0;
+      }
     });
   }
   // Clear death saves, concentration, and external buffs on long rest
   clearDeathSaves(c);
   c.concentration = { active: false, spellName: '' };
   c.externalBuffs = [];
+  // Recharge equipment charges and daily uses on long rest
+  (c.equippedItems || []).forEach(function(item) {
+    if (!isItemActive(item)) return;
+    if (item.charges) {
+      var recharge = item.charges.rechargeOn;
+      if (recharge === 'short' || recharge === 'long' || recharge === 'dawn') {
+        var oldCurrent = item.charges.current;
+        item.charges.current = item.charges.max;
+        if (oldCurrent < item.charges.max) {
+          logEvent(item.name + ' recharged to ' + item.charges.max + '/' + item.charges.max, c);
+        }
+      }
+    }
+    if (item.dailyUses) {
+      var oldDaily = item.dailyUses.current;
+      item.dailyUses.current = item.dailyUses.max;
+      if (oldDaily < item.dailyUses.max) {
+        logEvent(item.name + ' daily use restored', c);
+      }
+    }
+  });
   // Wizard Divination: auto-roll new Portent dice on long rest
   if (c.class === 'Wizard' && c.subclass === 'School of Divination' && c.level >= 2) {
     var numPortent = c.level >= 14 ? 3 : 2;
@@ -856,6 +907,48 @@ function removeEquipItem(idx) {
   var c = loadCharacter();
   if (!c) return;
   c.equippedItems.splice(idx, 1);
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function useCharge(idx) {
+  var c = loadCharacter();
+  if (!c) return;
+  var item = (c.equippedItems || [])[idx];
+  if (!item || !item.charges || item.charges.current <= 0) return;
+  item.charges.current -= 1;
+  logEvent('Used 1 charge of ' + item.name + ' (' + item.charges.current + '/' + item.charges.max + ' left)', c);
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function addCharge(idx) {
+  var c = loadCharacter();
+  if (!c) return;
+  var item = (c.equippedItems || [])[idx];
+  if (!item || !item.charges || item.charges.current >= item.charges.max) return;
+  item.charges.current += 1;
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function useDailyAbility(idx) {
+  var c = loadCharacter();
+  if (!c) return;
+  var item = (c.equippedItems || [])[idx];
+  if (!item || !item.dailyUses || item.dailyUses.current <= 0) return;
+  item.dailyUses.current -= 1;
+  logEvent('Used ' + item.name + ': ' + (item.dailyUses.label || 'ability') + ' (' + item.dailyUses.current + '/' + item.dailyUses.max + ' left)', c);
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function addDailyUse(idx) {
+  var c = loadCharacter();
+  if (!c) return;
+  var item = (c.equippedItems || [])[idx];
+  if (!item || !item.dailyUses || item.dailyUses.current >= item.dailyUses.max) return;
+  item.dailyUses.current += 1;
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }

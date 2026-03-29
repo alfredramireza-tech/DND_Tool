@@ -802,7 +802,7 @@ details[open] summary::before { content: '▾ '; }
 
 /* ── Equipment System ── */
 .equip-item {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: flex-start; justify-content: space-between;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   padding: 10px 14px; margin-bottom: 6px; min-height: 48px;
 }
@@ -816,6 +816,14 @@ details[open] summary::before { content: '▾ '; }
   min-height: 32px; font-family: inherit;
 }
 .equip-item .ei-btn:active { border-color: var(--accent); color: var(--accent); }
+.ei-charges { display: flex; align-items: center; gap: 4px; margin-top: 4px; flex-wrap: wrap; font-size: 0.85rem; }
+.ei-dot { color: var(--text-dim); opacity: 0.3; font-size: 0.7rem; }
+.ei-dot.filled { color: var(--accent); opacity: 1; }
+.ei-charge-count { font-size: 0.8rem; color: var(--text-dim); margin: 0 2px; }
+.ei-charge-btn { padding: 2px 6px !important; font-size: 0.7rem !important; min-height: 26px !important; }
+.ei-charge-btn.disabled { opacity: 0.3; pointer-events: none; }
+.ei-recharge-label { font-size: 0.75rem; color: var(--text-dim); margin-left: 4px; }
+.ei-daily-label { font-size: 0.8rem; color: var(--text); font-weight: 500; }
 .equip-form {
   background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius);
   padding: 14px; margin-bottom: 10px;

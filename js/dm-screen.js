@@ -500,7 +500,7 @@ function renderInitiativeRow(entry, index, encounter) {
   if (entry.type === 'pc') html += ' <span style="font-size:0.75rem;background:#4a6a9a;color:#fff;padding:1px 6px;border-radius:4px">PC</span>';
   html += '</div>';
   html += '<div style="display:flex;align-items:center;gap:6px">';
-  html += '<span class="text-dim" style="font-size:0.85rem">Init ' + (entry.initiative || '?') + ' \u2022 AC ' + (entry.ac || '?') + '</span>';
+  html += '<span class="text-dim" style="font-size:0.85rem">Init ' + (entry.initiative !== null && entry.initiative !== '' ? entry.initiative : '?') + ' \u2022 AC ' + (entry.ac || '?') + '</span>';
   html += '<button class="btn btn-secondary" style="padding:2px 6px;font-size:0.7rem;min-height:28px" onclick="showMoveAfter(\'' + entry.id + '\')">Move</button>';
   html += '</div></div>';
 

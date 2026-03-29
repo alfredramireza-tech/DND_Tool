@@ -273,7 +273,7 @@ function renderAbilityChecks(c) {
   ABILITIES.forEach(ab => {
     const isProficient = c.savingThrows.includes(ab);
     const bonus = getEffectiveMod(c, ab) + (isProficient ? c.proficiencyBonus : 0) + getEquipSaveBonus(c, ab);
-    html += `<button class="save-check-btn ${isProficient ? 'proficient' : ''}" onclick="doAbilityRoll('${ab}',${isProficient})">
+    html += `<button class="save-check-btn ${isProficient ? 'proficient' : ''}" onclick="doAbilityRoll('${ab}',${isProficient},true)">
       <span class="sc-ab">${ABILITY_NAMES[ab]}${isProficient ? ' *' : ''}</span>
       <span class="sc-bonus">${bonus >= 0 ? '+' : ''}${bonus}</span>
     </button>`;
@@ -292,8 +292,13 @@ function renderAbilityChecks(c) {
       const profMult = isExpertise ? 2 : (isProficient ? 1 : 0);
       const bonus = getEffectiveMod(c, sk.ability) + c.proficiencyBonus * profMult;
       const btnClass = isExpertise ? 'proficient expertise' : (isProficient ? 'proficient' : '');
+      var stealthDisadv = '';
+      if (sk.name.toLowerCase() === 'stealth') {
+        var hasSD = (c.equippedItems || []).some(function(item) { return isItemActive(item) && item.stealthDisadvantage; });
+        if (hasSD) stealthDisadv = ' <span style="color:var(--error);font-size:0.7rem">(disadv)</span>';
+      }
       html += `<button class="skill-roll-btn ${btnClass}" onclick="doSkillRoll('${sk.name}')">
-        ${sk.name} ${bonus >= 0 ? '+' : ''}${bonus}${isExpertise ? ' (E)' : ''}</button>`;
+        ${sk.name} ${bonus >= 0 ? '+' : ''}${bonus}${isExpertise ? ' (E)' : ''}${stealthDisadv}</button>`;
     });
     html += '</div></div>';
   }

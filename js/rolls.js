@@ -297,14 +297,15 @@ function doWeaponRoll(idx, rollType) {
   }
 }
 
-function doAbilityRoll(ability, isProficient) {
+function doAbilityRoll(ability, isProficient, isSave) {
+  isSave = isSave !== undefined ? isSave : isProficient;
   const char = loadCharacter();
   if (!char) return;
   const abilMod = getEffectiveMod(char, ability);
   var extraBonus = 0;
   var extraLabel = '';
   // Remarkable Athlete: Champion 7+ adds half prof to unproficient STR/DEX/CON checks (not saves)
-  if (!isProficient && char.class === 'Fighter' && char.subclass === 'Champion' && char.level >= 7) {
+  if (!isProficient && !isSave && char.class === 'Fighter' && char.subclass === 'Champion' && char.level >= 7) {
     var physAbilities = ['str', 'dex', 'con'];
     if (physAbilities.indexOf(ability) >= 0) {
       extraBonus = Math.ceil(char.proficiencyBonus / 2);
@@ -312,18 +313,18 @@ function doAbilityRoll(ability, isProficient) {
     }
   }
   // Equipment save bonuses (saves only, not checks)
-  var equipSaveB = isProficient ? getEquipSaveBonus(char, ability) : 0;
+  var equipSaveB = isSave ? getEquipSaveBonus(char, ability) : 0;
   if (equipSaveB > 0) extraLabel += '+' + equipSaveB + ' equip';
   const bonus = abilMod + (isProficient ? char.proficiencyBonus : 0) + extraBonus + equipSaveB;
   const d20 = rollDie(20);
   var total = d20 + bonus;
-  const label = ABILITY_NAMES[ability] + (isProficient ? ' Save' : ' Check');
+  const label = ABILITY_NAMES[ability] + (isSave ? ' Save' : ' Check');
   var ctx = {};
   if (d20 === 20) ctx.nat20 = true;
   else if (d20 === 1) ctx.nat1 = true;
   var modLabel = isProficient ? ABILITY_NAMES[ability] + '+prof' : ABILITY_NAMES[ability];
   if (extraLabel) modLabel += extraLabel;
-  var buffType = isProficient ? 'saves' : 'checks';
+  var buffType = isSave ? 'saves' : 'checks';
   var buffInfo = rollBuffBonuses(char, buffType);
   if (buffInfo.totalBonus !== 0) {
     total += buffInfo.totalBonus;
@@ -352,13 +353,30 @@ function doSkillRoll(skillName) {
   }
   var profMult = isExpertise ? 2 : (isProficient ? 1 : 0);
   const bonus = abilMod + char.proficiencyBonus * profMult + extraBonus;
-  var d20 = rollDie(20);
+  // Stealth disadvantage from equipment
+  // TODO: if buff system adds structured advantage tracking, check for cancellation here
+  var hasStealthDisadv = false;
+  if (skillName.toLowerCase() === 'stealth') {
+    (char.equippedItems || []).forEach(function(item) {
+      if (isItemActive(item) && item.stealthDisadvantage) hasStealthDisadv = true;
+    });
+  }
+  var d20, d20b, diceArr;
+  if (hasStealthDisadv) {
+    var r1 = rollDie(20), r2 = rollDie(20);
+    d20 = Math.min(r1, r2);
+    diceArr = [r1, r2];
+  } else {
+    d20 = rollDie(20);
+    diceArr = [d20];
+  }
   var reliableTalentNote = '';
   // Reliable Talent: Rogue 11+, proficient skills, treat d20 below 10 as 10
   if ((isProficient || isExpertise) && char.class === 'Rogue' && char.level >= 11 && d20 < 10) {
     reliableTalentNote = 'd20: ' + d20 + ' \u2192 10 (Reliable Talent)';
     d20 = 10;
   }
+  var disadvNote = hasStealthDisadv ? 'Disadvantage (equipment)' : '';
   var total = d20 + bonus;
   var ctx = {};
   if (d20 === 20) ctx.nat20 = true;
@@ -370,7 +388,8 @@ function doSkillRoll(skillName) {
     total += buffInfo.totalBonus;
     buffInfo.results.forEach(function(r) { modLabel += (r.subtract ? '-' : '+') + r.dice + '[' + r.roll + '] ' + r.name; });
   }
-  showRollResult(skillName, [d20], bonus + buffInfo.totalBonus, modLabel, total, reliableTalentNote, ctx);
+  var extraNote = [reliableTalentNote, disadvNote].filter(Boolean).join(' | ');
+  showRollResult(skillName, diceArr, bonus + buffInfo.totalBonus, modLabel, total, extraNote, ctx);
 }
 
 function rollSneakAttack() {

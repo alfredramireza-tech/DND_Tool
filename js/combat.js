@@ -1314,7 +1314,9 @@ function showPartyCharDetail(idx) {
   // Stat grid
   html += '<div class="stat-grid">';
   html += '<div class="stat-card"><div class="stat-value">' + (ac || '?') + '</div><div class="stat-label">AC</div></div>';
-  html += '<div class="stat-card"><div class="stat-value">' + (c.speed || 30) + ' ft</div><div class="stat-label">Speed</div></div>';
+  var combatSpeedBonus = 0;
+  (c.equippedItems || []).forEach(function(item) { if (isItemActive(item)) combatSpeedBonus += (item.speedBonus || 0); });
+  html += '<div class="stat-card"><div class="stat-value">' + ((c.speed || 30) + combatSpeedBonus) + ' ft</div><div class="stat-label">Speed</div></div>';
   html += '<div class="stat-card"><div class="stat-value">' + (c.initiative >= 0 ? '+' : '') + c.initiative + '</div><div class="stat-label">Initiative</div></div>';
   html += '<div class="stat-card"><div class="stat-value">+' + c.proficiencyBonus + '</div><div class="stat-label">Prof.</div></div>';
   if (isCaster) {
