@@ -442,6 +442,27 @@ function renderDashboard(c, preserveScroll) {
     html += '<p class="text-dim">No equipped gear</p>';
   }
 
+  // Unequipped Gear
+  var unequipped = c.unequippedItems || [];
+  if (unequipped.length > 0) {
+    html += '<h3 style="font-size:1rem;margin:16px 0 8px">Unequipped Gear</h3>';
+    unequipped.forEach(function(item, idx) {
+      var eiMagic = item.magicBonus || 0;
+      html += '<div class="equip-item"><div class="ei-info">';
+      html += '<div class="ei-name">' + escapeHtml(item.name) + (eiMagic ? ' <span class="text-accent" style="font-size:0.8rem">+' + eiMagic + '</span>' : '') + '</div>';
+      var detail = item.slot;
+      if (item.stats && item.stats.ac) detail += ' · AC ' + item.stats.ac + (eiMagic ? '+' + eiMagic : '');
+      if (item.stats && item.stats.acBonus) detail += ' · +' + ((item.stats.acBonus || 0) + eiMagic) + ' AC';
+      html += '<div class="ei-detail">' + detail + '</div>';
+      html += '<div style="margin-top:4px"><input type="text" class="uneq-note-input" id="uneq-note-' + idx + '" value="' + escapeHtml(item.notes || '') + '" placeholder="Notes..." onblur="saveUnequippedNote(' + idx + ')" onclick="event.stopPropagation()"></div>';
+      html += '</div><div class="ei-actions">';
+      html += '<button class="ei-btn" onclick="equipFromInventory(' + idx + ')">Equip</button>';
+      html += '<button class="ei-btn" onclick="showEditUnequippedForm(' + idx + ')">Edit</button>';
+      html += '<button class="ei-btn" onclick="deleteUnequippedItem(' + idx + ')" style="color:var(--error)">×</button>';
+      html += '</div></div>';
+    });
+  }
+
   // Quick Items
   html += '<h3 style="font-size:1rem;margin:16px 0 8px">Quick Items</h3>';
   html += '<div class="quick-add">';
@@ -449,7 +470,13 @@ function renderDashboard(c, preserveScroll) {
   html += '<button class="btn btn-secondary" onclick="addQuickItem()" style="padding:8px 16px">Add</button></div>';
   html += '<div id="quick-items-list">';
   (c.quickItems || []).forEach(function(item, idx) {
-    html += '<span class="quick-item">' + escapeHtml(item) + '<button class="qi-remove" onclick="removeQuickItem(' + idx + ')">×</button></span>';
+    var qiName = typeof item === 'string' ? item : item.name;
+    var qiNotes = typeof item === 'string' ? '' : (item.notes || '');
+    html += '<div class="qi-card">';
+    html += '<div class="qi-card-header"><span class="qi-card-name">' + escapeHtml(qiName) + '</span>';
+    html += '<button class="qi-remove" onclick="removeQuickItem(' + idx + ')">×</button></div>';
+    html += '<input type="text" class="qi-note-input" id="qi-note-' + idx + '" value="' + escapeHtml(qiNotes) + '" placeholder="Add note..." onblur="saveQuickItemNote(' + idx + ')" onclick="event.stopPropagation()">';
+    html += '</div>';
   });
   html += '</div>';
 

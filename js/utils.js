@@ -20,7 +20,12 @@ function migrateCharacter(c) {
   if (c.channelDivinityUsed === undefined) c.channelDivinityUsed = 0;
   if (!c.currency) c.currency = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
   if (!c.equippedItems) c.equippedItems = [];
+  if (!c.unequippedItems) c.unequippedItems = [];
   if (!c.quickItems) c.quickItems = [];
+  // Migrate quickItems from string[] to object[]
+  if (c.quickItems.length > 0 && typeof c.quickItems[0] === 'string') {
+    c.quickItems = c.quickItems.map(function(s) { return { name: s, notes: '' }; });
+  }
   if (c.bulkGear === undefined) c.bulkGear = c.equipment || '';
   if (!c.weapons) c.weapons = [];
   if (!c.levelHistory) c.levelHistory = [];

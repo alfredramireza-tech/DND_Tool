@@ -832,6 +832,21 @@ details[open] summary::before { content: '▾ '; }
   background: none; border: none; color: var(--error); cursor: pointer; font-size: 1rem;
   padding: 0 2px; min-width: 20px;
 }
+.qi-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 8px 12px; margin-bottom: 6px;
+}
+.qi-card-header { display: flex; justify-content: space-between; align-items: center; }
+.qi-card-name { font-size: 0.9rem; font-weight: 500; }
+.qi-card .qi-remove {
+  background: none; border: none; color: var(--error); cursor: pointer; font-size: 1rem;
+  padding: 0 2px; min-width: 20px;
+}
+.qi-note-input, .uneq-note-input {
+  width: 100%; box-sizing: border-box; padding: 4px 8px; font-size: 0.8rem;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text-dim); margin-top: 4px;
+}
 .quick-add { display: flex; gap: 8px; margin-bottom: 10px; }
 .quick-add input { flex: 1; min-height: 40px; padding: 8px 12px; }
 .quick-add button { min-height: 40px; padding: 8px 16px; }

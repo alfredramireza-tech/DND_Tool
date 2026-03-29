@@ -276,7 +276,14 @@ async function fillPdfTemplate(c) {
     if (item.notes) line += ' (' + item.notes + ')';
     equipLines.push(line);
   });
-  (c.quickItems || []).forEach(function(item) { equipLines.push(item); });
+  (c.unequippedItems || []).forEach(function(item) {
+    var line = item.name + ' (unequipped)';
+    if (item.notes) line += ' — ' + item.notes;
+    equipLines.push(line);
+  });
+  (c.quickItems || []).forEach(function(item) {
+    equipLines.push(typeof item === 'string' ? item : item.name);
+  });
   pdfSetText(form, 'Equipment', equipLines.join('\n'), 6);
   pdfSetText(form, 'Equipment2', c.bulkGear || '', 6);
 

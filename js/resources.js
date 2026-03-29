@@ -678,6 +678,11 @@ function saveEquipItem(idx) {
   else if (acVal) stats.acBonus = acVal;
   var magicBonus = parseInt(document.getElementById('ef-magic').value) || 0;
   var item = { name: name, slot: slot, armorType: armorType, stats: stats, magicBonus: magicBonus, notes: notes };
+  // Validate when adding new (not editing existing)
+  if (idx < 0) {
+    var msg = checkEquipConflict(c, item);
+    if (msg) { showEquipAlert(msg); return; }
+  }
   if (idx >= 0) c.equippedItems[idx] = item;
   else c.equippedItems.push(item);
   saveCurrentCharacter(c);
@@ -703,10 +708,131 @@ function unequipItem(idx) {
   var item = c.equippedItems[idx];
   if (!item) return;
   c.equippedItems.splice(idx, 1);
-  if (!c.quickItems) c.quickItems = [];
-  c.quickItems.push(item.name);
+  if (!c.unequippedItems) c.unequippedItems = [];
+  c.unequippedItems.push(item);
   saveCurrentCharacter(c);
   showDashboard(c, true);
+}
+
+function equipFromInventory(idx) {
+  var c = loadCharacter();
+  if (!c || !c.unequippedItems) return;
+  var item = c.unequippedItems[idx];
+  if (!item) return;
+  // Validate: no duplicate armor or shield
+  var msg = checkEquipConflict(c, item);
+  if (msg) { showEquipAlert(msg); return; }
+  c.unequippedItems.splice(idx, 1);
+  if (!c.equippedItems) c.equippedItems = [];
+  c.equippedItems.push(item);
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function deleteUnequippedItem(idx) {
+  var c = loadCharacter();
+  if (!c || !c.unequippedItems || !c.unequippedItems[idx]) return;
+  var name = c.unequippedItems[idx].name;
+  showModal(
+    '<h3>Delete Item?</h3><p>Remove ' + escapeHtml(name) + '?</p>' +
+    '<div class="confirm-actions">' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-danger" onclick="doDeleteUnequipped(' + idx + ')">Delete</button></div>'
+  );
+}
+
+function doDeleteUnequipped(idx) {
+  var c = loadCharacter();
+  if (!c || !c.unequippedItems) return;
+  c.unequippedItems.splice(idx, 1);
+  saveCurrentCharacter(c);
+  closeModal();
+  showDashboard(c, true);
+}
+
+function saveUnequippedNote(idx) {
+  var input = document.getElementById('uneq-note-' + idx);
+  if (!input) return;
+  var c = loadCharacter();
+  if (!c || !c.unequippedItems || !c.unequippedItems[idx]) return;
+  c.unequippedItems[idx].notes = input.value.trim();
+  saveCurrentCharacter(c);
+}
+
+function showEditUnequippedForm(idx) {
+  var c = loadCharacter();
+  if (!c || !c.unequippedItems) return;
+  var item = c.unequippedItems[idx];
+  if (!item) return;
+  var area = document.getElementById('equip-form-area');
+  if (!area) return;
+  var showArmorType = (item.slot === 'armor' || item.slot === 'shield');
+  area.innerHTML = '<div class="equip-form">' +
+    '<div class="ef-row"><div class="form-group"><label>Name</label>' +
+    '<input type="text" id="ef-name" value="' + escapeHtml(item.name || '') + '" onclick="event.stopPropagation()"></div></div>' +
+    '<div class="ef-row"><div class="form-group"><label>Slot</label>' +
+    '<select id="ef-slot" onchange="onEquipSlotChange()" onclick="event.stopPropagation()">' +
+    '<option value="armor"' + (item.slot === 'armor' ? ' selected' : '') + '>Armor</option>' +
+    '<option value="shield"' + (item.slot === 'shield' ? ' selected' : '') + '>Shield</option>' +
+    '<option value="ring"' + (item.slot === 'ring' ? ' selected' : '') + '>Ring</option>' +
+    '<option value="cloak"' + (item.slot === 'cloak' ? ' selected' : '') + '>Cloak</option>' +
+    '<option value="other"' + (item.slot === 'other' ? ' selected' : '') + '>Other</option>' +
+    '</select></div>' +
+    '<div class="form-group" id="ef-armor-type-group" style="' + (showArmorType ? '' : 'display:none') + '">' +
+    '<label>Armor Type</label><select id="ef-armor-type" onclick="event.stopPropagation()">' +
+    '<option value="light"' + (item.armorType === 'light' ? ' selected' : '') + '>Light</option>' +
+    '<option value="medium"' + (item.armorType === 'medium' ? ' selected' : '') + '>Medium</option>' +
+    '<option value="heavy"' + (item.armorType === 'heavy' ? ' selected' : '') + '>Heavy</option>' +
+    '</select></div></div>' +
+    '<div class="ef-row"><div class="form-group"><label>Base AC / AC Bonus</label>' +
+    '<input type="number" id="ef-ac" value="' + ((item.stats && item.stats.ac) || (item.stats && item.stats.acBonus) || '') + '" onclick="event.stopPropagation()"></div>' +
+    '<div class="form-group"><label>Magic Bonus (+1, +2, etc.)</label>' +
+    '<input type="number" id="ef-magic" value="' + (item.magicBonus || 0) + '" min="0" onclick="event.stopPropagation()"></div></div>' +
+    '<div class="ef-row"><div class="form-group"><label>Notes</label>' +
+    '<input type="text" id="ef-notes" value="' + escapeHtml(item.notes || '') + '" onclick="event.stopPropagation()"></div></div>' +
+    '<div class="ef-actions">' +
+    '<button class="btn btn-primary" onclick="saveUnequippedEdit(' + idx + ')" style="padding:10px 20px">Save</button>' +
+    '<button class="btn btn-secondary" onclick="cancelEquipForm()" style="padding:10px 20px">Cancel</button></div></div>';
+}
+
+function saveUnequippedEdit(idx) {
+  var c = loadCharacter();
+  if (!c || !c.unequippedItems) return;
+  var name = document.getElementById('ef-name').value.trim();
+  if (!name) return;
+  var slot = document.getElementById('ef-slot').value;
+  var armorType = (slot === 'armor' || slot === 'shield') ? document.getElementById('ef-armor-type').value : null;
+  var acVal = parseInt(document.getElementById('ef-ac').value) || 0;
+  var notes = document.getElementById('ef-notes').value.trim();
+  var stats = {};
+  if (slot === 'shield') stats.acBonus = acVal || 2;
+  else if (slot === 'armor') stats.ac = acVal;
+  else if (acVal) stats.acBonus = acVal;
+  var magicBonus = parseInt(document.getElementById('ef-magic').value) || 0;
+  c.unequippedItems[idx] = { name: name, slot: slot, armorType: armorType, stats: stats, magicBonus: magicBonus, notes: notes };
+  saveCurrentCharacter(c);
+  showDashboard(c, true);
+}
+
+function checkEquipConflict(c, item) {
+  if (item.slot === 'armor' && c.equippedItems.some(function(e) { return e.slot === 'armor'; })) {
+    return 'You already have armor equipped. Unequip it first.';
+  }
+  if (item.slot === 'shield' && c.equippedItems.some(function(e) { return e.slot === 'shield'; })) {
+    return 'You already have a shield equipped. Unequip it first.';
+  }
+  return null;
+}
+
+function showEquipAlert(msg) {
+  var container = document.getElementById('equip-form-area');
+  if (!container) container = document.querySelector('.dash-section');
+  if (!container) return;
+  var alert = document.createElement('div');
+  alert.style.cssText = 'background:rgba(139,32,32,0.15);border:1px solid var(--error);color:var(--error);border-radius:var(--radius);padding:8px 12px;font-size:0.85rem;margin:8px 0';
+  alert.textContent = msg;
+  container.prepend(alert);
+  setTimeout(function() { if (alert.parentNode) alert.parentNode.removeChild(alert); }, 3000);
 }
 
 function addQuickItem() {
@@ -715,7 +841,7 @@ function addQuickItem() {
   var c = loadCharacter();
   if (!c) return;
   if (!c.quickItems) c.quickItems = [];
-  c.quickItems.push(input.value.trim());
+  c.quickItems.push({ name: input.value.trim(), notes: '' });
   saveCurrentCharacter(c);
   showDashboard(c, true);
 }
@@ -726,6 +852,15 @@ function removeQuickItem(idx) {
   c.quickItems.splice(idx, 1);
   saveCurrentCharacter(c);
   showDashboard(c, true);
+}
+
+function saveQuickItemNote(idx) {
+  var input = document.getElementById('qi-note-' + idx);
+  if (!input) return;
+  var c = loadCharacter();
+  if (!c || !c.quickItems || !c.quickItems[idx]) return;
+  c.quickItems[idx].notes = input.value.trim();
+  saveCurrentCharacter(c);
 }
 
 /* ═══════════════════════════════════════════

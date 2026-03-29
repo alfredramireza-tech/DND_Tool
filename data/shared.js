@@ -117,6 +117,7 @@ const BLANK_DEFAULTS = {
   channelDivinityUsed: 0,
   currency: { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 },
   equippedItems: [],
+  unequippedItems: [],
   quickItems: [],
   bulkGear: '',
   levelHistory: [],

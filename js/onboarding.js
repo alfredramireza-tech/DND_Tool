@@ -1252,6 +1252,7 @@ function saveCharacter() {
       character.channelDivinityUsed = existing.channelDivinityUsed || 0;
       character.currency = character.currency || existing.currency || { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
       character.equippedItems = existing.equippedItems || [];
+      character.unequippedItems = existing.unequippedItems || [];
       character.quickItems = existing.quickItems || [];
       character.bulkGear = document.getElementById('f-equipment').value;
       // Preserve Phase 4+ fields
