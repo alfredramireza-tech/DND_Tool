@@ -381,9 +381,30 @@ function renderEncounterSetup(container, enc) {
   // Start Combat button — always enabled, validates on click
   html += '<button class="btn btn-primary btn-large" style="width:100%;min-height:48px;margin-bottom:12px" onclick="startCombat()">Start Combat</button>';
 
-  html += '<button class="btn btn-secondary" style="width:100%" onclick="showDmScreen()">\u2190 Back to DM Screen</button>';
+  html += '<button class="btn btn-secondary" style="width:100%;margin-bottom:8px" onclick="showDmScreen()">\u2190 Back to DM Screen</button>';
+  html += '<button class="btn btn-secondary" style="width:100%;color:var(--error)" onclick="abandonEncounter()">Abandon Encounter</button>';
   html += '</div>';
   container.innerHTML = html;
+}
+
+function abandonEncounter() {
+  showModal(
+    '<h3>Abandon Encounter?</h3>' +
+    '<p>It will be deleted. This cannot be undone.</p>' +
+    '<div class="confirm-actions">' +
+    '<button class="btn btn-secondary" onclick="closeModal()">Cancel</button>' +
+    '<button class="btn btn-primary" style="background:var(--error)" onclick="confirmAbandonEncounter()">Abandon</button></div>'
+  );
+}
+
+function confirmAbandonEncounter() {
+  var enc = getActiveEncounter();
+  if (!enc) { closeModal(); showDmScreen(); return; }
+  var data = loadDmData();
+  data.encounters = data.encounters.filter(function(e) { return e.id !== enc.id; });
+  saveDmData(data);
+  closeModal();
+  showDmScreen();
 }
 
 function renderEncounterBattle(container, enc) {
