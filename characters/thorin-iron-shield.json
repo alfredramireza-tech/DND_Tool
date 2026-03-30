@@ -47,7 +47,7 @@
     ]
   },
   "proficiencyBonus": 2,
-  "ac": 21,
+  "ac": 19,
   "speed": 25,
   "initiative": -1,
   "savingThrows": [
@@ -199,11 +199,19 @@
     "failures": 0
   },
   "concentration": {
-    "active": true,
-    "spellName": "Shield of Faith"
+    "active": false,
+    "spellName": ""
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "10:39 PM",
+      "text": "Dropped concentration on Shield of Faith"
+    },
+    {
+      "time": "10:39 PM",
+      "text": "Removed buff: Shield of Faith (-2 AC)"
+    },
     {
       "time": "9:04 PM",
       "text": "Added buff: Shield of Faith (+2 AC)"
@@ -375,18 +383,7 @@
   ],
   "inspiration": true,
   "journal": [],
-  "externalBuffs": [
-    {
-      "spellName": "Shield of Faith",
-      "effects": [
-        {
-          "type": "acBonus",
-          "value": 2
-        }
-      ],
-      "linkedToConcentration": true
-    }
-  ],
+  "externalBuffs": [],
   "maxHpBoost": {
     "value": 0,
     "source": ""
