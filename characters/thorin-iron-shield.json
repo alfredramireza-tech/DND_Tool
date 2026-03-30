@@ -193,7 +193,24 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [],
+  "sessionLog": [
+    {
+      "time": "2:05 PM",
+      "text": "Channel Divinity: 1/1 remaining"
+    },
+    {
+      "time": "2:05 PM",
+      "text": "Channel Divinity: 0/1 remaining"
+    },
+    {
+      "time": "2:04 PM",
+      "text": "Gained Inspiration"
+    },
+    {
+      "time": "2:04 PM",
+      "text": "Used Inspiration"
+    }
+  ],
   "inspiration": true,
   "journal": [],
   "externalBuffs": [],
