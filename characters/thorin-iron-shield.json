@@ -153,7 +153,9 @@
   "id": "mn12z7a2x0032",
   "currentHp": 34,
   "tempHp": 0,
-  "spellSlotsUsed": {},
+  "spellSlotsUsed": {
+    "2": 0
+  },
   "channelDivinityUsed": 0,
   "equippedItems": [
     {
@@ -194,6 +196,22 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "2:06 PM",
+      "text": "Spiritual Weapon — Attack: 20"
+    },
+    {
+      "time": "2:06 PM",
+      "text": "Cast Spiritual Weapon at 2nd level (1 slots remaining)"
+    },
+    {
+      "time": "2:05 PM",
+      "text": "Spiritual Weapon — force: 9"
+    },
+    {
+      "time": "2:05 PM",
+      "text": "Cast Spiritual Weapon at 2nd level (2 slots remaining)"
+    },
     {
       "time": "2:05 PM",
       "text": "Channel Divinity: 1/1 remaining"
