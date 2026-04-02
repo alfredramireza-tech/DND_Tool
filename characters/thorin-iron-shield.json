@@ -154,6 +154,7 @@
   "currentHp": 34,
   "tempHp": 0,
   "spellSlotsUsed": {
+    "1": 1,
     "2": 0
   },
   "channelDivinityUsed": 0,
@@ -196,6 +197,26 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "12:16 PM",
+      "text": "Healing Word — Healing: 11"
+    },
+    {
+      "time": "12:16 PM",
+      "text": "Cast Healing Word at 1st level (3 slots remaining)"
+    },
+    {
+      "time": "12:16 PM",
+      "text": "WIS Save: 8"
+    },
+    {
+      "time": "12:15 PM",
+      "text": "Brain Smoothie — piercing: 10"
+    },
+    {
+      "time": "12:15 PM",
+      "text": "Brain Smoothie — Attack: 24"
+    },
     {
       "time": "10:39 AM",
       "text": "Religion: 21"
