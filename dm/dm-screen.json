@@ -1,7 +1,65 @@
 {
-  "encounters": [],
+  "encounters": [
+    {
+      "id": "enc_1775320254715",
+      "name": "Encounter 1",
+      "created": 1775320254715,
+      "initiative": [
+        {
+          "id": "init_pc_mnajixxnd6h00",
+          "name": "Mage",
+          "type": "pc",
+          "charId": "mnajixxnd6h00",
+          "initiative": null,
+          "ac": 12,
+          "maxHp": 22,
+          "currentHp": 7,
+          "conditions": [],
+          "concentration": null,
+          "attack": "",
+          "notes": "",
+          "dexMod": null
+        },
+        {
+          "id": "init_pc_mnajn080rkrta",
+          "name": "Rogue",
+          "type": "pc",
+          "charId": "mnajn080rkrta",
+          "initiative": null,
+          "ac": 13,
+          "maxHp": 31,
+          "currentHp": 31,
+          "conditions": [],
+          "concentration": null,
+          "attack": "",
+          "notes": "",
+          "dexMod": null
+        },
+        {
+          "id": "init_pc_mn12z7a2x0032",
+          "name": "Thorin Iron Shield",
+          "type": "pc",
+          "charId": "mn12z7a2x0032",
+          "initiative": null,
+          "ac": 17,
+          "maxHp": 34,
+          "currentHp": 34,
+          "conditions": [],
+          "concentration": null,
+          "attack": "",
+          "notes": "",
+          "dexMod": null
+        }
+      ],
+      "currentTurn": 0,
+      "round": 0,
+      "notes": "",
+      "log": [],
+      "active": true
+    }
+  ],
   "quickMonsters": [],
   "sessionNotes": "",
   "passwordHash": "h2h53ho5y",
-  "lastModified": "2026-04-02T19:18:20.503Z"
+  "lastModified": "2026-04-04T17:14:57.069Z"
 }
