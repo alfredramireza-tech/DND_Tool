@@ -184,7 +184,12 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [],
+  "sessionLog": [
+    {
+      "time": "2:53 PM",
+      "text": "1d20: 9"
+    }
+  ],
   "inspiration": false,
   "journal": [],
   "externalBuffs": [],
@@ -194,5 +199,6 @@
   },
   "spellMastery": null,
   "signatureSpells": null,
-  "passwordHash": null
+  "passwordHash": null,
+  "unequippedItems": []
 }
