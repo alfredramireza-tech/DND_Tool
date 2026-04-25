@@ -160,7 +160,16 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [],
+  "sessionLog": [
+    {
+      "time": "10:10 PM",
+      "text": "Acrobatics: 21"
+    },
+    {
+      "time": "10:10 PM",
+      "text": "Acrobatics: 25"
+    }
+  ],
   "inspiration": false,
   "journal": [],
   "externalBuffs": [],
