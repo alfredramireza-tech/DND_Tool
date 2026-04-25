@@ -154,7 +154,7 @@
   "currentHp": 34,
   "tempHp": 0,
   "spellSlotsUsed": {
-    "1": 1,
+    "1": 0,
     "2": 0
   },
   "channelDivinityUsed": 0,
@@ -291,7 +291,13 @@
     }
   ],
   "inspiration": true,
-  "journal": [],
+  "journal": [
+    {
+      "title": "Before Black Spider - start of session",
+      "body": "In town and elections are next",
+      "date": "4/24/2026"
+    }
+  ],
   "externalBuffs": [],
   "maxHpBoost": {
     "value": 0,
