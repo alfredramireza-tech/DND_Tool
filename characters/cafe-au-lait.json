@@ -92,7 +92,7 @@
   "maneuversKnown": [],
   "spellsKnown": [],
   "id": "modu0zqe7bj4c",
-  "currentHp": 14,
+  "currentHp": 31,
   "tempHp": 0,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
@@ -125,6 +125,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "9:37 PM",
+      "text": "Took 3 damage — HP 34→31"
+    },
+    {
+      "time": "9:37 PM",
+      "text": "Healed 31 HP — HP 14→34"
+    },
     {
       "time": "9:22 PM",
       "text": "Used Action Surge (0/1 remaining)"
