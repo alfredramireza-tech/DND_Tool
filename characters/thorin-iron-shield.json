@@ -151,13 +151,13 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 23,
+  "currentHp": 26,
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 0,
     "2": 0
   },
-  "channelDivinityUsed": 0,
+  "channelDivinityUsed": 1,
   "equippedItems": [
     {
       "name": "Splint Mail",
@@ -216,6 +216,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "9:37 PM",
+      "text": "Channel Divinity: 0/1 remaining"
+    },
+    {
+      "time": "9:37 PM",
+      "text": "Healed 3 HP — HP 23→26"
+    },
     {
       "time": "9:31 PM",
       "text": "Brain Smoothie — Attack: 11"
