@@ -168,6 +168,14 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "11:33 PM",
+      "text": "Added external buff: Bless (+1d4)"
+    },
+    {
+      "time": "11:30 PM",
+      "text": "Swift Crossbow — Attack: 25"
+    },
+    {
       "time": "10:23 PM",
       "text": "Swift Crossbow — Attack: 19"
     },
@@ -182,7 +190,24 @@
   ],
   "inspiration": false,
   "journal": [],
-  "externalBuffs": [],
+  "externalBuffs": [
+    {
+      "spellName": "Bless",
+      "effects": [
+        {
+          "type": "rollReminder",
+          "text": "+1d4",
+          "rollBonus": {
+            "dice": "1d4",
+            "appliesTo": [
+              "attacks",
+              "saves"
+            ]
+          }
+        }
+      ]
+    }
+  ],
   "maxHpBoost": {
     "value": 0,
     "source": ""
