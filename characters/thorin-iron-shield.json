@@ -155,7 +155,7 @@
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 0,
-    "2": 1
+    "2": 0
   },
   "channelDivinityUsed": 1,
   "equippedItems": [
@@ -216,6 +216,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:10 PM",
+      "text": "Sacred Flame — radiant: 4"
+    },
     {
       "time": "11:09 PM",
       "text": "Prayer of Healing — Healing: 15"
