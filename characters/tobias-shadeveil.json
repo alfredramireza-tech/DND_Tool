@@ -142,19 +142,19 @@
   ],
   "bulkGear": "5- Carnelian \n2- Peridot\n1- Pearl\n3- Slave Collar\n\nThieves tools \nBackpack\nBell\n5- Candles\nCrowbar\nHammer\n10 Pitons\n3- Flasks of Oil\nTinderbox\nWaterskin\n\n20ft Rope\nHooded lantern \n\n\nSteampunk Glasses w/ Yellow Stones\nAncient Ornate Crown ",
   "colorTheme": {
-    "name": "Rogue Purple",
-    "accent": "#9a6ac5",
-    "accentHover": "#aa7ad5",
-    "accentDim": "#6a4890",
-    "bg": "#16121a",
+    "name": "Custom",
+    "accent": "#00ff00",
+    "accentHover": "#10ff10",
+    "accentDim": "#00d700",
+    "bg": "#303030",
     "surface": "#1e1a24",
-    "surfaceRaised": "#28222e",
-    "border": "#362e3d",
+    "surfaceRaised": "#28242e",
+    "border": "#37333d",
     "text": "#dcd0e8",
-    "textDim": "#9888a8",
+    "textDim": "#97909e",
     "error": "#c45a5a",
     "success": "#6aaa5a",
-    "inputBg": "#1a141e"
+    "inputBg": "#2b292c"
   },
   "passwordHash": "hvox5yjaisw",
   "deathSaves": {
