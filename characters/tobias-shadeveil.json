@@ -1,0 +1,137 @@
+{
+  "name": "Tobias Shadeveil",
+  "race": "Lightfoot Halfling",
+  "subrace": "",
+  "class": "Rogue",
+  "subclass": "Thief",
+  "background": "Criminal",
+  "alignment": "Chaotic Neutral",
+  "level": 4,
+  "abilityScores": {
+    "str": 8,
+    "dex": 18,
+    "con": 12,
+    "int": 10,
+    "wis": 10,
+    "cha": 16
+  },
+  "hp": {
+    "max": 28,
+    "hitDiceType": 8,
+    "hitDiceCount": 4,
+    "hpHistory": []
+  },
+  "proficiencyBonus": 2,
+  "ac": 16,
+  "speed": 25,
+  "initiative": 4,
+  "savingThrows": [
+    "dex",
+    "int"
+  ],
+  "skillProficiencies": [
+    "acrobatics",
+    "sleight of hand",
+    "stealth",
+    "investigation"
+  ],
+  "cantripsKnown": [],
+  "spellSlots": {},
+  "preparedSpellCount": 0,
+  "currentPreparedSpells": [],
+  "domainSpells": [],
+  "features": [
+    "Sneak Attack",
+    "Thieves' Cant",
+    "Cunning Action",
+    "Fast Hands",
+    "Second-Story Work"
+  ],
+  "channelDivinityUses": 0,
+  "equipment": "5- Carnelian \n2- Peridot\n1- Pearl\n3- Slave Collar\n\nSteampunk Glasses w/ Yellow Stones\nAncient Ornate Crown ",
+  "notes": "",
+  "weapons": [
+    {
+      "name": "Veiled Bow",
+      "ability": "dex",
+      "proficient": true,
+      "damage": "1d6",
+      "damageType": "3 piercing",
+      "notes": ""
+    },
+    {
+      "name": "Rapier",
+      "ability": "dex",
+      "proficient": true,
+      "damage": "1d8",
+      "damageType": "3 piercing",
+      "notes": ""
+    },
+    {
+      "name": "Swift Crossbow",
+      "ability": "dex",
+      "proficient": true,
+      "damage": "1d8",
+      "damageType": "3 piercing",
+      "notes": ""
+    }
+  ],
+  "levelHistory": [],
+  "expertiseSkills": [
+    "acrobatics",
+    "stealth"
+  ],
+  "resources": {},
+  "currency": {
+    "cp": 0,
+    "sp": 108,
+    "ep": 45,
+    "gp": 290,
+    "pp": 0
+  },
+  "id": "modvf4mgjphx5",
+  "currentHp": 28,
+  "tempHp": 0,
+  "spellSlotsUsed": {},
+  "channelDivinityUsed": 0,
+  "equippedItems": [],
+  "unequippedItems": [],
+  "quickItems": [],
+  "bulkGear": "5- Carnelian \n2- Peridot\n1- Pearl\n3- Slave Collar\n\nSteampunk Glasses w/ Yellow Stones\nAncient Ornate Crown ",
+  "colorTheme": {
+    "name": "Rogue Purple",
+    "accent": "#9a6ac5",
+    "accentHover": "#aa7ad5",
+    "accentDim": "#6a4890",
+    "bg": "#16121a",
+    "surface": "#1e1a24",
+    "surfaceRaised": "#28222e",
+    "border": "#362e3d",
+    "text": "#dcd0e8",
+    "textDim": "#9888a8",
+    "error": "#c45a5a",
+    "success": "#6aaa5a",
+    "inputBg": "#1a141e"
+  },
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  },
+  "concentration": {
+    "active": false,
+    "spellName": ""
+  },
+  "activeConditions": [],
+  "sessionLog": [],
+  "inspiration": false,
+  "journal": [],
+  "externalBuffs": [],
+  "maxHpBoost": {
+    "value": 0,
+    "source": ""
+  },
+  "spellbook": [],
+  "spellMastery": null,
+  "signatureSpells": null,
+  "passwordHash": "hvox5yjaisw"
+}
