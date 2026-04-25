@@ -167,6 +167,25 @@
         "ac": 17
       },
       "notes": ""
+    },
+    {
+      "name": "Boots of Striding and Springing",
+      "slot": "other",
+      "armorType": null,
+      "stats": {},
+      "magicBonus": 0,
+      "notes": "Jump 3x normal distance but can’t be more than emailing movement speed. Also, not encumbered and heavy armor doesn’t slow down.",
+      "requiresAttunement": false,
+      "attuned": false,
+      "charges": null,
+      "dailyUses": null,
+      "abilityOverride": null,
+      "abilityBonus": null,
+      "saveBonusAll": 0,
+      "saveBonusSpecific": null,
+      "speedBonus": 5,
+      "stealthDisadvantage": false,
+      "resistance": []
     }
   ],
   "quickItems": [],
