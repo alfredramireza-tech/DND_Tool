@@ -151,8 +151,8 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 26,
-  "tempHp": 0,
+  "currentHp": 31,
+  "tempHp": 5,
   "spellSlotsUsed": {
     "1": 0,
     "2": 0
@@ -216,6 +216,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:16 PM",
+      "text": "Healed 5 HP — HP 26→31"
+    },
+    {
+      "time": "11:15 PM",
+      "text": "Set temp HP to 5"
+    },
     {
       "time": "11:14 PM",
       "text": "Took 5 damage — HP 31→26"
