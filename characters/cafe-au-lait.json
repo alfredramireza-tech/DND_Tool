@@ -1,0 +1,155 @@
+{
+  "name": "Cafe Au lait",
+  "race": "Human",
+  "subrace": "",
+  "class": "Fighter",
+  "subclass": "Champion",
+  "background": "Noble man",
+  "alignment": "Lawful Neutral",
+  "level": 4,
+  "abilityScores": {
+    "str": 18,
+    "dex": 9,
+    "con": 15,
+    "int": 11,
+    "wis": 13,
+    "cha": 14
+  },
+  "hp": {
+    "max": 34,
+    "hitDiceType": 10,
+    "hitDiceCount": 4,
+    "hpHistory": []
+  },
+  "proficiencyBonus": 2,
+  "ac": 17,
+  "speed": 30,
+  "initiative": -1,
+  "savingThrows": [
+    "str",
+    "con"
+  ],
+  "skillProficiencies": [
+    "athletics",
+    "history",
+    "persuasion"
+  ],
+  "cantripsKnown": [],
+  "spellSlots": {},
+  "preparedSpellCount": 0,
+  "currentPreparedSpells": [],
+  "domainSpells": [],
+  "features": [
+    "Second Wind",
+    "Action Surge",
+    "Improved Critical"
+  ],
+  "channelDivinityUses": 0,
+  "equipment": "Chain mail, great ace, 2 javelins, backpack, blanket, tinder ox, water skin, fine clothes, signet ring, scroll of pedigree ",
+  "notes": "",
+  "weapons": [
+    {
+      "name": "Nespresso",
+      "ability": "str",
+      "proficient": true,
+      "damage": "1d12",
+      "damageType": "Slashing",
+      "notes": "+4 slashing"
+    },
+    {
+      "name": "Great sword",
+      "ability": "str",
+      "proficient": true,
+      "damage": "2d6",
+      "damageType": "Slashing",
+      "notes": "+5 bonus"
+    },
+    {
+      "name": "Javelin",
+      "ability": "str",
+      "proficient": true,
+      "damage": "1d6",
+      "damageType": "Piercing",
+      "notes": "+4 piercing"
+    }
+  ],
+  "levelHistory": [],
+  "expertiseSkills": [],
+  "resources": {},
+  "currency": {
+    "cp": 0,
+    "sp": 0,
+    "ep": 0,
+    "gp": 0,
+    "pp": 0
+  },
+  "fightingStyle": "Great Weapon Fighting",
+  "maneuversKnown": [],
+  "spellsKnown": [],
+  "id": "modu0zqe7bj4c",
+  "currentHp": 14,
+  "tempHp": 0,
+  "spellSlotsUsed": {},
+  "channelDivinityUsed": 0,
+  "equippedItems": [],
+  "unequippedItems": [],
+  "quickItems": [],
+  "bulkGear": "Chain mail, great ace, 2 javelins, backpack, blanket, tinder ox, water skin, fine clothes, signet ring, scroll of pedigree ",
+  "colorTheme": {
+    "name": "Fighter Steel",
+    "accent": "#6a9bc5",
+    "accentHover": "#7aadd5",
+    "accentDim": "#4a7090",
+    "bg": "#121820",
+    "surface": "#1a2230",
+    "surfaceRaised": "#222c3a",
+    "border": "#2e3a4d",
+    "text": "#d8e0ec",
+    "textDim": "#8898aa",
+    "error": "#c45a5a",
+    "success": "#6aaa5a",
+    "inputBg": "#141c28"
+  },
+  "deathSaves": {
+    "successes": 0,
+    "failures": 0
+  },
+  "concentration": {
+    "active": false,
+    "spellName": ""
+  },
+  "activeConditions": [],
+  "sessionLog": [
+    {
+      "time": "9:22 PM",
+      "text": "Took 20 damage — HP 34→14"
+    },
+    {
+      "time": "9:21 PM",
+      "text": "Initiative: 6"
+    },
+    {
+      "time": "9:21 PM",
+      "text": "Initiative: 6"
+    },
+    {
+      "time": "9:21 PM",
+      "text": "Nespresso — Attack: 23"
+    },
+    {
+      "time": "9:21 PM",
+      "text": "Nespresso — Slashing: 15"
+    }
+  ],
+  "inspiration": false,
+  "journal": [],
+  "externalBuffs": [],
+  "maxHpBoost": {
+    "value": 0,
+    "source": ""
+  },
+  "spellbook": [],
+  "spellMastery": null,
+  "signatureSpells": null,
+  "passwordHash": "h1bu6214qovimh"
+}
