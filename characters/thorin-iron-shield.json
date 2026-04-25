@@ -155,7 +155,7 @@
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 0,
-    "2": 0
+    "2": 1
   },
   "channelDivinityUsed": 1,
   "equippedItems": [
@@ -216,6 +216,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:09 PM",
+      "text": "Prayer of Healing — Healing: 15"
+    },
+    {
+      "time": "11:09 PM",
+      "text": "Cast Prayer of Healing at 2nd level (2 slots remaining)"
+    },
     {
       "time": "11:06 PM",
       "text": "Healing Word — Healing: 10"
