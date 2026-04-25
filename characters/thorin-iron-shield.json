@@ -154,7 +154,7 @@
   "currentHp": 31,
   "tempHp": 5,
   "spellSlotsUsed": {
-    "1": 1,
+    "1": 2,
     "2": 0
   },
   "channelDivinityUsed": 1,
@@ -211,11 +211,27 @@
     "failures": 0
   },
   "concentration": {
-    "active": false,
-    "spellName": ""
+    "active": true,
+    "spellName": "Bless"
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:19 PM",
+      "text": "Initiative: 11"
+    },
+    {
+      "time": "11:19 PM",
+      "text": "Initiative: 11"
+    },
+    {
+      "time": "11:19 PM",
+      "text": "Added buff: Bless (+1d4)"
+    },
+    {
+      "time": "11:19 PM",
+      "text": "Began concentrating on Bless"
+    },
     {
       "time": "11:17 PM",
       "text": "Guiding Bolt — Attack: 18"
@@ -547,7 +563,25 @@
   ],
   "inspiration": true,
   "journal": [],
-  "externalBuffs": [],
+  "externalBuffs": [
+    {
+      "spellName": "Bless",
+      "effects": [
+        {
+          "type": "rollReminder",
+          "text": "+1d4",
+          "rollBonus": {
+            "dice": "1d4",
+            "appliesTo": [
+              "attacks",
+              "saves"
+            ]
+          }
+        }
+      ],
+      "linkedToConcentration": true
+    }
+  ],
   "maxHpBoost": {
     "value": 0,
     "source": ""
