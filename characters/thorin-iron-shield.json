@@ -151,7 +151,7 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 29,
+  "currentHp": 23,
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 2,
@@ -216,6 +216,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:37 PM",
+      "text": "CON Save: 22"
+    },
+    {
+      "time": "11:37 PM",
+      "text": "Took 6 damage — HP 29→23"
+    },
     {
       "time": "11:33 PM",
       "text": "Spiritual Weapon — Attack: 12"
