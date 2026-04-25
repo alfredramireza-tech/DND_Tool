@@ -151,7 +151,7 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 34,
+  "currentHp": 23,
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 0,
@@ -216,6 +216,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "9:29 PM",
+      "text": "Took 11 damage — HP 34→23"
+    },
     {
       "time": "9:19 PM",
       "text": "Brain Smoothie — piercing: 6"
