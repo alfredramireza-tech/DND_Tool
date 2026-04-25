@@ -93,7 +93,7 @@
   "spellsKnown": [],
   "id": "modu0zqe7bj4c",
   "currentHp": 23,
-  "tempHp": 0,
+  "tempHp": 5,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
   "equippedItems": [],
@@ -125,6 +125,18 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:15 PM",
+      "text": "Set temp HP to 5"
+    },
+    {
+      "time": "11:15 PM",
+      "text": "Took 5 damage — HP 28→23"
+    },
+    {
+      "time": "11:15 PM",
+      "text": "Healed 5 HP — HP 23→28"
+    },
     {
       "time": "10:40 PM",
       "text": "Took 8 damage — HP 31→23"
