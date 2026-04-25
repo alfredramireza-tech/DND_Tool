@@ -168,6 +168,10 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "11:44 PM",
+      "text": "1d20: 19"
+    },
+    {
       "time": "11:33 PM",
       "text": "Added external buff: Bless (+1d4)"
     },
