@@ -56,7 +56,8 @@
       "ability": "dex",
       "proficient": true,
       "damage": "1d6",
-      "damageType": "3 piercing",
+      "damageType": "piercing",
+      "magicBonus": 0,
       "notes": ""
     },
     {
@@ -64,7 +65,8 @@
       "ability": "dex",
       "proficient": true,
       "damage": "1d8",
-      "damageType": "3 piercing",
+      "damageType": "piercing",
+      "magicBonus": 0,
       "notes": ""
     },
     {
@@ -72,7 +74,8 @@
       "ability": "dex",
       "proficient": true,
       "damage": "1d8",
-      "damageType": "3 piercing",
+      "damageType": "piercing",
+      "magicBonus": 0,
       "notes": ""
     }
   ],
