@@ -99,7 +99,20 @@
   "channelDivinityUsed": 0,
   "equippedItems": [],
   "unequippedItems": [],
-  "quickItems": [],
+  "quickItems": [
+    {
+      "name": "Arrows",
+      "notes": "30"
+    },
+    {
+      "name": "Fire Arrows",
+      "notes": "4"
+    },
+    {
+      "name": "Bolts",
+      "notes": "12"
+    }
+  ],
   "bulkGear": "5- Carnelian \n2- Peridot\n1- Pearl\n3- Slave Collar\n\nSteampunk Glasses w/ Yellow Stones\nAncient Ornate Crown ",
   "colorTheme": {
     "name": "Rogue Purple",
