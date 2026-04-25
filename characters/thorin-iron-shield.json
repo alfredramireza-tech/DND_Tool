@@ -151,7 +151,7 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 13,
+  "currentHp": 0,
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 2,
@@ -211,11 +211,23 @@
     "failures": 0
   },
   "concentration": {
-    "active": true,
-    "spellName": "Bless"
+    "active": false,
+    "spellName": ""
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:48 PM",
+      "text": "Dropped concentration on Bless"
+    },
+    {
+      "time": "11:48 PM",
+      "text": "Removed buff: Bless (+1d4)"
+    },
+    {
+      "time": "11:48 PM",
+      "text": "Took 26 damage — HP 13→0"
+    },
     {
       "time": "11:47 PM",
       "text": "8d6: 33"
@@ -603,41 +615,11 @@
     {
       "time": "9:37 PM",
       "text": "Channel Divinity: 0/1 remaining"
-    },
-    {
-      "time": "9:37 PM",
-      "text": "Healed 3 HP — HP 23→26"
-    },
-    {
-      "time": "9:31 PM",
-      "text": "Brain Smoothie — Attack: 11"
-    },
-    {
-      "time": "9:29 PM",
-      "text": "Took 11 damage — HP 34→23"
     }
   ],
   "inspiration": true,
   "journal": [],
-  "externalBuffs": [
-    {
-      "spellName": "Bless",
-      "effects": [
-        {
-          "type": "rollReminder",
-          "text": "+1d4",
-          "rollBonus": {
-            "dice": "1d4",
-            "appliesTo": [
-              "attacks",
-              "saves"
-            ]
-          }
-        }
-      ],
-      "linkedToConcentration": true
-    }
-  ],
+  "externalBuffs": [],
   "maxHpBoost": {
     "value": 0,
     "source": ""
