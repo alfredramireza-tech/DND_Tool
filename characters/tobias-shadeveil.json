@@ -158,7 +158,16 @@
     "spellName": ""
   },
   "activeConditions": [],
-  "sessionLog": [],
+  "sessionLog": [
+    {
+      "time": "10:13 PM",
+      "text": "Deception: 24"
+    },
+    {
+      "time": "10:13 PM",
+      "text": "Deception: 15"
+    }
+  ],
   "inspiration": false,
   "journal": [],
   "externalBuffs": [],
