@@ -151,10 +151,10 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 31,
-  "tempHp": 5,
+  "currentHp": 26,
+  "tempHp": 0,
   "spellSlotsUsed": {
-    "1": 1,
+    "1": 0,
     "2": 0
   },
   "channelDivinityUsed": 1,
@@ -216,6 +216,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:14 PM",
+      "text": "Took 5 damage — HP 31→26"
+    },
     {
       "time": "11:13 PM",
       "text": "Healed 5 HP — HP 26→31"
