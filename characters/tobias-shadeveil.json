@@ -121,15 +121,15 @@
   "quickItems": [
     {
       "name": "Arrows",
-      "notes": "30"
+      "notes": "34"
     },
     {
       "name": "Fire Arrows",
-      "notes": "4"
+      "notes": "3"
     },
     {
       "name": "Bolts",
-      "notes": "12"
+      "notes": "15"
     },
     {
       "name": "Health Potion",
@@ -167,6 +167,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "10:23 PM",
+      "text": "Swift Crossbow — Attack: 19"
+    },
     {
       "time": "10:13 PM",
       "text": "Deception: 24"
