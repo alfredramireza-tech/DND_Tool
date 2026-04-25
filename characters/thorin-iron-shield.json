@@ -217,6 +217,34 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "11:42 PM",
+      "text": "DEX Save: 20"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 9"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 1"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 17"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 5"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 4"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 1"
+    },
+    {
       "time": "11:39 PM",
       "text": "CON Save: 20"
     },
@@ -587,14 +615,6 @@
     {
       "time": "2:05 PM",
       "text": "Channel Divinity: 0/1 remaining"
-    },
-    {
-      "time": "2:04 PM",
-      "text": "Gained Inspiration"
-    },
-    {
-      "time": "2:04 PM",
-      "text": "Used Inspiration"
     }
   ],
   "inspiration": true,
