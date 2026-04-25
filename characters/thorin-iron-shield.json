@@ -151,8 +151,8 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 31,
-  "tempHp": 5,
+  "currentHp": 29,
+  "tempHp": 0,
   "spellSlotsUsed": {
     "1": 2,
     "2": 0
@@ -216,6 +216,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:25 PM",
+      "text": "Took 2 damage — HP 31→29"
+    },
     {
       "time": "11:19 PM",
       "text": "Initiative: 11"
