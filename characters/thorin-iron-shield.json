@@ -295,13 +295,7 @@
     }
   ],
   "inspiration": true,
-  "journal": [
-    {
-      "title": "Before Black Spider - start of session",
-      "body": "In town and elections are next",
-      "date": "4/24/2026"
-    }
-  ],
+  "journal": [],
   "externalBuffs": [],
   "maxHpBoost": {
     "value": 0,
@@ -312,14 +306,25 @@
   "signatureSpells": null,
   "unequippedItems": [
     {
-      "name": "SHield",
+      "name": "Shield",
       "slot": "shield",
       "armorType": "heavy",
       "stats": {
         "acBonus": 2
       },
       "magicBonus": 0,
-      "notes": ""
+      "notes": "",
+      "requiresAttunement": false,
+      "attuned": false,
+      "charges": null,
+      "dailyUses": null,
+      "abilityOverride": null,
+      "abilityBonus": null,
+      "saveBonusAll": 0,
+      "saveBonusSpecific": null,
+      "speedBonus": 0,
+      "stealthDisadvantage": false,
+      "resistance": []
     }
   ]
 }
