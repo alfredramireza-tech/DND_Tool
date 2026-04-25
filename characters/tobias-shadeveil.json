@@ -22,7 +22,7 @@
     "hpHistory": []
   },
   "proficiencyBonus": 2,
-  "ac": 16,
+  "ac": 20,
   "speed": 25,
   "initiative": 4,
   "savingThrows": [
@@ -97,7 +97,29 @@
   "tempHp": 0,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
-  "equippedItems": [],
+  "equippedItems": [
+    {
+      "name": "Studded Leather Armor",
+      "slot": "armor",
+      "armorType": "light",
+      "stats": {
+        "ac": 16
+      },
+      "magicBonus": 0,
+      "notes": "",
+      "requiresAttunement": false,
+      "attuned": false,
+      "charges": null,
+      "dailyUses": null,
+      "abilityOverride": null,
+      "abilityBonus": null,
+      "saveBonusAll": 0,
+      "saveBonusSpecific": null,
+      "speedBonus": 0,
+      "stealthDisadvantage": false,
+      "resistance": []
+    }
+  ],
   "unequippedItems": [],
   "quickItems": [
     {
