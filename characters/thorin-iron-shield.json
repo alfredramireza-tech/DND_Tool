@@ -217,6 +217,118 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "11:44 PM",
+      "text": "DEX Save: 8"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 4"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 12"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 12"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 5"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 7"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 20"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 13"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 22"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 13"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 10"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "CON Save: 10"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 18"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 12"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 22"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 9"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 18"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 21"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 21"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 7"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 13"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 13"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 13"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 8"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 15"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 17"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 3"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 2"
+    },
+    {
       "time": "11:42 PM",
       "text": "DEX Save: 20"
     },
@@ -503,118 +615,6 @@
     {
       "time": "9:18 PM",
       "text": "Brain Smoothie — piercing: 7"
-    },
-    {
-      "time": "9:18 PM",
-      "text": "Brain Smoothie — Attack: 21"
-    },
-    {
-      "time": "9:08 PM",
-      "text": "Brain Smoothie — piercing: 10"
-    },
-    {
-      "time": "9:08 PM",
-      "text": "Brain Smoothie — Attack: 16"
-    },
-    {
-      "time": "8:57 PM",
-      "text": "Initiative: 2"
-    },
-    {
-      "time": "8:57 PM",
-      "text": "Initiative: 2"
-    },
-    {
-      "time": "7:41 PM",
-      "text": "Investigation: 3"
-    },
-    {
-      "time": "7:27 PM",
-      "text": "History: 11"
-    },
-    {
-      "time": "12:16 PM",
-      "text": "Healing Word — Healing: 11"
-    },
-    {
-      "time": "12:16 PM",
-      "text": "Cast Healing Word at 1st level (3 slots remaining)"
-    },
-    {
-      "time": "12:16 PM",
-      "text": "WIS Save: 8"
-    },
-    {
-      "time": "12:15 PM",
-      "text": "Brain Smoothie — piercing: 10"
-    },
-    {
-      "time": "12:15 PM",
-      "text": "Brain Smoothie — Attack: 24"
-    },
-    {
-      "time": "10:39 AM",
-      "text": "Religion: 21"
-    },
-    {
-      "time": "10:39 AM",
-      "text": "CHA Save: 19"
-    },
-    {
-      "time": "10:39 AM",
-      "text": "CON Save: 6"
-    },
-    {
-      "time": "10:39 AM",
-      "text": "Athletics: 11"
-    },
-    {
-      "time": "10:39 AM",
-      "text": "CHA Save: 5"
-    },
-    {
-      "time": "10:39 AM",
-      "text": "CHA Save: 14"
-    },
-    {
-      "time": "10:39 AM",
-      "text": "CHA Save: 8"
-    },
-    {
-      "time": "10:39 AM",
-      "text": "WIS Save: 19"
-    },
-    {
-      "time": "10:38 AM",
-      "text": "Initiative: 6"
-    },
-    {
-      "time": "10:38 AM",
-      "text": "Initiative: 6"
-    },
-    {
-      "time": "2:06 PM",
-      "text": "Spiritual Weapon — Attack: 20"
-    },
-    {
-      "time": "2:06 PM",
-      "text": "Cast Spiritual Weapon at 2nd level (1 slots remaining)"
-    },
-    {
-      "time": "2:05 PM",
-      "text": "Spiritual Weapon — force: 9"
-    },
-    {
-      "time": "2:05 PM",
-      "text": "Cast Spiritual Weapon at 2nd level (2 slots remaining)"
-    },
-    {
-      "time": "2:05 PM",
-      "text": "Channel Divinity: 1/1 remaining"
-    },
-    {
-      "time": "2:05 PM",
-      "text": "Channel Divinity: 0/1 remaining"
     }
   ],
   "inspiration": true,
