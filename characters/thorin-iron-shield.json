@@ -157,7 +157,7 @@
     "1": 3,
     "2": 1
   },
-  "channelDivinityUsed": 0,
+  "channelDivinityUsed": 1,
   "equippedItems": [
     {
       "name": "Splint Mail",
@@ -197,6 +197,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "7:25 PM",
+      "text": "Channel Divinity: 0/1 remaining"
+    },
     {
       "time": "7:21 PM",
       "text": "Took 34 damage — HP 34→0"
