@@ -151,7 +151,7 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 34,
+  "currentHp": 0,
   "tempHp": 0,
   "spellSlotsUsed": {
     "1": 1,
@@ -197,6 +197,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "7:21 PM",
+      "text": "Took 34 damage — HP 34→0"
+    },
     {
       "time": "4:18 PM",
       "text": "Handaxe — Attack: 12"
