@@ -6,7 +6,7 @@
   "subclass": "Thief",
   "background": "Criminal",
   "alignment": "Chaotic Neutral",
-  "level": 4,
+  "level": 5,
   "abilityScores": {
     "str": 8,
     "dex": 18,
@@ -16,12 +16,19 @@
     "cha": 16
   },
   "hp": {
-    "max": 28,
+    "max": 37,
     "hitDiceType": 8,
-    "hitDiceCount": 4,
-    "hpHistory": []
+    "hitDiceCount": 5,
+    "hpHistory": [
+      {
+        "level": 5,
+        "gained": 9,
+        "method": "roll",
+        "notes": "8 (roll) + 1 CON"
+      }
+    ]
   },
-  "proficiencyBonus": 2,
+  "proficiencyBonus": 3,
   "ac": 20,
   "speed": 25,
   "initiative": 4,
@@ -44,6 +51,7 @@
     "Sneak Attack",
     "Thieves' Cant",
     "Cunning Action",
+    "Uncanny Dodge",
     "Fast Hands",
     "Second-Story Work"
   ],
@@ -76,7 +84,17 @@
       "notes": ""
     }
   ],
-  "levelHistory": [],
+  "levelHistory": [
+    {
+      "level": 5,
+      "from": 4,
+      "hpMethod": "roll",
+      "hpRoll": 8,
+      "hpGained": 9,
+      "retroHp": false,
+      "retroHpAmount": 0
+    }
+  ],
   "expertiseSkills": [
     "sleight of hand",
     "stealth"
@@ -90,7 +108,7 @@
     "pp": 0
   },
   "id": "modvf4mgjphx5",
-  "currentHp": 28,
+  "currentHp": 37,
   "tempHp": 0,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
@@ -192,6 +210,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:44 PM",
+      "text": "Long Rest — all resources restored, HP full"
+    },
     {
       "time": "11:41 PM",
       "text": "STR Save: 24"
