@@ -156,7 +156,7 @@
     "success": "#6aaa5a",
     "inputBg": "#2b292c"
   },
-  "passwordHash": "hvox5yjaisw",
+  "passwordHash": "",
   "deathSaves": {
     "successes": 0,
     "failures": 0
