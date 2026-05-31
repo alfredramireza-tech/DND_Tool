@@ -169,6 +169,26 @@
   "sessionLog": [
     {
       "time": "9:20 PM",
+      "text": "Veiled Bow — Attack: 24"
+    },
+    {
+      "time": "9:20 PM",
+      "text": "Veiled Bow — Attack: 7"
+    },
+    {
+      "time": "9:20 PM",
+      "text": "Veiled Bow — Attack: 7"
+    },
+    {
+      "time": "9:20 PM",
+      "text": "Veiled Bow — Attack: 7"
+    },
+    {
+      "time": "9:20 PM",
+      "text": "Removed external buff: Bless"
+    },
+    {
+      "time": "9:20 PM",
       "text": "Veiled Bow — Attack: 12"
     },
     {
@@ -262,24 +282,7 @@
   ],
   "inspiration": false,
   "journal": [],
-  "externalBuffs": [
-    {
-      "spellName": "Bless",
-      "effects": [
-        {
-          "type": "rollReminder",
-          "text": "+1d4",
-          "rollBonus": {
-            "dice": "1d4",
-            "appliesTo": [
-              "attacks",
-              "saves"
-            ]
-          }
-        }
-      ]
-    }
-  ],
+  "externalBuffs": [],
   "maxHpBoost": {
     "value": 0,
     "source": ""
