@@ -151,13 +151,10 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 15,
+  "currentHp": 34,
   "tempHp": 0,
-  "spellSlotsUsed": {
-    "1": 3,
-    "2": 2
-  },
-  "channelDivinityUsed": 1,
+  "spellSlotsUsed": {},
+  "channelDivinityUsed": 0,
   "equippedItems": [
     {
       "name": "Splint Mail",
@@ -216,6 +213,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "7:52 PM",
+      "text": "Long Rest — all resources restored, HP full"
+    },
     {
       "time": "7:34 PM",
       "text": "Healed 10 HP — HP 5→15"
@@ -611,10 +612,6 @@
     {
       "time": "10:06 PM",
       "text": "Initiative: 15"
-    },
-    {
-      "time": "10:06 PM",
-      "text": "Initiative: 3"
     }
   ],
   "inspiration": true,
