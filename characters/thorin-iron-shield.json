@@ -214,6 +214,10 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "8:38 PM",
+      "text": "1d20: 1"
+    },
+    {
       "time": "8:37 PM",
       "text": "Initiative: 18"
     },
@@ -608,10 +612,6 @@
     {
       "time": "10:48 PM",
       "text": "Brain Smoothie — Attack: 16"
-    },
-    {
-      "time": "10:33 PM",
-      "text": "Brain Smoothie — piercing: 11"
     }
   ],
   "inspiration": true,
