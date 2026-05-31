@@ -155,7 +155,7 @@
   "tempHp": 9,
   "spellSlotsUsed": {
     "1": 2,
-    "2": 2
+    "2": 1
   },
   "channelDivinityUsed": 0,
   "equippedItems": [
@@ -216,6 +216,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "10:46 PM",
+      "text": "Spiritual Weapon — force: 12"
+    },
+    {
+      "time": "10:46 PM",
+      "text": "Cast Spiritual Weapon at 2nd level (0 slots remaining)"
+    },
     {
       "time": "10:46 PM",
       "text": "Spiritual Weapon — Attack: 21"
@@ -607,14 +615,6 @@
     {
       "time": "11:13 PM",
       "text": "Set temp HP to 5"
-    },
-    {
-      "time": "11:13 PM",
-      "text": "Healed 2 HP — HP 24→26"
-    },
-    {
-      "time": "11:13 PM",
-      "text": "Took 5 damage — HP 29→24"
     }
   ],
   "inspiration": false,
