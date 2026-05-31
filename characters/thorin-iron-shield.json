@@ -215,6 +215,14 @@
   "sessionLog": [
     {
       "time": "9:06 PM",
+      "text": "Brain Smoothie — Attack: 15"
+    },
+    {
+      "time": "9:06 PM",
+      "text": "Used Inspiration"
+    },
+    {
+      "time": "9:06 PM",
       "text": "Brain Smoothie — Attack: 12"
     },
     {
@@ -604,17 +612,9 @@
     {
       "time": "11:06 PM",
       "text": "Healing Word — Healing: 9"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Cast Healing Word at 1st level (3 slots remaining)"
-    },
-    {
-      "time": "10:55 PM",
-      "text": "Brain Smoothie — Attack: 12"
     }
   ],
-  "inspiration": true,
+  "inspiration": false,
   "journal": [],
   "externalBuffs": [],
   "maxHpBoost": {
