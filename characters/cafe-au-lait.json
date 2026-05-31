@@ -77,7 +77,7 @@
   "expertiseSkills": [],
   "resources": {
     "actionSurge": {
-      "used": 1,
+      "used": 0,
       "max": 1
     }
   },
@@ -92,7 +92,7 @@
   "maneuversKnown": [],
   "spellsKnown": [],
   "id": "modu0zqe7bj4c",
-  "currentHp": 10,
+  "currentHp": 34,
   "tempHp": 0,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
@@ -125,6 +125,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "7:52 PM",
+      "text": "Long Rest — all resources restored, HP full"
+    },
     {
       "time": "7:42 PM",
       "text": "Healed 10 HP — HP 0→10"
