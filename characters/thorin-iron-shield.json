@@ -152,7 +152,7 @@
   },
   "id": "mn12z7a2x0032",
   "currentHp": 34,
-  "tempHp": 0,
+  "tempHp": 9,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
   "equippedItems": [
@@ -213,6 +213,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "8:53 PM",
+      "text": "Set temp HP to 9"
+    },
     {
       "time": "8:38 PM",
       "text": "1d20: 1"
@@ -608,10 +612,6 @@
     {
       "time": "10:48 PM",
       "text": "Brain Smoothie — piercing: 11"
-    },
-    {
-      "time": "10:48 PM",
-      "text": "Brain Smoothie — Attack: 16"
     }
   ],
   "inspiration": true,
