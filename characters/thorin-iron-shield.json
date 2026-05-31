@@ -217,6 +217,50 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "11:16 PM",
+      "text": "WIS Save: 24"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 21"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 21"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "Religion: 11"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 9"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 12"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 24"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 10"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 7"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 8"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "WIS Save: 13"
+    },
+    {
       "time": "10:46 PM",
       "text": "Spiritual Weapon — force: 12"
     },
@@ -571,50 +615,6 @@
     {
       "time": "11:25 PM",
       "text": "Took 2 damage — HP 31→29"
-    },
-    {
-      "time": "11:19 PM",
-      "text": "Initiative: 11"
-    },
-    {
-      "time": "11:19 PM",
-      "text": "Initiative: 11"
-    },
-    {
-      "time": "11:19 PM",
-      "text": "Added buff: Bless (+1d4)"
-    },
-    {
-      "time": "11:19 PM",
-      "text": "Began concentrating on Bless"
-    },
-    {
-      "time": "11:17 PM",
-      "text": "Guiding Bolt — Attack: 18"
-    },
-    {
-      "time": "11:17 PM",
-      "text": "Cast Guiding Bolt at 2nd level (2 slots remaining)"
-    },
-    {
-      "time": "11:16 PM",
-      "text": "Healed 5 HP — HP 26→31"
-    },
-    {
-      "time": "11:15 PM",
-      "text": "Set temp HP to 5"
-    },
-    {
-      "time": "11:14 PM",
-      "text": "Took 5 damage — HP 31→26"
-    },
-    {
-      "time": "11:13 PM",
-      "text": "Healed 5 HP — HP 26→31"
-    },
-    {
-      "time": "11:13 PM",
-      "text": "Set temp HP to 5"
     }
   ],
   "inspiration": false,
