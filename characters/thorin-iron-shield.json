@@ -216,6 +216,14 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "10:38 PM",
+      "text": "Initiative: 1"
+    },
+    {
+      "time": "10:38 PM",
+      "text": "Initiative: 1"
+    },
+    {
       "time": "10:19 PM",
       "text": "Added buff: Shield of Faith (+2 AC)"
     },
@@ -606,14 +614,6 @@
     {
       "time": "11:12 PM",
       "text": "Healed 15 HP — HP 26→34"
-    },
-    {
-      "time": "11:12 PM",
-      "text": "Set temp HP to 5"
-    },
-    {
-      "time": "11:12 PM",
-      "text": "Took 5 damage — HP 31→26"
     }
   ],
   "inspiration": false,
