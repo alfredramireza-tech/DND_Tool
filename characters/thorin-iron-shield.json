@@ -208,11 +208,19 @@
     "failures": 0
   },
   "concentration": {
-    "active": false,
-    "spellName": ""
+    "active": true,
+    "spellName": "Bless"
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "10:15 PM",
+      "text": "Added buff: Bless (+1d4)"
+    },
+    {
+      "time": "10:15 PM",
+      "text": "Began concentrating on Bless"
+    },
     {
       "time": "9:40 PM",
       "text": "STR Save: 12"
@@ -604,19 +612,29 @@
     {
       "time": "11:10 PM",
       "text": "Sacred Flame — radiant: 4"
-    },
-    {
-      "time": "11:09 PM",
-      "text": "Prayer of Healing — Healing: 15"
-    },
-    {
-      "time": "11:09 PM",
-      "text": "Cast Prayer of Healing at 2nd level (2 slots remaining)"
     }
   ],
   "inspiration": false,
   "journal": [],
-  "externalBuffs": [],
+  "externalBuffs": [
+    {
+      "spellName": "Bless",
+      "effects": [
+        {
+          "type": "rollReminder",
+          "text": "+1d4",
+          "rollBonus": {
+            "dice": "1d4",
+            "appliesTo": [
+              "attacks",
+              "saves"
+            ]
+          }
+        }
+      ],
+      "linkedToConcentration": true
+    }
+  ],
   "maxHpBoost": {
     "value": 0,
     "source": ""
