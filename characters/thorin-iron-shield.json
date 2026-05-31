@@ -154,7 +154,8 @@
   "currentHp": 34,
   "tempHp": 9,
   "spellSlotsUsed": {
-    "1": 2
+    "1": 2,
+    "2": 1
   },
   "channelDivinityUsed": 0,
   "equippedItems": [
