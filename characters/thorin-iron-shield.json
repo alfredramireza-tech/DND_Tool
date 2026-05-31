@@ -160,15 +160,6 @@
   "channelDivinityUsed": 0,
   "equippedItems": [
     {
-      "name": "Splint Mail",
-      "slot": "armor",
-      "armorType": "heavy",
-      "stats": {
-        "ac": 17
-      },
-      "notes": ""
-    },
-    {
       "name": "Boots of Striding and Springing",
       "slot": "other",
       "armorType": null,
@@ -186,9 +177,23 @@
       "speedBonus": 5,
       "stealthDisadvantage": false,
       "resistance": []
+    },
+    {
+      "name": "Splint Mail",
+      "slot": "armor",
+      "armorType": "heavy",
+      "stats": {
+        "ac": 17
+      },
+      "notes": ""
     }
   ],
-  "quickItems": [],
+  "quickItems": [
+    {
+      "name": "Gauntlets of Ogre Power",
+      "notes": ""
+    }
+  ],
   "bulkGear": "Backpack, crowbar, hammer, 10 pitons, 10 torches, tinderbox, 10 days rations, waterskin, 50ft rope, mason's tools, playing cards, trophy, pouch, common clothes, rank insignia (sergeant), 3 apples, gem eye patch, semi-precious stones, ring from 2x Rivas, scroll of augury, 3 gold idols, Tressender Family Rings x2",
   "colorTheme": {
     "name": "Cleric Gold",
@@ -645,6 +650,27 @@
       "armorType": "heavy",
       "stats": {
         "acBonus": 2
+      },
+      "magicBonus": 0,
+      "notes": "",
+      "requiresAttunement": false,
+      "attuned": false,
+      "charges": null,
+      "dailyUses": null,
+      "abilityOverride": null,
+      "abilityBonus": null,
+      "saveBonusAll": 0,
+      "saveBonusSpecific": null,
+      "speedBonus": 0,
+      "stealthDisadvantage": false,
+      "resistance": []
+    },
+    {
+      "name": "Silver Armor",
+      "slot": "armor",
+      "armorType": "light",
+      "stats": {
+        "ac": 0
       },
       "magicBonus": 0,
       "notes": "",
