@@ -153,7 +153,9 @@
   "id": "mn12z7a2x0032",
   "currentHp": 34,
   "tempHp": 9,
-  "spellSlotsUsed": {},
+  "spellSlotsUsed": {
+    "1": 2
+  },
   "channelDivinityUsed": 0,
   "equippedItems": [
     {
