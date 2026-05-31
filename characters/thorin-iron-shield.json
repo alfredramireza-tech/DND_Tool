@@ -214,6 +214,10 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "9:30 PM",
+      "text": "STR Save: 9"
+    },
+    {
       "time": "9:29 PM",
       "text": "Brain Smoothie — Attack: 13"
     },
@@ -608,10 +612,6 @@
     {
       "time": "11:06 PM",
       "text": "Healing Word — Healing: 10"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Cast Healing Word at 1st level (0 slots remaining)"
     }
   ],
   "inspiration": false,
