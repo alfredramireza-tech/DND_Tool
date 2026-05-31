@@ -93,7 +93,7 @@
   "spellsKnown": [],
   "id": "modu0zqe7bj4c",
   "currentHp": 34,
-  "tempHp": 0,
+  "tempHp": 5,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
   "equippedItems": [],
@@ -125,6 +125,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "10:17 PM",
+      "text": "Set temp HP to 5"
+    },
     {
       "time": "7:52 PM",
       "text": "Long Rest — all resources restored, HP full"
