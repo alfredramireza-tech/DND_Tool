@@ -151,10 +151,10 @@
     "pp": 0
   },
   "id": "mn12z7a2x0032",
-  "currentHp": 0,
+  "currentHp": 5,
   "tempHp": 0,
   "spellSlotsUsed": {
-    "1": 3,
+    "1": 2,
     "2": 1
   },
   "channelDivinityUsed": 1,
@@ -167,6 +167,25 @@
         "ac": 17
       },
       "notes": ""
+    },
+    {
+      "name": "Boots of Striding and Springing",
+      "slot": "other",
+      "armorType": null,
+      "stats": {},
+      "magicBonus": 0,
+      "notes": "Jump 3x normal distance but can’t be more than emailing movement speed. Also, not encumbered and heavy armor doesn’t slow down.",
+      "requiresAttunement": false,
+      "attuned": false,
+      "charges": null,
+      "dailyUses": null,
+      "abilityOverride": null,
+      "abilityBonus": null,
+      "saveBonusAll": 0,
+      "saveBonusSpecific": null,
+      "speedBonus": 5,
+      "stealthDisadvantage": false,
+      "resistance": []
     }
   ],
   "quickItems": [],
@@ -198,112 +217,404 @@
   "activeConditions": [],
   "sessionLog": [
     {
-      "time": "7:25 PM",
-      "text": "Channel Divinity: 0/1 remaining"
+      "time": "7:30 PM",
+      "text": "Brain Smoothie — piercing: 9"
     },
     {
-      "time": "7:21 PM",
-      "text": "Took 34 damage — HP 34→0"
+      "time": "7:29 PM",
+      "text": "Brain Smoothie — Attack: 21"
     },
     {
-      "time": "4:18 PM",
-      "text": "Handaxe — Attack: 12"
+      "time": "7:26 PM",
+      "text": "Healed 5 HP — HP 0→5"
     },
     {
-      "time": "2:54 PM",
-      "text": "Handaxe — Attack: 16"
+      "time": "11:48 PM",
+      "text": "Dropped concentration on Bless"
     },
     {
-      "time": "12:16 PM",
-      "text": "Healing Word — Healing: 11"
+      "time": "11:48 PM",
+      "text": "Removed buff: Bless (+1d4)"
     },
     {
-      "time": "12:16 PM",
-      "text": "Cast Healing Word at 1st level (3 slots remaining)"
+      "time": "11:48 PM",
+      "text": "Took 26 damage — HP 13→0"
     },
     {
-      "time": "12:16 PM",
-      "text": "WIS Save: 8"
+      "time": "11:47 PM",
+      "text": "8d6: 33"
     },
     {
-      "time": "12:15 PM",
-      "text": "Brain Smoothie — piercing: 10"
+      "time": "11:47 PM",
+      "text": "1d20: 4"
     },
     {
-      "time": "12:15 PM",
-      "text": "Brain Smoothie — Attack: 24"
+      "time": "11:44 PM",
+      "text": "DEX Save: 8"
     },
     {
-      "time": "10:39 AM",
-      "text": "Religion: 21"
+      "time": "11:44 PM",
+      "text": "DEX Save: 4"
     },
     {
-      "time": "10:39 AM",
-      "text": "CHA Save: 19"
+      "time": "11:44 PM",
+      "text": "DEX Save: 12"
     },
     {
-      "time": "10:39 AM",
-      "text": "CON Save: 6"
+      "time": "11:44 PM",
+      "text": "DEX Save: 12"
     },
     {
-      "time": "10:39 AM",
-      "text": "Athletics: 11"
+      "time": "11:44 PM",
+      "text": "DEX Save: 5"
     },
     {
-      "time": "10:39 AM",
-      "text": "CHA Save: 5"
+      "time": "11:44 PM",
+      "text": "DEX Save: 7"
     },
     {
-      "time": "10:39 AM",
-      "text": "CHA Save: 14"
+      "time": "11:44 PM",
+      "text": "DEX Save: 20"
     },
     {
-      "time": "10:39 AM",
-      "text": "CHA Save: 8"
+      "time": "11:44 PM",
+      "text": "DEX Save: 13"
     },
     {
-      "time": "10:39 AM",
-      "text": "WIS Save: 19"
+      "time": "11:44 PM",
+      "text": "DEX Save: 22"
     },
     {
-      "time": "10:38 AM",
-      "text": "Initiative: 6"
+      "time": "11:44 PM",
+      "text": "DEX Save: 13"
     },
     {
-      "time": "10:38 AM",
-      "text": "Initiative: 6"
+      "time": "11:44 PM",
+      "text": "DEX Save: 10"
     },
     {
-      "time": "2:06 PM",
-      "text": "Spiritual Weapon — Attack: 20"
+      "time": "11:44 PM",
+      "text": "CON Save: 10"
     },
     {
-      "time": "2:06 PM",
+      "time": "11:44 PM",
+      "text": "DEX Save: 18"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 12"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 22"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 9"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 18"
+    },
+    {
+      "time": "11:44 PM",
+      "text": "DEX Save: 21"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 21"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 7"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 13"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 13"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 13"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 8"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 15"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 17"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 3"
+    },
+    {
+      "time": "11:43 PM",
+      "text": "DEX Save: 2"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 20"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 9"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 1"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 17"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 5"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 4"
+    },
+    {
+      "time": "11:42 PM",
+      "text": "DEX Save: 1"
+    },
+    {
+      "time": "11:39 PM",
+      "text": "CON Save: 20"
+    },
+    {
+      "time": "11:39 PM",
+      "text": "Took 3 damage — HP 16→13"
+    },
+    {
+      "time": "11:39 PM",
+      "text": "CON Save: 5"
+    },
+    {
+      "time": "11:39 PM",
+      "text": "Took 7 damage — HP 23→16"
+    },
+    {
+      "time": "11:37 PM",
+      "text": "CON Save: 22"
+    },
+    {
+      "time": "11:37 PM",
+      "text": "Took 6 damage — HP 29→23"
+    },
+    {
+      "time": "11:33 PM",
+      "text": "Spiritual Weapon — Attack: 12"
+    },
+    {
+      "time": "11:33 PM",
       "text": "Cast Spiritual Weapon at 2nd level (1 slots remaining)"
     },
     {
-      "time": "2:05 PM",
-      "text": "Spiritual Weapon — force: 9"
+      "time": "11:25 PM",
+      "text": "Took 2 damage — HP 31→29"
     },
     {
-      "time": "2:05 PM",
-      "text": "Cast Spiritual Weapon at 2nd level (2 slots remaining)"
+      "time": "11:19 PM",
+      "text": "Initiative: 11"
     },
     {
-      "time": "2:05 PM",
-      "text": "Channel Divinity: 1/1 remaining"
+      "time": "11:19 PM",
+      "text": "Initiative: 11"
     },
     {
-      "time": "2:05 PM",
-      "text": "Channel Divinity: 0/1 remaining"
+      "time": "11:19 PM",
+      "text": "Added buff: Bless (+1d4)"
     },
     {
-      "time": "2:04 PM",
-      "text": "Gained Inspiration"
+      "time": "11:19 PM",
+      "text": "Began concentrating on Bless"
     },
     {
-      "time": "2:04 PM",
-      "text": "Used Inspiration"
+      "time": "11:17 PM",
+      "text": "Guiding Bolt — Attack: 18"
+    },
+    {
+      "time": "11:17 PM",
+      "text": "Cast Guiding Bolt at 2nd level (2 slots remaining)"
+    },
+    {
+      "time": "11:16 PM",
+      "text": "Healed 5 HP — HP 26→31"
+    },
+    {
+      "time": "11:15 PM",
+      "text": "Set temp HP to 5"
+    },
+    {
+      "time": "11:14 PM",
+      "text": "Took 5 damage — HP 31→26"
+    },
+    {
+      "time": "11:13 PM",
+      "text": "Healed 5 HP — HP 26→31"
+    },
+    {
+      "time": "11:13 PM",
+      "text": "Set temp HP to 5"
+    },
+    {
+      "time": "11:13 PM",
+      "text": "Healed 2 HP — HP 24→26"
+    },
+    {
+      "time": "11:13 PM",
+      "text": "Took 5 damage — HP 29→24"
+    },
+    {
+      "time": "11:13 PM",
+      "text": "Took 5 damage — HP 34→29"
+    },
+    {
+      "time": "11:12 PM",
+      "text": "Healed 15 HP — HP 26→34"
+    },
+    {
+      "time": "11:12 PM",
+      "text": "Set temp HP to 5"
+    },
+    {
+      "time": "11:12 PM",
+      "text": "Took 5 damage — HP 31→26"
+    },
+    {
+      "time": "11:12 PM",
+      "text": "Took 0 damage — HP 31→31"
+    },
+    {
+      "time": "11:11 PM",
+      "text": "Set temp HP to 5"
+    },
+    {
+      "time": "11:11 PM",
+      "text": "Healed 5 HP — HP 26→31"
+    },
+    {
+      "time": "11:10 PM",
+      "text": "Sacred Flame — radiant: 4"
+    },
+    {
+      "time": "11:09 PM",
+      "text": "Prayer of Healing — Healing: 15"
+    },
+    {
+      "time": "11:09 PM",
+      "text": "Cast Prayer of Healing at 2nd level (2 slots remaining)"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Healing Word — Healing: 10"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Cast Healing Word at 1st level (0 slots remaining)"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Healing Word — Healing: 8"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Cast Healing Word at 1st level (1 slots remaining)"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Healing Word — Healing: 11"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Cast Healing Word at 1st level (2 slots remaining)"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Healing Word — Healing: 10"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Cast Healing Word at 1st level (3 slots remaining)"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Healing Word — Healing: 9"
+    },
+    {
+      "time": "11:06 PM",
+      "text": "Cast Healing Word at 1st level (3 slots remaining)"
+    },
+    {
+      "time": "10:55 PM",
+      "text": "Brain Smoothie — Attack: 12"
+    },
+    {
+      "time": "10:48 PM",
+      "text": "Brain Smoothie — piercing: 11"
+    },
+    {
+      "time": "10:48 PM",
+      "text": "Brain Smoothie — Attack: 16"
+    },
+    {
+      "time": "10:33 PM",
+      "text": "Brain Smoothie — piercing: 11"
+    },
+    {
+      "time": "10:32 PM",
+      "text": "Brain Smoothie — Attack: 21"
+    },
+    {
+      "time": "10:07 PM",
+      "text": "Initiative: 11"
+    },
+    {
+      "time": "10:07 PM",
+      "text": "Initiative: 11"
+    },
+    {
+      "time": "10:06 PM",
+      "text": "Initiative: 15"
+    },
+    {
+      "time": "10:06 PM",
+      "text": "Initiative: 15"
+    },
+    {
+      "time": "10:06 PM",
+      "text": "Initiative: 3"
+    },
+    {
+      "time": "10:06 PM",
+      "text": "Initiative: 3"
+    },
+    {
+      "time": "10:06 PM",
+      "text": "Initiative: 5"
+    },
+    {
+      "time": "10:06 PM",
+      "text": "Initiative: 5"
+    },
+    {
+      "time": "9:58 PM",
+      "text": "Brain Smoothie — piercing: 8"
+    },
+    {
+      "time": "9:58 PM",
+      "text": "Brain Smoothie — Attack: 10"
     }
   ],
   "inspiration": true,
@@ -318,14 +629,25 @@
   "signatureSpells": null,
   "unequippedItems": [
     {
-      "name": "SHield",
+      "name": "Shield",
       "slot": "shield",
       "armorType": "heavy",
       "stats": {
         "acBonus": 2
       },
       "magicBonus": 0,
-      "notes": ""
+      "notes": "",
+      "requiresAttunement": false,
+      "attuned": false,
+      "charges": null,
+      "dailyUses": null,
+      "abilityOverride": null,
+      "abilityBonus": null,
+      "saveBonusAll": 0,
+      "saveBonusSpecific": null,
+      "speedBonus": 0,
+      "stealthDisadvantage": false,
+      "resistance": []
     }
   ]
 }
