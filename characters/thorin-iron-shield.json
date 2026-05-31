@@ -214,6 +214,34 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "9:29 PM",
+      "text": "Brain Smoothie — Attack: 13"
+    },
+    {
+      "time": "9:29 PM",
+      "text": "Brain Smoothie — Attack: 24"
+    },
+    {
+      "time": "9:29 PM",
+      "text": "Brain Smoothie — Attack: 19"
+    },
+    {
+      "time": "9:29 PM",
+      "text": "Brain Smoothie — Attack: 16"
+    },
+    {
+      "time": "9:29 PM",
+      "text": "Brain Smoothie — Attack: 23"
+    },
+    {
+      "time": "9:29 PM",
+      "text": "Brain Smoothie — Attack: 23"
+    },
+    {
+      "time": "9:28 PM",
+      "text": "Brain Smoothie — Attack: 12"
+    },
+    {
       "time": "9:06 PM",
       "text": "Brain Smoothie — Attack: 15"
     },
@@ -584,34 +612,6 @@
     {
       "time": "11:06 PM",
       "text": "Cast Healing Word at 1st level (0 slots remaining)"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Healing Word — Healing: 8"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Cast Healing Word at 1st level (1 slots remaining)"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Healing Word — Healing: 11"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Cast Healing Word at 1st level (2 slots remaining)"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Healing Word — Healing: 10"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Cast Healing Word at 1st level (3 slots remaining)"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Healing Word — Healing: 9"
     }
   ],
   "inspiration": false,
