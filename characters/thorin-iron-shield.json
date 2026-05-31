@@ -214,6 +214,18 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "8:32 PM",
+      "text": "Initiative: 7"
+    },
+    {
+      "time": "8:32 PM",
+      "text": "Initiative: 7"
+    },
+    {
+      "time": "8:32 PM",
+      "text": "Brain Smoothie — Attack: 5"
+    },
+    {
       "time": "7:52 PM",
       "text": "Long Rest — all resources restored, HP full"
     },
@@ -600,18 +612,6 @@
     {
       "time": "10:07 PM",
       "text": "Initiative: 11"
-    },
-    {
-      "time": "10:07 PM",
-      "text": "Initiative: 11"
-    },
-    {
-      "time": "10:06 PM",
-      "text": "Initiative: 15"
-    },
-    {
-      "time": "10:06 PM",
-      "text": "Initiative: 15"
     }
   ],
   "inspiration": true,
