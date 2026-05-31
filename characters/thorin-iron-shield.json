@@ -214,6 +214,10 @@
   "activeConditions": [],
   "sessionLog": [
     {
+      "time": "9:40 PM",
+      "text": "STR Save: 12"
+    },
+    {
       "time": "9:30 PM",
       "text": "STR Save: 9"
     },
@@ -608,10 +612,6 @@
     {
       "time": "11:09 PM",
       "text": "Cast Prayer of Healing at 2nd level (2 slots remaining)"
-    },
-    {
-      "time": "11:06 PM",
-      "text": "Healing Word — Healing: 10"
     }
   ],
   "inspiration": false,
