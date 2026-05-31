@@ -86,7 +86,7 @@
     "cp": 100,
     "sp": 350,
     "ep": 260,
-    "gp": 467,
+    "gp": 457,
     "pp": 0
   },
   "id": "modvf4mgjphx5",
@@ -109,6 +109,27 @@
       "charges": null,
       "dailyUses": null,
       "abilityOverride": null,
+      "abilityBonus": null,
+      "saveBonusAll": 0,
+      "saveBonusSpecific": null,
+      "speedBonus": 0,
+      "stealthDisadvantage": false,
+      "resistance": []
+    },
+    {
+      "name": "Gauntlets of Ogre Power",
+      "slot": "other",
+      "armorType": null,
+      "stats": {},
+      "magicBonus": 0,
+      "notes": "",
+      "requiresAttunement": true,
+      "attuned": true,
+      "charges": null,
+      "dailyUses": null,
+      "abilityOverride": {
+        "str": 19
+      },
       "abilityBonus": null,
       "saveBonusAll": 0,
       "saveBonusSpecific": null,
@@ -141,7 +162,7 @@
     },
     {
       "name": "Potion of Vitality",
-      "notes": ""
+      "notes": "1"
     }
   ],
   "bulkGear": "5- Carnelian \n2- Peridot\n1- Pearl\n3- Slave Collar\n\nThieves tools \nBackpack\nBell\n5- Candles\nCrowbar\nHammer\n10 Pitons\n3- Flasks of Oil\nTinderbox\nWaterskin\n\n20ft Rope\nHooded lantern \n\n\nSteampunk Glasses w/ Yellow Stones\nAncient Ornate Crown ",
@@ -171,6 +192,14 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:39 PM",
+      "text": "STR Save: 17"
+    },
+    {
+      "time": "10:15 PM",
+      "text": "Perception: 4"
+    },
     {
       "time": "9:20 PM",
       "text": "Veiled Bow — Attack: 24"
