@@ -47,7 +47,7 @@
     ]
   },
   "proficiencyBonus": 2,
-  "ac": 17,
+  "ac": 19,
   "speed": 25,
   "initiative": -1,
   "savingThrows": [
@@ -211,10 +211,26 @@
   },
   "concentration": {
     "active": true,
-    "spellName": "Bless"
+    "spellName": "Shield of Faith"
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "10:19 PM",
+      "text": "Added buff: Shield of Faith (+2 AC)"
+    },
+    {
+      "time": "10:19 PM",
+      "text": "Began concentrating on Shield of Faith"
+    },
+    {
+      "time": "10:19 PM",
+      "text": "Lost concentration on Bless"
+    },
+    {
+      "time": "10:19 PM",
+      "text": "Removed buff: Bless (+1d4)"
+    },
     {
       "time": "10:15 PM",
       "text": "Added buff: Bless (+1d4)"
@@ -598,40 +614,17 @@
     {
       "time": "11:12 PM",
       "text": "Took 5 damage — HP 31→26"
-    },
-    {
-      "time": "11:12 PM",
-      "text": "Took 0 damage — HP 31→31"
-    },
-    {
-      "time": "11:11 PM",
-      "text": "Set temp HP to 5"
-    },
-    {
-      "time": "11:11 PM",
-      "text": "Healed 5 HP — HP 26→31"
-    },
-    {
-      "time": "11:10 PM",
-      "text": "Sacred Flame — radiant: 4"
     }
   ],
   "inspiration": false,
   "journal": [],
   "externalBuffs": [
     {
-      "spellName": "Bless",
+      "spellName": "Shield of Faith",
       "effects": [
         {
-          "type": "rollReminder",
-          "text": "+1d4",
-          "rollBonus": {
-            "dice": "1d4",
-            "appliesTo": [
-              "attacks",
-              "saves"
-            ]
-          }
+          "type": "acBonus",
+          "value": 2
         }
       ],
       "linkedToConcentration": true
