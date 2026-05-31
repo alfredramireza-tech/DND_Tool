@@ -92,7 +92,7 @@
   "maneuversKnown": [],
   "spellsKnown": [],
   "id": "modu0zqe7bj4c",
-  "currentHp": 25,
+  "currentHp": 24,
   "tempHp": 0,
   "spellSlotsUsed": {},
   "channelDivinityUsed": 0,
@@ -125,6 +125,10 @@
   },
   "activeConditions": [],
   "sessionLog": [
+    {
+      "time": "11:10 PM",
+      "text": "Took 1 damage — HP 25→24"
+    },
     {
       "time": "11:09 PM",
       "text": "Took 5 damage — HP 30→25"
